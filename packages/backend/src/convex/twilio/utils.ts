@@ -1,7 +1,6 @@
 "use node"
 import { Twilio } from 'twilio';
 import { Result, ok, err, ResultAsync, fromThrowable } from 'neverthrow';
-import { env } from '../../../env';
 import type { TwilioError } from './error';
 
 // =============================================================================
@@ -16,7 +15,7 @@ type SMSConfig = {
 };
 
 // Helper functions
-const isDevelopment = () => env.NODE_ENV === 'development';
+const isDevelopment = () => process.env.NODE_ENV === 'development';
 
 const validateInput = (phoneNumber: string, code: string): Result<[string, string], TwilioError> => {
   if (!phoneNumber?.trim()) {
@@ -29,9 +28,9 @@ const validateInput = (phoneNumber: string, code: string): Result<[string, strin
 };
 
 const getConfig = (): Result<SMSConfig, TwilioError> => {
-  const accountSid = env.TWILIO_ACCOUNT_SID;
-  const authToken = env.TWILIO_AUTH_TOKEN;
-  const fromNumber = env.TWILIO_NUMBER;
+  const accountSid = process.env.TWILIO_ACCOUNT_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const fromNumber = process.env.TWILIO_NUMBER;
 
   if (!accountSid || !authToken || !fromNumber) {
     return err({
@@ -51,7 +50,7 @@ const createClient = fromThrowable(
 const logDevOTP = (phoneNumber: string, code: string): void => {
   console.log('\n' + '='.repeat(50));
   console.log(`📱 Development OTP`);
-  console.log(`NODE_ENV: ${env.NODE_ENV}`);
+  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
   console.log(`Phone: ${phoneNumber}`);
   console.log(`Code:  ${code}`);
   console.log('='.repeat(50) + '\n');

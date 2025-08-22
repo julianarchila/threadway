@@ -314,7 +314,7 @@ function Features() {
     { icon: Network, title: "Open MCP layer", desc: "Connect Gmail, Calendar, Notion, GitHub, CRMs, and internal tools." },
     { icon: Zap, title: "Fast onboarding", desc: "Say hi and you're in. Phone‑number authentication—no sign‑up flow." },
   ]
-    return (
+  return (
     <section id="features" className="relative">
       <div className="mx-auto max-w-7xl px-4 py-16 md:py-20">
         <SectionHeader center title="Features" subtitle="Everything you expect from a real assistant—powered by LLMs and your tools." />
@@ -376,10 +376,10 @@ function Pricing() {
           {plans.map((plan) => (
             <Card
               key={plan.name}
-                className={cn(
-                  "relative flex flex-col border-muted/60 transition-all motion-safe:hover:-translate-y-[2px] hover:shadow-lg",
-                  plan.highlight && "border-emerald-300/80 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] dark:border-emerald-500/50 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.35)]"
-                )}
+              className={cn(
+                "relative flex flex-col border-muted/60 transition-all motion-safe:hover:-translate-y-[2px] hover:shadow-lg",
+                plan.highlight && "border-emerald-300/80 shadow-[0_0_0_1px_rgba(16,185,129,0.25)] dark:border-emerald-500/50 dark:shadow-[0_0_0_1px_rgba(16,185,129,0.35)]"
+              )}
             >
               {plan.highlight && (
                 <div className="absolute right-3 top-3 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-900 dark:border-emerald-500/40 dark:bg-emerald-950/30 dark:text-emerald-200">
@@ -517,7 +517,7 @@ function Testimonials() {
             >
               <CardContent className="p-6">
                 <div className="mb-4 flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                  <Avatar className="h-10 w-10">
                     <AvatarImage src={q.img || "/placeholder.svg"} alt={`${q.name} avatar`} loading="lazy" />
                     <AvatarFallback>{q.name.slice(0, 1)}</AvatarFallback>
                   </Avatar>
