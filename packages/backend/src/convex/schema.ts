@@ -7,4 +7,9 @@ export default defineSchema({
     phoneNumber: v.string(),
     name: v.optional(v.string()),
   }).index("by_phone_number", ["phoneNumber"]),
+
+  todos: defineTable({
+    title: v.string(),
+    done: v.boolean(),
+  })
 });
