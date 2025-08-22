@@ -19,7 +19,7 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 
 
-export default function TodosPage() {
+export default function TodosPageExample() {
   const [newTodoText, setNewTodoText] = useState("");
 
   const todos = useQuery(api.todo.lisTodos);
@@ -44,7 +44,7 @@ export default function TodosPage() {
   };
 
   return (
-    <div className="mx-auto w-full max-w-md py-10">
+    <div className="w-full max-w-md">
       <Card>
         <CardHeader>
           <CardTitle>Todo List</CardTitle>
