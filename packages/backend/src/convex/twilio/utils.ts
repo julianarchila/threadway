@@ -15,7 +15,7 @@ type SMSConfig = {
 };
 
 // Helper functions
-const isDevelopment = () => process.env.NODE_ENV === 'development';
+const isDevelopment = () => process.env.TWILIO_ENV === 'development';
 
 const validateInput = (phoneNumber: string, code: string): Result<[string, string], TwilioError> => {
   if (!phoneNumber?.trim()) {
@@ -50,7 +50,6 @@ const createClient = fromThrowable(
 const logDevOTP = (phoneNumber: string, code: string): void => {
   console.log('\n' + '='.repeat(50));
   console.log(`📱 Development OTP`);
-  console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
   console.log(`Phone: ${phoneNumber}`);
   console.log(`Code:  ${code}`);
   console.log('='.repeat(50) + '\n');

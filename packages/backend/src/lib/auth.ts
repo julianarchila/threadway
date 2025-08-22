@@ -8,7 +8,7 @@ import { internal } from "../convex/_generated/api";
 
 const getSiteUrl = () => {
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return `http://localhost:${process.env.PORT ?? 3001}`;
+  return `http://localhost:${process.env.PORT ?? 3000}`;
 };
 
 export const createAuth = (ctx: GenericCtx) =>
