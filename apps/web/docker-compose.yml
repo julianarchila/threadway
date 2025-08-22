@@ -1,0 +1,23 @@
+name: whatsapp-mcp-client
+
+services:
+  postgres:
+    image: postgres
+    container_name: whatsapp-mcp-client-postgres
+    environment:
+      POSTGRES_DB: whatsapp-mcp-client
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - whatsapp-mcp-client_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  whatsapp-mcp-client_postgres_data:
