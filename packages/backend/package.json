@@ -10,7 +10,8 @@
   "description": "",
   "exports": {
     "./lib/*": "./src/lib/*.ts",
-    "./convex/api": "./src/convex/_generated/api.js"
+    "./convex/api": "./src/convex/_generated/api.js",
+    "./convex/dataModel": "./src/convex/_generated/dataModel.js"
   },
   "devDependencies": {
     "typescript": "^5.8.3"
