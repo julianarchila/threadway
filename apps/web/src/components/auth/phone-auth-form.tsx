@@ -4,12 +4,10 @@ import { authClient } from "@/lib/auth-client";
 import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import z from "zod";
-import Loader from "./loader";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { PhoneInput } from "./ui/phone-input";
-import { InputOTP, InputOTPGroup, InputOTPSlot } from "./ui/input-otp";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/ui/phone-input";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 

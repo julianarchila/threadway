@@ -2,7 +2,7 @@
 
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { ThemeProvider } from "./theme-provider";
-import { Toaster } from "./ui/sonner";
+import { Toaster } from "../components/ui/sonner";
 import { ConvexClientProvider } from "./ConvexClientProvider";
 
 

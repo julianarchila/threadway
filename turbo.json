@@ -14,14 +14,6 @@
 				".next/**",
 				"!.next/cache/**",
 				"dist/**"
-			],
-			"env": [
-				"POSTGRES_URL",
-				"BETTER_AUTH_SECRET",
-				"TWILIO_AUTH_TOKEN",
-				"OPENAI_API_KEY",
-				"TWILIO_ACCOUNT_SID",
-				"TWILIO_NUMBER"
 			]
 		},
 		"lint": {
@@ -35,61 +27,6 @@
 			]
 		},
 		"dev": {
-			"cache": false,
-			"persistent": true,
-			"env": [
-				"POSTGRES_URL",
-				"BETTER_AUTH_SECRET",
-				"TWILIO_AUTH_TOKEN",
-				"OPENAI_API_KEY",
-				"TWILIO_ACCOUNT_SID",
-				"TWILIO_NUMBER"
-			]
-		},
-		"db:push": {
-			"cache": false,
-			"persistent": true,
-			"env": [
-				"POSTGRES_URL"
-			]
-		},
-		"db:studio": {
-			"cache": false,
-			"persistent": true,
-			"env": [
-				"POSTGRES_URL"
-			]
-		},
-		"db:migrate": {
-			"cache": false,
-			"persistent": true,
-			"env": [
-				"POSTGRES_URL"
-			]
-		},
-		"db:generate": {
-			"cache": false,
-			"persistent": true,
-			"env": [
-				"POSTGRES_URL"
-			]
-		},
-		"db:start": {
-			"cache": false,
-			"persistent": true
-		},
-		"db:stop": {
-			"cache": false,
-			"persistent": true
-		},
-		"db:watch": {
-			"cache": false,
-			"persistent": true,
-			"env": [
-				"POSTGRES_URL"
-			]
-		},
-		"db:down": {
 			"cache": false,
 			"persistent": true
 		}

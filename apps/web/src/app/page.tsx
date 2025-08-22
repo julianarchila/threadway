@@ -1,8 +1,7 @@
 import NextLink from "next/link"
-import PhoneMockup from "@/components/phone-mockup"
+import PhoneMockup from "@/components/landing/phone-mockup"
 import { ArrowRight, Check, ChevronRight, MessageCircle, Mic, Calendar, Globe2, ShieldCheck, Zap, Bot, Mail, TerminalSquare, Star, Lock, ExternalLink, Wrench, Network, Link2 } from 'lucide-react'
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Separator } from "@/components/ui/separator"

@@ -9,7 +9,7 @@ import { createAuth } from "@whatsapp-mcp-client/backend/lib/auth"
 import { api } from "@whatsapp-mcp-client/backend/convex/api"
 
 // Local imports
-import PhoneAuthForm from "@/components/phone-auth-form";
+import PhoneAuthForm from "@/components/auth/phone-auth-form";
 
 export default async function LoginPage() {
 
