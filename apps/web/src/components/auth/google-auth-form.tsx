@@ -58,28 +58,11 @@ export default function GoogleAuthForm() {
           {isLoading ? "Signing in..." : "Continue with Google"}
         </Button>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white dark:bg-gray-900 px-2 text-gray-500">or</span>
-          </div>
-        </div>
 
-        <Button
-          variant="link"
-          className="w-full text-gray-600 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200"
-          onClick={() => router.push("/login/phone")}
-        >
-          Sign in with phone number instead
-        </Button>
       </div>
 
       <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
         By continuing, you agree to our Terms of Service and Privacy Policy.
-        <br />
-        New users will automatically get an account created.
       </p>
     </div>
   );

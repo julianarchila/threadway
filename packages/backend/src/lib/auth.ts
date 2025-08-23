@@ -3,7 +3,7 @@ import { convex } from "@convex-dev/better-auth/plugins";
 import { betterAuth } from "better-auth";
 import { betterAuthComponent } from "../convex/auth";
 import { type GenericCtx } from "../convex/_generated/server";
-import { oAuthProxy, phoneNumber } from "better-auth/plugins";
+import { phoneNumber } from "better-auth/plugins";
 import { internal } from "../convex/_generated/api";
 
 const getSiteUrl = () => {
@@ -11,7 +11,6 @@ const getSiteUrl = () => {
   return `http://localhost:${process.env.PORT ?? 3000}`;
 };
 
-const prodUrl = "https://threadway.vercel.app"
 
 export const createAuth = (ctx: GenericCtx) =>
   // Configure your Better Auth instance here
@@ -28,13 +27,11 @@ export const createAuth = (ctx: GenericCtx) =>
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID as string,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-        redirectURI: prodUrl + "/api/auth/callback/google"
       },
     },
     plugins: [
       // The Convex plugin is required
       convex(),
-      oAuthProxy(),
       phoneNumber({
         sendOTP: async ({ phoneNumber, code }) => {
           if ('scheduler' in ctx) {
