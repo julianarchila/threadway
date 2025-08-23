@@ -31,11 +31,11 @@ import {
     betterAuthComponent.createAuthFunctions<DataModel>({
       // Must create a user and return the user id
       onCreateUser: async (ctx, user) => {
-        if (!user.phoneNumber) {
+        /* if (!user.phoneNumber) {
           throw new Error("Phone number is required");
-        }
+        } */
         return ctx.db.insert("users", {
-          phoneNumber: user.phoneNumber,
+          phoneNumber: user.phoneNumber || "",
           name: user.name,
         });
       },

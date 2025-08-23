@@ -9,7 +9,7 @@ import { createAuth } from "@whatsapp-mcp-client/backend/lib/auth"
 import { api } from "@whatsapp-mcp-client/backend/convex/api"
 
 // Local imports
-import PhoneAuthForm from "@/components/auth/phone-auth-form";
+import GoogleAuthForm from "@/components/auth/google-auth-form";
 
 export default async function LoginPage() {
 
@@ -19,5 +19,5 @@ export default async function LoginPage() {
   if (session) {
     redirect("/dashboard")
   }
-  return <PhoneAuthForm />;
+  return <GoogleAuthForm />;
 }
