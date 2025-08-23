@@ -1,4 +1,3 @@
-
 // External imports
 import { redirect } from "next/navigation";
 import { getToken } from "@convex-dev/better-auth/nextjs"
@@ -9,9 +8,9 @@ import { createAuth } from "@whatsapp-mcp-client/backend/lib/auth"
 import { api } from "@whatsapp-mcp-client/backend/convex/api"
 
 // Local imports
-import GoogleAuthForm from "@/components/auth/google-auth-form";
+import PhoneAuthForm from "@/components/auth/phone-auth-form";
 
-export default async function LoginPage() {
+export default async function PhoneLoginPage() {
 
   const token = await getToken(createAuth)
   const session = await fetchQuery(api.auth.getCurrentUser, {}, { token })
@@ -19,5 +18,5 @@ export default async function LoginPage() {
   if (session) {
     redirect("/dashboard")
   }
-  return <GoogleAuthForm />;
+  return <PhoneAuthForm />;
 }
