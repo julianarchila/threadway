@@ -12,7 +12,6 @@ import type * as agent_actions from "../agent/actions.js";
 import type * as agent_helpers from "../agent/helpers.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
-import type * as todo from "../todo.js";
 import type * as twilio_actions from "../twilio/actions.js";
 import type * as twilio_error from "../twilio/error.js";
 import type * as twilio_normalizer from "../twilio/normalizer.js";
@@ -23,6 +22,9 @@ import type * as user_error from "../user/error.js";
 import type * as user_helpers from "../user/helpers.js";
 import type * as user_queries from "../user/queries.js";
 import type * as user_utils from "../user/utils.js";
+import type * as workflows_error from "../workflows/error.js";
+import type * as workflows_mutations from "../workflows/mutations.js";
+import type * as workflows_queries from "../workflows/queries.js";
 
 import type {
   ApiFromModules,
@@ -43,7 +45,6 @@ declare const fullApi: ApiFromModules<{
   "agent/helpers": typeof agent_helpers;
   auth: typeof auth;
   http: typeof http;
-  todo: typeof todo;
   "twilio/actions": typeof twilio_actions;
   "twilio/error": typeof twilio_error;
   "twilio/normalizer": typeof twilio_normalizer;
@@ -54,6 +55,9 @@ declare const fullApi: ApiFromModules<{
   "user/helpers": typeof user_helpers;
   "user/queries": typeof user_queries;
   "user/utils": typeof user_utils;
+  "workflows/error": typeof workflows_error;
+  "workflows/mutations": typeof workflows_mutations;
+  "workflows/queries": typeof workflows_queries;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 
