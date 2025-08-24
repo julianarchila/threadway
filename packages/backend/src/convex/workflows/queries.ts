@@ -26,17 +26,21 @@ export const getWorkflowById = query({
 });
 
 // Obtener todos los workflows de un usuario
-export const getWorkflowsByUser = query({
+export const getUserWorkflows = query({
   handler: async (ctx) => {
     const userId = await betterAuthComponent.getAuthUserId(ctx)
     if (!userId) {
       throw new Error("User not authenticated")
     }
 
-    return await ctx.db
+    const workflows = await ctx.db
       .query("workflows")
       .withIndex("by_user", (q) => q.eq("userId", userId as Id<"users">))
       .order("desc")
       .collect();
+
+    return workflows.map(({content,userId, ...rest}) => ({
+      ...rest,
+    }));
   },
 }); 
