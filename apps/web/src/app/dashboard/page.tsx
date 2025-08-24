@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import {
   Card,
-  CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -20,7 +19,6 @@ import {
   Database,
   Hammer,
   GitBranch,
-  Grid3X3,
   Github,
   HardDrive,
   Blocks,
@@ -28,7 +26,6 @@ import {
   Figma,
   SunMoon,
   Trash2,
-  Edit,
   Loader2,
   AlertCircle,
   CheckCircle,
@@ -46,6 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { ResultAsync } from "neverthrow";
 
 // Define icons for each integration
 const integrationIcons = {
@@ -60,8 +58,8 @@ const integrationIcons = {
   Jira: HardDrive,
 };
 
-// Available integrations templates
-const availableIntegrationsTemplates = [
+// Available integrations
+const availableIntegrations = [
   {
     name: "Weather",
     mcpUrl: "https://mcp-server-wether.vercel.app/mcp/",
@@ -115,15 +113,14 @@ export default function IntegrationsPage() {
   const { isAuthenticated, isLoading: authLoading } = useConvexAuth();
 
   const myIntegrations = useQuery(
-    api.integrations.getMyIntegrations,
+    api.integrations.queries.getMyIntegrations,
     isAuthenticated ? undefined : "skip"
   );
-  const createIntegrationMutation = useMutation(api.integrations.createIntegration);
-  const deleteIntegrationMutation = useMutation(api.integrations.deleteIntegration);
+  const createIntegrationMutation = useMutation(api.integrations.mutations.createIntegration);
+  const deleteIntegrationMutation = useMutation(api.integrations.mutations.deleteIntegration);
 
-  // Conditional query para búsqueda - solo si está autenticado y hay término de búsqueda
   const searchIntegrations = useQuery(
-    api.integrations.searchMyIntegrations,
+    api.integrations.queries.searchMyIntegrations,
     isAuthenticated && searchTerm.trim() ? { searchTerm } : "skip"
   );
 
@@ -136,67 +133,74 @@ export default function IntegrationsPage() {
       return;
     }
 
-    try {
-      await createIntegrationMutation({
+    await ResultAsync.fromPromise(
+      createIntegrationMutation({
         name: mcpName.trim(),
         mcpUrl: mcpUrl.trim(),
         apiKey: apiKey.trim() || "",
-      });
-
-      toast.success("Integration added successfully!");
-
-      // Reset form fields
-      setMcpName("");
-      setMcpUrl("");
-      setApiKey("");
-      setIsAddDialogOpen(false);
-    } catch (error: any) {
-      if (error.message?.includes("Usuario no autenticado") || error.message?.includes("not authenticated")) {
-        toast.error("Please sign in to add integrations");
-      } else {
-        toast.error(error.message || "Failed to add integration");
+      }),
+      (error: any) => error
+    ).match(
+      () => {
+        toast.success("Integration added successfully!");
+        setMcpName("");
+        setMcpUrl("");
+        setApiKey("");
+        setIsAddDialogOpen(false);
+      },
+      (error: any) => {
+        if (error.message?.includes("Usuario no autenticado") || error.message?.includes("not authenticated")) {
+          toast.error("Please sign in to add integrations");
+        } else {
+          toast.error(error.message || "Failed to add integration");
+        }
       }
-    }
+    );
   };
 
-  const handleConnectFromTemplate = async (template: typeof availableIntegrationsTemplates[0]) => {
-    try {
-      await createIntegrationMutation({
-        name: template.name,
-        mcpUrl: template.mcpUrl,
+  const handleConnectFromIntegration = async (integration: typeof availableIntegrations[0]) => {
+    await ResultAsync.fromPromise(
+      createIntegrationMutation({
+        name: integration.name,
+        mcpUrl: integration.mcpUrl,
         apiKey: "",
-      });
-
-      toast.success(`${template.name} integration added successfully!`);
-    } catch (error: any) {
-      if (error.message?.includes("Usuario no autenticado") || error.message?.includes("not authenticated")) {
-        toast.error("Please sign in to add integrations");
-      } else {
-        toast.error(error.message || `Failed to add ${template.name} integration`);
+      }),
+      (error: any) => error
+    ).match(
+      () => {
+        toast.success(`${integration.name} integration added successfully!`);
+      },
+      (error: any) => {
+        if (error.message?.includes("Usuario no autenticado") || error.message?.includes("not authenticated")) {
+          toast.error("Please sign in to add integrations");
+        } else {
+          toast.error(error.message || `Failed to add ${integration.name} integration`);
+        }
       }
-    }
+    );
   };
 
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
-    try {
-      await deleteIntegrationMutation({ integrationId: deleteTarget.id });
-      toast.success("Integration deleted successfully!");
-      setDeleteTarget(null);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete integration");
-    }
+
+    await ResultAsync.fromPromise(
+      deleteIntegrationMutation({ integrationId: deleteTarget.id }),
+      (error: any) => error
+    ).match(
+      () => {
+        toast.success("Integration deleted successfully!");
+        setDeleteTarget(null);
+      },
+      (error: any) => {
+        toast.error(error.message || "Failed to delete integration");
+      }
+    );
   };
 
-  const handleDeleteIntegration = async (integrationId: Id<"integrations">, name: string) => {
-    setDeleteTarget({ id: integrationId, name });
-  };
-
-  const filteredTemplates = availableIntegrationsTemplates.filter(template =>
-    template.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredIntegrations = availableIntegrations.filter(integration =>
+    integration.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Loading state - mientras carga la autenticación
   if (authLoading) {
     return (
       <div className="w-full max-w-6xl mx-auto p-6">
@@ -392,18 +396,18 @@ export default function IntegrationsPage() {
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredTemplates.map((template) => {
-            const IconComponent = integrationIcons[template.name as keyof typeof integrationIcons] || Hammer;
-            const isAlreadyAdded = myIntegrations?.some(integration =>
-              integration.name === template.name && integration.mcpUrl === template.mcpUrl
+          {filteredIntegrations.map((integration) => {
+            const IconComponent = integrationIcons[integration.name as keyof typeof integrationIcons] || Hammer;
+            const isAlreadyAdded = myIntegrations?.some(myIntegration =>
+              myIntegration.name === integration.name && myIntegration.mcpUrl === integration.mcpUrl
             );
 
             return (
               <Card
-                key={template.name}
+                key={integration.name}
                 className={`group hover:shadow-md transition-shadow cursor-pointer border-2 ${isAlreadyAdded ? 'opacity-50 cursor-not-allowed' : 'border-border/50 hover:border-primary/20'
                   }`}
-                onClick={() => !isAlreadyAdded && handleConnectFromTemplate(template)}
+                onClick={() => !isAlreadyAdded && handleConnectFromIntegration(integration)}
               >
                 <CardHeader>
                   <div className="flex items-center justify-between">
@@ -413,10 +417,10 @@ export default function IntegrationsPage() {
                       </div>
                       <div>
                         <CardTitle className="text-base font-medium">
-                          {template.name}
+                          {integration.name}
                         </CardTitle>
                         <p className="text-sm text-muted-foreground">
-                          {template.description}
+                          {integration.description}
                         </p>
                       </div>
                     </div>
@@ -433,7 +437,7 @@ export default function IntegrationsPage() {
                         className="cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity flex items-center space-x-1"
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleConnectFromTemplate(template);
+                          handleConnectFromIntegration(integration);
                         }}
                       >
                         <span>Connect</span>
