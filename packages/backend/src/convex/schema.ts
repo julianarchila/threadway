@@ -11,5 +11,14 @@ export default defineSchema({
   todos: defineTable({
     title: v.string(),
     done: v.boolean(),
-  })
+  }),
+
+  // Tabla para guardar el contenido del editor
+  workflows: defineTable({
+    workflowId: v.string(), // ID personalizado del workflow
+    content: v.string(), // Contenido del editor Tiptap
+    userId: v.id("users"), // Referencia al ID del usuario en la tabla users
+    createdAt: v.number(), // Timestamp de creación
+    updatedAt: v.number(), // Timestamp de última actualización
+  }).index("by_workflow_id", ["workflowId"]).index("by_user", ["userId"]),
 });
