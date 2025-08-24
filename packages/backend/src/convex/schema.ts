@@ -8,8 +8,10 @@ export default defineSchema({
     name: v.optional(v.string()),
   }).index("by_phone_number", ["phoneNumber"]),
 
-  todos: defineTable({
-    title: v.string(),
-    done: v.boolean(),
-  })
+  integrations: defineTable({
+    userId: v.id("users"),
+    name: v.string(),
+    mcpUrl: v.string(),
+    apiKey: v.optional(v.string()),
+  }).index("by_user", ["userId"]),
 });
