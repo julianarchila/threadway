@@ -7,12 +7,6 @@ export default defineSchema({
     phoneNumber: v.string(),
     name: v.optional(v.string()),
   }).index("by_phone_number", ["phoneNumber"]),
-
-  todos: defineTable({
-    title: v.string(),
-    done: v.boolean(),
-  }),
-
   // Tabla para guardar el contenido del editor
   workflows: defineTable({
     content: v.string(), // Contenido del editor Tiptap
