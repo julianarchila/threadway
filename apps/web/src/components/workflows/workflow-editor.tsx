@@ -9,6 +9,7 @@ import type { Id } from "@whatsapp-mcp-client/backend/convex/dataModel";
 import { useMutation } from "convex/react";
 import { usePreloadedQuery, type Preloaded } from "convex/react";
 import type { Block, PartialBlock } from "@blocknote/core";
+import { EditableTitle } from "./editable-title";
 
 interface WorkflowEditorProps {
   preloadedWorkflow: Preloaded<typeof api.workflows.queries.getWorkflowById>;
@@ -38,9 +39,11 @@ export function WorkflowEditor({ preloadedWorkflow, workflowId }: WorkflowEditor
     <div className="w-full max-w-4xl mx-auto px-6 py-8">
       {/* Document Title */}
       <div className="mb-8 px-14">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-          {workflow.title}
-        </h1>
+        <EditableTitle 
+          title={workflow.title} 
+          workflowId={workflowId}
+          className="mb-2"
+        />
       </div>
 
       {/* Editor */}

@@ -69,3 +69,41 @@ export const update = mutation({
     return args.workflowId
   }
 })
+
+export const updateTitle = mutation({
+  args: {
+    workflowId: v.id("workflows"),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const userId = await betterAuthComponent.getAuthUserId(ctx)
+    if (!userId) {
+      throw new Error("User not authenticated")
+    }
+    
+    const workflow = await ctx.db.get(args.workflowId)
+    if (!workflow) {
+      throw createWorkflowNotFoundError(args.workflowId)
+    }
+
+    if (workflow.userId !== userId) {
+      throw createUserNotAuthorizedError(userId, args.workflowId)
+    }
+
+    // Validate title length (reasonable limit)
+    if (args.title.length > 200) {
+      throw new Error("Title too long (max 200 characters)")
+    }
+
+    if (args.title.trim().length === 0) {
+      throw new Error("Title cannot be empty")
+    }
+
+    await ctx.db.patch(args.workflowId, {
+      title: args.title.trim(),
+      updatedAt: Date.now(),
+    })
+
+    return args.workflowId
+  }
+})
