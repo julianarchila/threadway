@@ -43,13 +43,13 @@ export default function TodosPageExample() {
     deleteTodoMutation({ id });
   };
 
+  const createWorkflowMutation = useMutation(api.workflows.mutations.create)
+
   // Agregado: función para crear workflow y navegar
-  const handleCreateWorkflow = () => {
+  const handleCreateWorkflow = async () => {
     // Generar ID único para el workflow
-    const workflowId = crypto.randomUUID();
-    
-    // Navegar al editor con la ruta dinámica
-    router.push(`/dashboard/editor/${workflowId}`);
+    const workflowId = await createWorkflowMutation()
+    router.push(`/dashboard/f/${workflowId}`);
   };
 
   return (
