@@ -20,5 +20,9 @@ export default defineSchema({
     userId: v.id("users"), // Referencia al ID del usuario en la tabla users
     createdAt: v.number(), // Timestamp de creación
     updatedAt: v.number(), // Timestamp de última actualización
-  }).index("by_workflow_id", ["workflowId"]).index("by_user", ["userId"]),
+  })
+    .index("by_workflow_id", ["workflowId"])
+    .index("by_user", ["userId"])
+    .index("by_user_workflow", ["userId", "workflowId"]) // scope lookups by tenant
+    .index("by_user_updatedAt", ["userId", "updatedAt"]),
 });
