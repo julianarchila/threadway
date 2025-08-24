@@ -28,7 +28,7 @@ export default async function DasshboardLayout({
         <div className="flex items-center p-4 border-b">
           <SidebarTrigger />
         </div>
-        <div className="flex-1 flex items-center justify-center p-4">
+        <div className="flex-1 p-4">
           {children}
         </div>
       </main>

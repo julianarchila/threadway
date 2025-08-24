@@ -53,8 +53,9 @@ export default function TodosPageExample() {
   };
 
   return (
-    <div className="w-full max-w-md">
-      <Card>
+    <div className="flex items-center justify-center min-h-full">
+      <div className="w-full max-w-md">
+        <Card>
         <CardHeader>
           <CardTitle>Todo List</CardTitle>
           <CardDescription>Manage your tasks efficiently</CardDescription>
@@ -129,6 +130,7 @@ export default function TodosPageExample() {
         >
           Create Workflow
         </Button>
+        </div>
       </div>
     </div>
   );
