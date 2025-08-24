@@ -6,7 +6,8 @@ import {
   createWorkflowUpdateError,
   createUserNotAuthorizedError,
   createContentTooLongError,
-  createInvalidUserIdError
+  createInvalidUserIdError,
+  createInvalidWorkflowIdError
 } from "./error";
 
 // Constantes
