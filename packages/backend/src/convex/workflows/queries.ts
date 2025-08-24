@@ -1,7 +1,7 @@
 import { query } from "../_generated/server";
 import { v } from "convex/values";
 import { betterAuthComponent } from "../auth";
-import { Id } from "../_generated/dataModel";
+import type { Id } from "../_generated/dataModel";
 
 // Obtener workflow por ID
 export const getWorkflowById = query({
