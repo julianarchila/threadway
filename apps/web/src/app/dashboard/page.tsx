@@ -1,8 +1,6 @@
 "use client"
 import { api } from "@whatsapp-mcp-client/backend/convex/api"
 import type { Id } from "@whatsapp-mcp-client/backend/convex/dataModel"
-
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,7 +15,6 @@ import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { useMutation, useQuery } from "convex/react";
-
 
 export default function TodosPageExample() {
   const [newTodoText, setNewTodoText] = useState("");
@@ -110,6 +107,19 @@ export default function TodosPageExample() {
           )}
         </CardContent>
       </Card>
+
+      {/* Botón Create Workflow*/}
+      <div className="mt-4">
+        <Button 
+          className="w-full" 
+          variant="outline"
+          onClick={() => {
+            console.log("Create Workflow clicked");
+          }}
+        >
+          Create Workflow
+        </Button>
+      </div>
     </div>
   );
 }
