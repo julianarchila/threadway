@@ -1,6 +1,7 @@
 "use client"
 import { api } from "@whatsapp-mcp-client/backend/convex/api"
 import type { Id } from "@whatsapp-mcp-client/backend/convex/dataModel"
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,11 +14,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Loader2, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation"; // Agregado: import para navegación
 
 import { useMutation, useQuery } from "convex/react";
 
 export default function TodosPageExample() {
   const [newTodoText, setNewTodoText] = useState("");
+  const router = useRouter(); // Agregado: hook para navegación
 
   const todos = useQuery(api.todo.lisTodos);
   const createTodoMutation = useMutation(api.todo.createTodo);
@@ -38,6 +41,15 @@ export default function TodosPageExample() {
 
   const handleDeleteTodo = (id: Id<"todos">) => {
     deleteTodoMutation({ id });
+  };
+
+  // Agregado: función para crear workflow y navegar
+  const handleCreateWorkflow = () => {
+    // Generar ID único para el workflow
+    const workflowId = crypto.randomUUID();
+    
+    // Navegar al editor con la ruta dinámica
+    router.push(`/dashboard/editor/${workflowId}`);
   };
 
   return (
@@ -108,14 +120,12 @@ export default function TodosPageExample() {
         </CardContent>
       </Card>
 
-      {/* Botón Create Workflow*/}
+      {/* Botón Create Workflow con navegación */}
       <div className="mt-4">
         <Button 
           className="w-full" 
           variant="outline"
-          onClick={() => {
-            console.log("Create Workflow clicked");
-          }}
+          onClick={handleCreateWorkflow} // Cambiado: ahora usa la función
         >
           Create Workflow
         </Button>
