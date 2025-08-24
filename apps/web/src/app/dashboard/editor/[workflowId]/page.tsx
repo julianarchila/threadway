@@ -8,18 +8,18 @@ export default function EditorPage() {
   const workflowId = params.workflowId as string;
 
   return (
-    <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-2">
+    <div className="p-4"> {/* Reducir padding */}
+      <div className="mb-4"> {/* Reducir margen */}
+        <h1 className="text-xl font-bold mb-1"> {/* Título más pequeño */}
           Editor de Workflow
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-sm text-muted-foreground"> {/* Texto más pequeño */}
           ID del Workflow: {workflowId}
         </p>
       </div>
 
-      {/* Editor Tiptap */}
-      <div className="border rounded-lg">
+      {/* Editor Tiptap con borde más sutil */}
+      <div className="border rounded-md max-w-4xl"> {/* Borde más sutil y ancho máximo */}
         <SimpleEditor />
       </div>
     </div>
