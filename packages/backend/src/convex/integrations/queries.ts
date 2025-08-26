@@ -1,40 +1,30 @@
 import { query } from "../_generated/server";
-import { getAuthenticatedUser } from "./helpers";
-import { IntegrationsError } from "./error";
 import { v } from "convex/values";
-import { ResultAsync } from "neverthrow";
+import type { Id } from "../_generated/dataModel";
+import { betterAuthComponent } from "../auth";
+import { IntegrationsError } from "./error";
 
 // Query to get the authenticated user's integrations
 export const getMyIntegrations = query({
     args: {},
     handler: async (ctx) => {
-        return await ResultAsync.fromPromise(
-            (async () => {
-                const { user } = await getAuthenticatedUser(ctx);
+        const userId = await betterAuthComponent.getAuthUserId(ctx);
+        if (!userId) {
+            throw new Error("User not authenticated");
+        }
 
-                const integrations = await ctx.db
-                    .query("integrations")
-                    .withIndex("by_user", (q) => q.eq("userId", user._id))
-                    .collect();
+        // Get all integrations for the user
+        const integrations = await ctx.db
+            .query("integrations")
+            .withIndex("by_user", (q) => q.eq("userId", userId as Id<"users">))
+            .collect();
 
-                return integrations.map((integration) => ({
-                    _id: integration._id,
-                    name: integration.name,
-                    mcpUrl: integration.mcpUrl,
-                }));
-            })(),
-            (error) =>
-                new IntegrationsError(
-                    "INTEGRATION_LOOKUP_FAILED",
-                    "Failed to fetch integrations",
-                    error
-                )
-        ).match(
-            (ok) => ok,
-            (err) => {
-                throw err;
-            }
-        );
+        // Return only the necessary fields
+        return integrations.map((integration) => ({
+            _id: integration._id,
+            name: integration.name,
+            mcpUrl: integration.mcpUrl,
+        }));
     },
 });
 
@@ -42,41 +32,32 @@ export const getMyIntegrations = query({
 export const searchMyIntegrations = query({
     args: { searchTerm: v.string() },
     handler: async (ctx, args) => {
-        return await ResultAsync.fromPromise(
-            (async () => {
-                const { user } = await getAuthenticatedUser(ctx);
+        const userId = await betterAuthComponent.getAuthUserId(ctx);
+        if (!userId) {
+            throw new Error("User not authenticated");
+        }
 
-                const term = args.searchTerm.trim();
-                if (!term) {
-                    return [];
-                }
+        const term = args.searchTerm.trim();
+        if (!term) {
+            return [];
+        }
 
-                const integrations = await ctx.db
-                    .query("integrations")
-                    .withIndex("by_user", (q) => q.eq("userId", user._id))
-                    .collect();
+        // Get all integrations for the user
+        const integrations = await ctx.db
+            .query("integrations")
+            .withIndex("by_user", (q) => q.eq("userId", userId as Id<"users">))
+            .collect();
 
-                const integrationsFilter = integrations.filter((integration) =>
-                    integration.name.toLowerCase().includes(term.toLowerCase())
-                );
-
-                return integrationsFilter.map((integration) => ({
-                    _id: integration._id,
-                    name: integration.name,
-                    mcpUrl: integration.mcpUrl,
-                }));
-            })(),
-            (error) =>
-                new IntegrationsError(
-                    "INTEGRATION_LOOKUP_FAILED",
-                    "Failed to search integrations",
-                    error
-                )
-        ).match(
-            (ok) => ok,
-            (err) => {
-                throw err;
-            }
+        // Filter integrations by search term
+        const filteredIntegrations = integrations.filter((integration) =>
+            integration.name.toLowerCase().includes(term.toLowerCase())
         );
+
+        // Return only the necessary fields
+        return filteredIntegrations.map((integration) => ({
+            _id: integration._id,
+            name: integration.name,
+            mcpUrl: integration.mcpUrl,
+        }));
     },
 });

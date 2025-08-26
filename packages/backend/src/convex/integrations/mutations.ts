@@ -1,193 +1,115 @@
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
-import { getAuthenticatedUser } from "./helpers";
+import type { Id } from "../_generated/dataModel";
+import { betterAuthComponent } from "../auth";
 import { IntegrationsError } from "./error";
-import { err, ok, Result, ResultAsync } from "neverthrow";
 
-// Small helper for URL validation
-function validateUrl(mcpUrl: string): Result<URL, IntegrationsError> {
-    try {
-        const parsed = new URL(mcpUrl);
-        if (!/^https?:$/.test(parsed.protocol)) {
-            return err(
-                new IntegrationsError(
-                    "INTEGRATION_CREATION_FAILED",
-                    "MCP URL must start with http:// or https://"
-                )
-            );
-        }
-        return ok(parsed);
-    } catch {
-        return err(
-            new IntegrationsError(
-                "INTEGRATION_CREATION_FAILED",
-                "MCP URL must be a valid http(s) URL"
-            )
-        );
-    }
-}
+import { z } from "zod";
+
+// URL validation schema
+const urlSchema = z.string().url("Invalid URL format");
 
 // Mutation to create a new integration
-export const createIntegration = mutation({
+export const create = mutation({
     args: {
         name: v.string(),
         mcpUrl: v.string(),
         apiKey: v.optional(v.string()),
     },
     handler: async (ctx, args) => {
-        return await ResultAsync.fromPromise(
-            getAuthenticatedUser(ctx),
-            (e) =>
-                new IntegrationsError(
-                    "INTEGRATION_CREATION_FAILED",
-                    "Failed to authenticate user",
-                    e
-                )
-        )
-            .andThen(({ user }) => {
-                // Normalize & validate inputs
-                const name = args.name.trim();
-                const mcpUrl = args.mcpUrl.trim();
-                const apiKey =
-                    typeof args.apiKey === "string" ? args.apiKey.trim() : undefined;
+        const userId = await betterAuthComponent.getAuthUserId(ctx)
+        if (!userId) {
+            throw new Error("User not authenticated")
+        }
 
-                if (!name) {
-                    return err(
-                        new IntegrationsError(
-                            "INTEGRATION_CREATION_FAILED",
-                            "Integration name is required"
-                        )
-                    );
-                }
-                if (!mcpUrl) {
-                    return err(
-                        new IntegrationsError(
-                            "INTEGRATION_CREATION_FAILED",
-                            "MCP URL is required"
-                        )
-                    );
-                }
+        // Normalize and validate inputs
+        const name = args.name.trim();
+        const mcpUrl = args.mcpUrl.trim();
+        const apiKey = typeof args.apiKey === "string" ? args.apiKey.trim() : undefined;
 
-                // URL validation
-                const urlResult = validateUrl(mcpUrl);
-                if (urlResult.isErr()) return err(urlResult.error);
-
-                // Proceed with user + validated inputs
-                return ok({ user, name, mcpUrl, apiKey });
-            })
-            .andThen(({ user, name, mcpUrl, apiKey }) =>
-                ResultAsync.fromPromise(
-                    ctx.db
-                        .query("integrations")
-                        .withIndex("by_user_nameLower", (q) =>
-                            q.eq("userId", user._id).eq("nameLower", name.toLowerCase())
-                        )
-                        .first(),
-                    (e) =>
-                        new IntegrationsError(
-                            "INTEGRATION_CREATION_FAILED",
-                            "Database query failed",
-                            e
-                        )
-                ).andThen((existingIntegration) => {
-                    if (existingIntegration) {
-                        return err(
-                            new IntegrationsError(
-                                "INTEGRATION_CREATION_FAILED",
-                                "You already have an integration with this name"
-                            )
-                        );
-                    }
-                    return ok({ user, name, mcpUrl, apiKey });
-                })
-            )
-            .andThen(({ user, name, mcpUrl, apiKey }) =>
-                ResultAsync.fromPromise(
-                    ctx.db.insert("integrations", {
-                        userId: user._id,
-                        name,
-                        nameLower: name.toLowerCase(),
-                        mcpUrl,
-                        apiKey: apiKey || "",
-                    }),
-                    (e) =>
-                        new IntegrationsError(
-                            "INTEGRATION_CREATION_FAILED",
-                            "Failed to insert integration",
-                            e
-                        )
-                )
-            )
-            .match(
-                (integrationId) => integrationId, // success
-                (error) => {
-                    throw error; // Convex expects exceptions on failure
-                }
+        if (!name) {
+            throw new IntegrationsError(
+                "INTEGRATION_CREATION_FAILED",
+                "Integration name is required"
             );
+        }
+
+        if (!mcpUrl) {
+            throw new IntegrationsError(
+                "INTEGRATION_CREATION_FAILED",
+                "MCP URL is required"
+            );
+        }
+
+        // Validate URL using zod
+        const urlValidation = urlSchema.safeParse(mcpUrl);
+        if (!urlValidation.success) {
+            throw new IntegrationsError(
+                "INTEGRATION_CREATION_FAILED",
+                "Invalid MCP URL format"
+            );
+        }
+
+        // Check if integration with same name already exists
+        const existingIntegration = await ctx.db
+            .query("integrations")
+            .withIndex("by_user_nameLower", (q) =>
+                q.eq("userId", userId as Id<"users">).eq("nameLower", name.toLowerCase())
+            )
+            .first();
+
+        if (existingIntegration) {
+            throw new IntegrationsError(
+                "INTEGRATION_CREATION_FAILED",
+                "You already have an integration with this name"
+            );
+        }
+
+        // Create the integration
+        const integrationId = await ctx.db.insert("integrations", {
+            userId: userId as Id<"users">,
+            name,
+            nameLower: name.toLowerCase(),
+            mcpUrl,
+            apiKey: apiKey || "",
+        });
+
+        return integrationId;
     },
 });
 
-// Mutation to delete an integration (only if it belongs to the user)
+// Mutation to delete an integration
 export const deleteIntegration = mutation({
     args: { integrationId: v.id("integrations") },
     handler: async (ctx, args) => {
-        return await ResultAsync.fromPromise(
-            getAuthenticatedUser(ctx),
-            (e) =>
-                new IntegrationsError(
-                    "INTEGRATION_DELETION_FAILED",
-                    "Failed to authenticate user",
-                    e
-                )
-        )
-            .andThen(({ user }) =>
-                ResultAsync.fromPromise(
-                    ctx.db.get(args.integrationId),
-                    (e) =>
-                        new IntegrationsError(
-                            "INTEGRATION_DELETION_FAILED",
-                            "Database query failed",
-                            e
-                        )
-                ).andThen((integration) => {
-                    if (!integration) {
-                        return err(
-                            new IntegrationsError(
-                                "INTEGRATION_DELETION_FAILED",
-                                "Integration not found"
-                            )
-                        );
-                    }
-                    if (integration.userId !== user._id) {
-                        return err(
-                            new IntegrationsError(
-                                "INTEGRATION_DELETION_FAILED",
-                                "You do not have permissions to delete this integration"
-                            )
-                        );
-                    }
-                    return ok(args.integrationId);
-                })
-            )
-            .andThen((integrationId) =>
-                ResultAsync.fromPromise(
-                    ctx.db.delete(integrationId),
-                    (e) =>
-                        new IntegrationsError(
-                            "INTEGRATION_DELETION_FAILED",
-                            "Failed to delete integration",
-                            e
-                        )
-                ).map(() => ({
-                    success: true,
-                    message: "Integration deleted successfully",
-                }))
-            )
-            .match(
-                (result) => result,
-                (error) => {
-                    throw error; // Convex still needs thrown error
-                }
+        const userId = await betterAuthComponent.getAuthUserId(ctx)
+        if (!userId) {
+            throw new Error("User not authenticated")
+        }
+
+        // Get the integration to verify ownership
+        const integration = await ctx.db.get(args.integrationId);
+        if (!integration) {
+            throw new IntegrationsError(
+                "INTEGRATION_DELETION_FAILED",
+                "Integration not found"
             );
+        }
+
+        // Check if user owns this integration
+        if (integration.userId !== userId) {
+            throw new IntegrationsError(
+                "INTEGRATION_DELETION_FAILED",
+                "You do not have permissions to delete this integration"
+            );
+        }
+
+        // Delete the integration
+        await ctx.db.delete(args.integrationId);
+
+        return {
+            success: true,
+            message: "Integration deleted successfully",
+        };
     },
 });
