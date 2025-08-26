@@ -1,4 +1,6 @@
-import { Calendar, Home, Inbox, Search, Settings, FileText, Loader2, Plus, MessageSquare } from "lucide-react"
+'use client'
+
+import { Calendar, Home, Inbox, Search, Settings, FileText, Loader2, Plus } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
@@ -123,7 +125,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <UserMenu/>
+        <UserMenu />
       </SidebarFooter>
     </Sidebar>
   )
