@@ -13,7 +13,6 @@ import type * as agent_helpers from "../agent/helpers.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as integrations_error from "../integrations/error.js";
-import type * as integrations_helpers from "../integrations/helpers.js";
 import type * as integrations_mutations from "../integrations/mutations.js";
 import type * as integrations_queries from "../integrations/queries.js";
 import type * as twilio_actions from "../twilio/actions.js";
@@ -50,7 +49,6 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   http: typeof http;
   "integrations/error": typeof integrations_error;
-  "integrations/helpers": typeof integrations_helpers;
   "integrations/mutations": typeof integrations_mutations;
   "integrations/queries": typeof integrations_queries;
   "twilio/actions": typeof twilio_actions;
