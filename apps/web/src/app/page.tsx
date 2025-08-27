@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import ThemeToggle from "@/components/theme-toggle"
 
-const WA_URL = `https://wa.me/message/RZEXMJPBWCZRG1`
+// Waitlist UI only for now; link CTAs to #waitlist
 
 // JSON-LD structured data for SEO
 const jsonLd = {
@@ -60,10 +60,10 @@ function Header() {
               size="sm"
               className="bg-gradient-to-r from-emerald-600 to-teal-600 shadow-[0_8px_24px_-8px_rgba(16,185,129,0.65)] transition-transform hover:scale-[1.01] hover:from-emerald-600 hover:to-teal-600"
             >
-              <a href={WA_URL} target="_blank" rel="noreferrer">
-                Get Started Free
+              <NextLink href="#waitlist">
+                Join the Waitlist
                 <ArrowRight className="ml-1 h-4 w-4" />
-              </a>
+              </NextLink>
             </Button>
           </div>
         </div>
@@ -100,16 +100,19 @@ function Hero() {
             <p className="mt-4 text-pretty text-muted-foreground">
               Many of us use WhatsApp as a notes-to-self pad — expenses, reminders, links. Threadway upgrades that habit with an AI assistant that organizes and automates everything for you.
             </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Threadway is coming soon. Join the waitlist to be the first to try it.
+            </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <Button
                 asChild
                 size="lg"
                 className="bg-gradient-to-r from-emerald-600 to-teal-600 shadow-[0_16px_40px_-12px_rgba(16,185,129,0.65)] transition-transform hover:scale-[1.01]"
               >
-                <a href={WA_URL} target="_blank" rel="noreferrer" aria-label="Get Started Free">
-                  Get Started Free
+                <NextLink href="#waitlist" aria-label="Join the Waitlist">
+                  Join the Waitlist
                   <ArrowRight className="ml-2 h-5 w-5" />
-                </a>
+                </NextLink>
               </Button>
               <Button asChild size="lg" variant="outline" className="backdrop-blur">
                 <NextLink href="#how-it-works">See how it works</NextLink>
@@ -235,8 +238,8 @@ function EverydayUseCases() {
           </ul>
           <div className="mt-6">
             <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 shadow-[0_12px_28px_-12px_rgba(16,185,129,0.65)] transition-transform hover:scale-[1.01]">
-              <NextLink href="/login">
-                Try My First Workflow
+              <NextLink href="#waitlist">
+                Join the Waitlist
                 <ArrowRight className="ml-2 h-4 w-4" />
               </NextLink>
             </Button>
@@ -285,7 +288,7 @@ function WhyPeopleLoveIt() {
 
 function ClosingSection() {
   return (
-    <section className="relative">
+    <section id="waitlist" className="relative">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
         <div className="absolute left-1/2 top-0 h-72 w-[900px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.18),transparent_60%)] blur-2xl" />
       </div>
@@ -294,17 +297,17 @@ function ClosingSection() {
           <CardContent className="flex flex-col items-center justify-between gap-4 p-6 md:flex-row md:gap-6">
             <div>
               <h3 className="text-xl font-semibold">Replace your notes chat with something smarter.</h3>
-              <p className="text-sm text-muted-foreground">Stop messaging yourself. Start messaging your assistant.</p>
+              <p className="text-sm text-muted-foreground">Threadway is coming soon. Join the waitlist to be the first to try it.</p>
             </div>
             <Button
               asChild
               size="lg"
               className="bg-gradient-to-r from-emerald-600 to-teal-600 shadow-[0_12px_28px_-12px_rgba(16,185,129,0.65)] transition-transform hover:scale-[1.01]"
             >
-              <a href={WA_URL} target="_blank" rel="noreferrer">
-                Get Started Free
+              <NextLink href="#waitlist">
+                Join the Waitlist
                 <ArrowRight className="ml-2 h-5 w-5" />
-              </a>
+              </NextLink>
             </Button>
           </CardContent>
         </Card>
