@@ -9,6 +9,7 @@ import {
 } from "convex/react";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
+import { RightSidebarStandalone } from "@/components/right-sidebar-standalone"
 
 export default function DasshboardLayout({
   children,
@@ -37,6 +38,7 @@ export default function DasshboardLayout({
         </div>
       </main>
     </SidebarProvider>
+    <RightSidebarStandalone />
 
     </Authenticated>
     </>
