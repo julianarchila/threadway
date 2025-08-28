@@ -7,7 +7,17 @@ import { IntegrationsError } from "./error";
 import { z } from "zod";
 
 // URL validation schema
-const urlSchema = z.string().url("Invalid URL format");
+const urlSchema = z
+    .string()
+    .url("Invalid URL format")
+    .refine((u) => {
+        try {
+            const p = new URL(u).protocol;
+            return p === "https:" || p === "http:";
+        } catch {
+            return false;
+        }
+    }, "URL must use http or https");
 
 // Mutation to create a new integration
 export const create = mutation({
@@ -19,7 +29,7 @@ export const create = mutation({
     handler: async (ctx, args) => {
         const userId = await betterAuthComponent.getAuthUserId(ctx)
         if (!userId) {
-            throw new Error("User not authenticated")
+            throw new IntegrationsError("INTEGRATION_CREATION_FAILED", "User not authenticated")
         }
 
         // Normalize and validate inputs
@@ -84,7 +94,7 @@ export const deleteIntegration = mutation({
     handler: async (ctx, args) => {
         const userId = await betterAuthComponent.getAuthUserId(ctx)
         if (!userId) {
-            throw new Error("User not authenticated")
+            throw new IntegrationsError("INTEGRATION_DELETION_FAILED", "User not authenticated")
         }
 
         // Get the integration to verify ownership

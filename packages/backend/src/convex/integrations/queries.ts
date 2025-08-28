@@ -10,7 +10,7 @@ export const getMyIntegrations = query({
     handler: async (ctx) => {
         const userId = await betterAuthComponent.getAuthUserId(ctx);
         if (!userId) {
-            throw new Error("User not authenticated");
+            throw new IntegrationsError("INTEGRATION_QUERY_FAILED", "Unauthorized");
         }
 
         // Get all integrations for the user
@@ -38,7 +38,7 @@ export const searchMyIntegrations = query({
         }
 
         const term = args.searchTerm.trim();
-        if (!term) {
+        if (term.length < 2) {
             return [];
         }
 
@@ -49,9 +49,12 @@ export const searchMyIntegrations = query({
             .collect();
 
         // Filter integrations by search term
-        const filteredIntegrations = integrations.filter((integration) =>
-            integration.name.toLowerCase().includes(term.toLowerCase())
-        );
+        const filteredIntegrations = integrations
+            .filter((integration) =>
+                integration.name.toLowerCase().includes(term.toLowerCase())
+            )
+            .sort((a, b) => a.name.localeCompare(b.name))
+            .slice(0, 50)
 
         // Return only the necessary fields
         return filteredIntegrations.map((integration) => ({
