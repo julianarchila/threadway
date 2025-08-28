@@ -16,11 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://threadway.co"),
   title: {
-    default: "Threadway — Use AI & your tools inside WhatsApp (Gmail, Calendar, Notion)",
+    default: "Threadway — Stop messaging yourself. Start messaging your assistant.",
     template: "%s | Threadway",
   },
   description:
-    "Turn WhatsApp into your AI command center. Connect Gmail, Calendar, Notion & more via MCP. Send emails, schedule meetings, and automate tasks with voice or text — no app, no passwords. Start free.",
+    "Upgrade your WhatsApp notes-to-self habit with an AI assistant that organizes and automates everyday tasks. Works inside WhatsApp, no new app to learn.",
   keywords: [
     "WhatsApp",
     "MCP",
@@ -31,23 +31,29 @@ export const metadata: Metadata = {
     "Gmail",
     "Calendar",
     "Notion",
+    "personal automation",
+    "notes to self",
+    "everyday tasks",
+    "personal productivity",
+    "WhatsApp automation",
+    "AI chat assistant",
   ],
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: "https://threadway.co/",
-    title: "Threadway — Use AI & your tools inside WhatsApp (Gmail, Calendar, Notion)",
+    title: "Threadway — Stop messaging yourself. Start messaging your assistant.",
     description:
-      "Turn WhatsApp into your AI command center. Connect Gmail, Calendar, Notion & more via MCP. Send emails, schedule meetings, and automate tasks with voice or text — no app, no passwords. Start free.",
+      "Upgrade your WhatsApp notes-to-self habit with an AI assistant that organizes and automates everyday tasks. Works inside WhatsApp, no new app to learn.",
     images: [
       { url: "/placeholder.svg", width: 1200, height: 630, alt: "Threadway product preview" },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Threadway — Use AI & your tools inside WhatsApp (Gmail, Calendar, Notion)",
+    title: "Threadway — Stop messaging yourself. Start messaging your assistant.",
     description:
-      "Turn WhatsApp into your AI command center. Connect Gmail, Calendar, Notion & more via MCP. Send emails, schedule meetings, and automate tasks with voice or text — no app, no passwords. Start free.",
+      "Upgrade your WhatsApp notes-to-self habit with an AI assistant that organizes and automates everyday tasks. Works inside WhatsApp, no new app to learn.",
     images: ["/placeholder.svg"],
   },
   robots: {
