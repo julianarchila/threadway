@@ -39,8 +39,13 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
   return (
     <div className={cn("w-full", className)}>
       {state?.success ? (
-        <div className="rounded-md border border-emerald-200/60 bg-emerald-50/70 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-100">
-          You’re on the list! We’ll email you at {state.email} when it’s ready.
+        <div className={cn(
+          "rounded-md border px-4 py-3 text-sm",
+          state.alreadyExists
+            ? "border-blue-200/60 bg-blue-50/70 text-blue-900 dark:border-blue-700/40 dark:bg-blue-900/20 dark:text-blue-100"
+            : "border-emerald-200/60 bg-emerald-50/70 text-emerald-900 dark:border-emerald-700/40 dark:bg-emerald-900/20 dark:text-emerald-100"
+        )}>
+          {state.message}
         </div>
       ) : (
         <form action={action} noValidate className="w-full">
@@ -53,10 +58,10 @@ export default function WaitlistForm({ className }: WaitlistFormProps) {
                 inputMode="email"
                 placeholder="you@example.com"
                 aria-label="Email address"
-                aria-invalid={Boolean(state?.message)}
+                aria-invalid={Boolean(state?.message && !state?.success)}
                 aria-describedby="email-error"
               />
-              {state?.message ? (
+              {state?.message && !state?.success ? (
                 <p id="email-error" className="mt-1 text-xs text-red-600 dark:text-red-400">
                   {state.message}
                 </p>

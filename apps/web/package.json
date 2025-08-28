@@ -35,6 +35,7 @@
     "framer-motion": "^12.23.12",
     "input-otp": "^1.4.2",
     "libphonenumber-js": "^1.12.10",
+    "loops": "^6.0.0",
     "lucide-react": "^0.487.0",
     "neverthrow": "^8.2.0",
     "next": "15.3.0",
