@@ -36,7 +36,7 @@ export default function DasshboardLayout({
         <div>Loading...</div>
       </AuthLoading>
       <Unauthenticated>
-        <div>Unauthenticated</div>
+        <UnauthRedirect />
       </Unauthenticated>
       <Authenticated>
         <SidebarProvider>
