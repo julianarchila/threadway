@@ -1,5 +1,6 @@
 import NextLink from "next/link"
 import PhoneMockup from "@/components/landing/phone-mockup"
+import WaitlistForm from "../components/landing/waitlist-form"
 import { ArrowRight, Check, ChevronRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -236,14 +237,6 @@ function EverydayUseCases() {
             <li className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 text-emerald-600" /> Log workouts or habits – “Pushups 20” → recorded in your log.</li>
             <li className="flex items-start gap-2"><Check className="mt-0.5 h-4 w-4 text-emerald-600" /> Smart reminders – “Remind me to call mom Friday 6pm” → done.</li>
           </ul>
-          <div className="mt-6">
-            <Button asChild className="bg-gradient-to-r from-emerald-600 to-teal-600 shadow-[0_12px_28px_-12px_rgba(16,185,129,0.65)] transition-transform hover:scale-[1.01]">
-              <NextLink href="#waitlist">
-                Join the Waitlist
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </NextLink>
-            </Button>
-          </div>
         </div>
       </div>
     </section>
@@ -286,7 +279,7 @@ function WhyPeopleLoveIt() {
 
 // removed FAQ per new direction
 
-function ClosingSection() {
+function WaitlistSection() {
   return (
     <section id="waitlist" className="relative">
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
@@ -294,21 +287,14 @@ function ClosingSection() {
       </div>
       <div className="mx-auto max-w-7xl px-4 pb-12 pt-2">
         <Card className="overflow-hidden border-border bg-card">
-          <CardContent className="flex flex-col items-center justify-between gap-4 p-6 md:flex-row md:gap-6">
-            <div>
+          <CardContent className="grid gap-4 p-6 md:grid-cols-5 md:items-center md:gap-6">
+            <div className="md:col-span-2">
               <h3 className="text-xl font-semibold">Replace your notes chat with something smarter.</h3>
-              <p className="text-sm text-muted-foreground">Threadway is coming soon. Join the waitlist to be the first to try it.</p>
+              <p className="text-sm text-muted-foreground">Threadway is coming soon. Join the waitlist to be the first to try it. No spam.</p>
             </div>
-            <Button
-              asChild
-              size="lg"
-              className="bg-gradient-to-r from-emerald-600 to-teal-600 shadow-[0_12px_28px_-12px_rgba(16,185,129,0.65)] transition-transform hover:scale-[1.01]"
-            >
-              <NextLink href="#waitlist">
-                Join the Waitlist
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </NextLink>
-            </Button>
+            <div className="md:col-span-3">
+              <WaitlistForm />
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -375,7 +361,7 @@ export default function LandingPage() {
       <HowItWorks />
       <EverydayUseCases />
       <WhyPeopleLoveIt />
-      <ClosingSection />
+      <WaitlistSection />
       <Footer />
     </main>
   )
