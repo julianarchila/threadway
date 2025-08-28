@@ -16,7 +16,7 @@ import { AddIntegrationDialog } from "@/components/integrations/add-integration-
 import { MyIntegrationCard, TemplateIntegrationCard } from "@/components/integrations/integration-card";
 import { DeleteConfirmationDialog } from "@/components/integrations/delete-confirmation-dialog";
 
-// Available integrations data
+// Available integrations data example
 const availableIntegrations = [
   {
     name: "Weather",
@@ -25,37 +25,37 @@ const availableIntegrations = [
   },
   {
     name: "Notion",
-    mcpUrl: "https://www.notion.so/",
+    mcpUrl: "https://www.notion.so/mcp/",
     description: "Connect to your Notion workspace"
   },
   {
     name: "Airtable",
-    mcpUrl: "https://www.airtable.com/",
+    mcpUrl: "https://www.airtable.com/mcp/",
     description: "Access your Airtable databases"
   },
   {
     name: "Linear",
-    mcpUrl: "https://linear.app/",
+    mcpUrl: "https://linear.app/mcp/",
     description: "Manage Linear issues and projects"
   },
   {
     name: "GitHub",
-    mcpUrl: "https://github.com/",
+    mcpUrl: "https://github.com/mcp/",
     description: "Access GitHub repositories"
   },
   {
     name: "Supabase",
-    mcpUrl: "https://supabase.com/",
+    mcpUrl: "https://supabase.com/mcp/",
     description: "Connect to Supabase database"
   },
   {
     name: "Figma",
-    mcpUrl: "https://www.figma.com/",
+    mcpUrl: "https://www.figma.com/mcp/",
     description: "Access Figma designs"
   },
   {
     name: "Jira",
-    mcpUrl: "https://www.atlassian.com/software/jira",
+    mcpUrl: "https://www.atlassian.com/software/jira/mcp",
     description: "Manage Jira tickets and projects"
   },
 ];
@@ -72,7 +72,7 @@ export default function IntegrationsPage() {
 
   const searchIntegrations = useQuery(
     api.integrations.queries.searchMyIntegrations,
-    searchTerm.trim() ? { searchTerm } : "skip"
+    searchTerm.trim() ? { searchTerm: searchTerm.trim() } : "skip"
   );
 
   // Use search results if searching, otherwise use all integrations

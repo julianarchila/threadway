@@ -13,7 +13,8 @@ interface DeleteConfirmationDialogProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   integrationName: string;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void> | void;
+  isLoading?: boolean;
 }
 
 export function DeleteConfirmationDialog({
@@ -33,8 +34,8 @@ export function DeleteConfirmationDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction 
-            onClick={onConfirm} 
+          <AlertDialogAction
+            onClick={onConfirm}
             className="bg-red-700 text-white hover:bg-red-500"
           >
             Delete
