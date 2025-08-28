@@ -95,6 +95,9 @@ importers:
       libphonenumber-js:
         specifier: ^1.12.10
         version: 1.12.10
+      loops:
+        specifier: ^6.0.0
+        version: 6.0.0
       lucide-react:
         specifier: ^0.487.0
         version: 0.487.0(react@19.1.1)
@@ -2629,6 +2632,10 @@ packages:
 
   longest-streak@3.1.0:
     resolution: {integrity: sha512-9Ri+o0JYgehTaVBBDoMqIl8GXtbWg711O3srftcHhZ0dqnETqLaoIK0x17fUw9rFSlK/0NlsKe0Ahhyl5pXE2g==}
+
+  loops@6.0.0:
+    resolution: {integrity: sha512-ekhzowXogU+8O/uKWydmx3f7wlKLkYBONcGreTHEienZFyEbKphjL0RqcJ1yNIQqwXoDPhocKWsVlyqfQfB7/A==}
+    engines: {node: '>=18'}
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
@@ -6062,6 +6069,8 @@ snapshots:
   lodash.once@4.1.1: {}
 
   longest-streak@3.1.0: {}
+
+  loops@6.0.0: {}
 
   lru-cache@10.4.3: {}
 
