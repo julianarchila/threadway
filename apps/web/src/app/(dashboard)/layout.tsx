@@ -21,13 +21,22 @@ export default function DasshboardLayout({
 }>) {
   const [showChatSidebar, setShowChatSidebar] = useState(false);
 
+  function UnauthRedirect() {
+    const router = useRouter();
+    useEffect(() => {
+      const next = window.location.pathname + window.location.search + window.location.hash;
+      router.replace(`/login?next=${encodeURIComponent(next)}`);
+    }, [router]);
+    return null;
+  }
+
   return (
     <>
       <AuthLoading>
         <div>Loading...</div>
       </AuthLoading>
       <Unauthenticated>
-        <div>Unauthenticated</div>
+        <UnauthRedirect />
       </Unauthenticated>
       <Authenticated>
         <SidebarProvider>
