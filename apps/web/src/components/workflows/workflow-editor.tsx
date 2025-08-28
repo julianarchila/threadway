@@ -10,6 +10,7 @@ import { useMutation } from "convex/react";
 import { usePreloadedQuery, type Preloaded } from "convex/react";
 import type { Block, PartialBlock } from "@blocknote/core";
 import { EditableTitle } from "./editable-title";
+import { RightSidebarStandalone } from "@/components/right-sidebar-standalone";
 
 interface WorkflowEditorProps {
   preloadedWorkflow: Preloaded<typeof api.workflows.queries.getWorkflowById>;
@@ -36,19 +37,22 @@ export function WorkflowEditor({ preloadedWorkflow, workflowId }: WorkflowEditor
 
   // Renders the editor instance using a React component.
   return (
-    <div className="w-full max-w-4xl mx-auto px-6 py-8">
-      {/* Document Title */}
-      <div className="mb-8 px-14">
-        <EditableTitle 
-          title={workflow.title} 
-          workflowId={workflowId}
-          className="mb-2"
-        />
-      </div>
+    <>
+      <div className="w-full max-w-4xl mx-auto px-6 py-8">
+        {/* Document Title */}
+        <div className="mb-8 px-14">
+          <EditableTitle 
+            title={workflow.title} 
+            workflowId={workflowId}
+            className="mb-2"
+          />
+        </div>
 
-      {/* Editor */}
-      <BlockNoteEditor initialContent={initialContent} onContentChange={saveContent} />
-    </div>
+        {/* Editor */}
+        <BlockNoteEditor initialContent={initialContent} onContentChange={saveContent} />
+      </div>
+      <RightSidebarStandalone />
+    </>
   );
 }
 
