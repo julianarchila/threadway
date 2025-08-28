@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings, FileText, Loader2, Plus } from "lucide-react"
+import { Calendar, Home, Inbox, Search, Settings, FileText, Loader2, Plus, MessageSquare } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
