@@ -18,6 +18,9 @@ import {
   ArrowUpRight,
   CheckCircle,
 } from "lucide-react";
+import { useMutation } from "convex/react";
+import { api } from "@whatsapp-mcp-client/backend/convex/api";
+import { toast } from "sonner";
 
 const integrationIcons = {
   Gmail: Mail,
@@ -47,7 +50,6 @@ interface TemplateIntegrationCardProps {
     description: string;
   };
   isAlreadyAdded: boolean;
-  onConnect: () => void;
 }
 
 export function MyIntegrationCard({ integration, onDelete }: MyIntegrationCardProps) {
@@ -89,9 +91,22 @@ export function MyIntegrationCard({ integration, onDelete }: MyIntegrationCardPr
 export function TemplateIntegrationCard({
   integration,
   isAlreadyAdded,
-  onConnect
 }: TemplateIntegrationCardProps) {
   const IconComponent = integrationIcons[integration.name as keyof typeof integrationIcons] || Hammer;
+  const createIntegrationMutation = useMutation(api.integrations.mutations.create);
+
+  const handleConnect = async () => {
+    try {
+      await createIntegrationMutation({
+        name: integration.name,
+        mcpUrl: integration.mcpUrl,
+        apiKey: "",
+      });
+      toast.success(`${integration.name} integration added successfully!`);
+    } catch (error: any) {
+      toast.error(error.message || `Failed to add ${integration.name} integration`);
+    }
+  };
 
   return (
     <Card
@@ -106,10 +121,10 @@ export function TemplateIntegrationCard({
         if (isAlreadyAdded) return;
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
-          onConnect();
+          handleConnect();
         }
       }}
-      onClick={() => !isAlreadyAdded && onConnect()}
+      onClick={() => !isAlreadyAdded && handleConnect()}
     >
       <CardHeader>
         <div className="flex items-center justify-between">
@@ -136,11 +151,11 @@ export function TemplateIntegrationCard({
             <Button
               size="sm"
               variant="secondary"
-              className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center space-x-1"
+              className="cursor-pointer opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center space-x-1"
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                onConnect();
+                handleConnect();
               }}
             >
               <span>Connect</span>
