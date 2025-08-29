@@ -11,14 +11,15 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, Loader2 } from "lucide-react";
 import { FormField } from "./form-field";
+import { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@whatsapp-mcp-client/backend/convex/api";
+import { toast } from "sonner";
 
-interface AddIntegrationDialogProps {
-  isOpen: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (values: { name: string; mcpUrl: string; apiKey: string }) => Promise<void>;
-}
+export function AddIntegrationDialog() {
+  const [isOpen, setIsOpen] = useState(false);
+  const createIntegrationMutation = useMutation(api.integrations.mutations.create);
 
-export function AddIntegrationDialog({ isOpen, onOpenChange, onSubmit }: AddIntegrationDialogProps) {
   const mcpForm = useForm({
     defaultValues: {
       name: '',
@@ -26,21 +27,28 @@ export function AddIntegrationDialog({ isOpen, onOpenChange, onSubmit }: AddInte
       apiKey: '',
     },
     onSubmit: async ({ value }) => {
-      await onSubmit({
-        name: value.name.trim(),
-        mcpUrl: value.mcpUrl.trim(),
-        apiKey: value.apiKey.trim() || "",
-      });
+      try {
+        await createIntegrationMutation({
+          name: value.name.trim(),
+          mcpUrl: value.mcpUrl.trim(),
+          apiKey: value.apiKey.trim() || "",
+        });
+        toast.success("Integration added successfully!");
+        setIsOpen(false);
+        mcpForm.reset();
+      } catch (error: any) {
+        toast.error(error.message || "Failed to add integration");
+      }
     },
   });
 
   const handleClose = () => {
-    onOpenChange(false);
+    setIsOpen(false);
     mcpForm.reset();
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button className="cursor-pointer flex items-center space-x-2">
           <Plus className="h-4 w-4" />

@@ -1,20 +1,14 @@
 "use client"
 
-import { api } from "@whatsapp-mcp-client/backend/convex/api"
-import type { Id } from "@whatsapp-mcp-client/backend/convex/dataModel"
 import { Input } from "@/components/ui/input";
 import {
   Blocks,
-  Loader2,
 } from "lucide-react";
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { toast } from "sonner";
 
-// Import our components
 import { AddIntegrationDialog } from "@/components/integrations/add-integration-dialog";
-import { MyIntegrationCard, TemplateIntegrationCard } from "@/components/integrations/integration-card";
-import { DeleteConfirmationDialog } from "@/components/integrations/delete-confirmation-dialog";
+import { TemplateIntegrationCard } from "@/components/integrations/integration-card";
+import { MyIntegrationsSection } from "@/components/integrations/my-integrations-section";
 
 // Available integrations data example
 const availableIntegrations = [
@@ -62,72 +56,11 @@ const availableIntegrations = [
 
 export default function IntegrationsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<{ id: Id<"integrations">, name: string } | null>(null);
-
-  // Queries and mutations - No need for auth checks since layout handles it
-  const myIntegrations = useQuery(api.integrations.queries.getMyIntegrations);
-  const createIntegrationMutation = useMutation(api.integrations.mutations.create);
-  const deleteIntegrationMutation = useMutation(api.integrations.mutations.deleteIntegration);
-
-  const searchIntegrations = useQuery(
-    api.integrations.queries.searchMyIntegrations,
-    searchTerm.trim() ? { searchTerm: searchTerm.trim() } : "skip"
-  );
-
-  // Use search results if searching, otherwise use all integrations
-  const displayedIntegrations = searchTerm.trim() ? (searchIntegrations || []) : (myIntegrations || []);
-
-  const handleAddIntegration = async (values: { name: string; mcpUrl: string; apiKey: string }) => {
-    try {
-      await createIntegrationMutation(values);
-      toast.success("Integration added successfully!");
-      setIsAddDialogOpen(false);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to add integration");
-    }
-  };
-
-  const handleConnectFromTemplate = async (integration: typeof availableIntegrations[0]) => {
-    try {
-      await createIntegrationMutation({
-        name: integration.name,
-        mcpUrl: integration.mcpUrl,
-        apiKey: "",
-      });
-      toast.success(`${integration.name} integration added successfully!`);
-    } catch (error: any) {
-      toast.error(error.message || `Failed to add ${integration.name} integration`);
-    }
-  };
-
-  const handleConfirmDelete = async () => {
-    if (!deleteTarget) return;
-
-    try {
-      await deleteIntegrationMutation({ integrationId: deleteTarget.id });
-      toast.success("Integration deleted successfully!");
-      setDeleteTarget(null);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to delete integration");
-    }
-  };
+  const [myIntegrations, setMyIntegrations] = useState<any[]>([]);
 
   const filteredIntegrations = availableIntegrations.filter(integration =>
     integration.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  // Only show loading for data, not auth (layout handles auth loading)
-  if (myIntegrations === undefined) {
-    return (
-      <div className="w-full max-w-6xl mx-auto p-6">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin" />
-          <span className="ml-2">Loading integrations...</span>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6">
@@ -149,37 +82,15 @@ export default function IntegrationsPage() {
             className="w-full"
           />
 
-          <AddIntegrationDialog
-            isOpen={isAddDialogOpen}
-            onOpenChange={setIsAddDialogOpen}
-            onSubmit={handleAddIntegration}
-          />
+          <AddIntegrationDialog />
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
-      <DeleteConfirmationDialog
-        isOpen={!!deleteTarget}
-        onOpenChange={(open) => !open && setDeleteTarget(null)}
-        integrationName={deleteTarget?.name || ""}
-        onConfirm={handleConfirmDelete}
-      />
-
       {/* My Integrations Section */}
-      {displayedIntegrations.length > 0 && (
-        <div className="mb-8">
-          <h2 className="text-base font-semibold text-muted-foreground mb-4">My Integrations</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {displayedIntegrations.map((integration) => (
-              <MyIntegrationCard
-                key={integration._id}
-                integration={integration}
-                onDelete={(id, name) => setDeleteTarget({ id: id as Id<"integrations">, name })}
-              />
-            ))}
-          </div>
-        </div>
-      )}
+      <MyIntegrationsSection
+        searchTerm={searchTerm}
+        onIntegrationsLoad={setMyIntegrations}
+      />
 
       {/* Available Integration Templates Section */}
       <div className="mb-6">
@@ -198,7 +109,6 @@ export default function IntegrationsPage() {
                 key={integration.name}
                 integration={integration}
                 isAlreadyAdded={isAlreadyAdded}
-                onConnect={() => handleConnectFromTemplate(integration)}
               />
             );
           })}
