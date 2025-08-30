@@ -48,7 +48,7 @@ export function MyIntegrationsSection({ searchTerm, onIntegrationsLoad }: MyInte
             <div className="mb-8">
                 <h2 className="text-base font-semibold text-muted-foreground mb-4">My Integrations</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {displayedIntegrations.map((integration) => (
+                    {displayedIntegrations.map((integration: Integration) => (
                         <MyIntegrationCard
                             key={integration._id}
                             integration={integration}
