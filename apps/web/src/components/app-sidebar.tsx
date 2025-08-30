@@ -1,8 +1,12 @@
-import { Calendar, Home, Inbox, Search, Settings, FileText, Loader2, Plus, MessageSquare } from "lucide-react"
+'use client'
+
+import { Blocks, Home, Inbox, FileText, Loader2, Plus, MoreHorizontal, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "@whatsapp-mcp-client/backend/convex/api"
+import type { Id } from "@whatsapp-mcp-client/backend/convex/dataModel";
+
 
 import {
   Sidebar,
@@ -16,34 +20,25 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import UserMenu from "./auth/user-menu"
 
 // Menu items.
 const items = [
   {
     title: "Home",
-    url: "#",
+    url: "/dashboard",
     icon: Home,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
+    title: "Integrations",
+    url: "/integrations",
+    icon: Blocks,
   },
 ]
 
@@ -51,10 +46,14 @@ export function AppSidebar() {
   const router = useRouter()
   const workflows = useQuery(api.workflows.queries.getUserWorkflows)
   const createWorkflowMutation = useMutation(api.workflows.mutations.create)
+  const deleteWorkflowMutation = useMutation(api.workflows.mutations.deleteWorkflow)
 
   const handleCreateWorkflow = async () => {
     const workflowId = await createWorkflowMutation()
     router.push(`/dashboard/f/${workflowId}`)
+  }
+  const handleDeleteWorkflow = async (workflowId: Id<"workflows">) => {
+    await deleteWorkflowMutation({ id: workflowId })
   }
 
   return (
@@ -109,12 +108,30 @@ export function AppSidebar() {
               ) : (
                 workflows.map((workflow) => (
                   <SidebarMenuItem key={workflow._id}>
-                    <SidebarMenuButton asChild>
-                      <Link href={`/dashboard/f/${workflow._id}`}>
-                        <FileText className="h-4 w-4" />
-                        <span>{workflow.title || 'Untitled Workflow'}</span>
-                      </Link>
-                    </SidebarMenuButton>
+                    <div className="flex items-center w-full">
+                      <SidebarMenuButton asChild className="flex-1">
+                        <Link href={`/dashboard/f/${workflow._id}`}>
+                          <FileText className="h-4 w-4" />
+                          <span>{workflow.title || 'Untitled Workflow'}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteWorkflow(workflow._id)}
+                            variant="destructive"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </SidebarMenuItem>
                 ))
               )}
@@ -123,7 +140,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <UserMenu/>
+        <UserMenu />
       </SidebarFooter>
     </Sidebar>
   )
