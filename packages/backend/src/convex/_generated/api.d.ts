@@ -15,7 +15,6 @@ import type * as http from "../http.js";
 import type * as integrations_error from "../integrations/error.js";
 import type * as integrations_mutations from "../integrations/mutations.js";
 import type * as integrations_queries from "../integrations/queries.js";
-import type * as integrations from "../integrations.js";
 import type * as twilio_actions from "../twilio/actions.js";
 import type * as twilio_error from "../twilio/error.js";
 import type * as twilio_normalizer from "../twilio/normalizer.js";
@@ -52,7 +51,6 @@ declare const fullApi: ApiFromModules<{
   "integrations/error": typeof integrations_error;
   "integrations/mutations": typeof integrations_mutations;
   "integrations/queries": typeof integrations_queries;
-  integrations: typeof integrations;
   "twilio/actions": typeof twilio_actions;
   "twilio/error": typeof twilio_error;
   "twilio/normalizer": typeof twilio_normalizer;
