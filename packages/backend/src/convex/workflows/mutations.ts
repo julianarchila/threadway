@@ -1,8 +1,8 @@
 import { mutation } from "../_generated/server";
 import { ConvexError, v } from "convex/values";
-import { 
-  createWorkflowCreationError, 
-  createWorkflowNotFoundError, 
+import {
+  createWorkflowCreationError,
+  createWorkflowNotFoundError,
   createWorkflowUpdateError,
   createUserNotAuthorizedError,
   createContentTooLongError,
@@ -22,7 +22,7 @@ export const create = mutation({
     if (!userId) {
       throw new Error("User not authenticated")
     }
-    
+
     const now = Date.now()
 
     // create a new workflow
@@ -80,7 +80,7 @@ export const updateTitle = mutation({
     if (!userId) {
       throw new Error("User not authenticated")
     }
-    
+
     const workflow = await ctx.db.get(args.workflowId)
     if (!workflow) {
       throw createWorkflowNotFoundError(args.workflowId)
@@ -105,5 +105,30 @@ export const updateTitle = mutation({
     })
 
     return args.workflowId
+  }
+})
+
+export const deleteWorkflow = mutation({
+  args: {
+    id: v.id("workflows"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await betterAuthComponent.getAuthUserId(ctx)
+    if (!userId) {
+      throw new Error("User not authenticated")
+    }
+
+    const workflow = await ctx.db.get(args.id)
+    if (!workflow) {
+      throw createWorkflowNotFoundError(args.id)
+    }
+
+    if (workflow.userId !== userId) {
+      throw createUserNotAuthorizedError(userId, args.id)
+    }
+
+    await ctx.db.delete(args.id)
+
+    return args.id
   }
 })
