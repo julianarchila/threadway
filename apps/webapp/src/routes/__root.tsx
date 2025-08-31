@@ -10,7 +10,6 @@ import { getCookie, getWebRequest } from '@tanstack/react-start/server'
 import { getCookieName, fetchSession } from '@/lib/server-auth-utils'
 import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 
-import Header from '../components/Header'
 
 import appCss from '../styles.css?url'
 import { authClient } from '@/lib/auth-client';
@@ -100,7 +99,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        <Header />
         {children}
         <Toaster position="bottom-right" richColors />
         <TanstackDevtools

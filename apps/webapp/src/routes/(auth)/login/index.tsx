@@ -1,7 +1,7 @@
 import GoogleAuthForm from '@/components/auth/google-auth-form'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/login/')({
+export const Route = createFileRoute('/(auth)/login/')({
   component: RouteComponent,
   beforeLoad: async ({context}) => {
     if (context.userId) {
