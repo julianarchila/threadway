@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import UserMenu from './auth/user-menu'
 
 export default function Header() {
   return (
@@ -14,6 +15,9 @@ export default function Header() {
 
         <div className="px-2 font-bold">
           <Link to="/demo/start/api-request">Start - API Request</Link>
+        </div>
+        <div className="px-2 font-bold">
+          <UserMenu />
         </div>
       </nav>
     </header>

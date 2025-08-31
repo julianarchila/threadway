@@ -80,7 +80,6 @@ function RootComponent() {
   const context = useRouteContext({ from: Route.id })
   return (
     <ConvexBetterAuthProvider
-      // @ts-expect-error
       client={context.convexClient}
       authClient={authClient}
     >
@@ -92,6 +91,8 @@ function RootComponent() {
   )
 }
 
+import { Toaster } from "@/components/ui/sonner"
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -101,6 +102,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         <Header />
         {children}
+        <Toaster position="bottom-right" richColors />
         <TanstackDevtools
           config={{
             position: 'bottom-left',
