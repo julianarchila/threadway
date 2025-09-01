@@ -83,7 +83,9 @@ function RootComponent() {
       authClient={authClient}
     >
       <RootDocument>
+        <ThemeProvider>
         <Outlet />
+        </ThemeProvider>
       </RootDocument>
 
     </ConvexBetterAuthProvider>
@@ -91,6 +93,7 @@ function RootComponent() {
 }
 
 import { Toaster } from "@/components/ui/sonner"
+import { ThemeProvider } from '@/components/theme-provider';
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

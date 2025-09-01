@@ -16,7 +16,7 @@ import { authClient } from "@/lib/auth-client";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import { useRouter } from "@tanstack/react-router";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme-provider";
 import { Monitor, Sun, Moon, LogOut, Palette } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
