@@ -170,3 +170,24 @@ body {
     --tw-gradient-to: var(--brand-to) var(--tw-gradient-to-position);
   }
 }
+
+/* BlockNote editor text readability fixes */
+@layer components {
+  .bn-editor {
+    color: oklch(var(--foreground)) !important;
+  }
+  .ProseMirror {
+    color: oklch(var(--foreground)) !important;
+  }
+  .ProseMirror p,
+  .ProseMirror h1,
+  .ProseMirror h2,
+  .ProseMirror h3,
+  .ProseMirror h4,
+  .ProseMirror h5,
+  .ProseMirror h6,
+  .ProseMirror li,
+  .ProseMirror blockquote {
+    color: oklch(var(--foreground)) !important;
+  }
+}

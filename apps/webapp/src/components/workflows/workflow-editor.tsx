@@ -68,7 +68,7 @@ function BlockNoteEditor({
     <div className="w-full">
       <BlockNoteView
         editor={editor}
-        className="min-h-[600px] [&_.bn-editor]:!bg-transparent [&_.ProseMirror]:!bg-transparent"
+        className="min-h-[600px] [&_.bn-editor]:!bg-transparent [&_.ProseMirror]:!bg-transparent [&_.ProseMirror]:!text-foreground [&_.bn-editor]:!text-foreground"
         onChange={() => onContentChange(editor.document)}
         shadCNComponents={
           {
