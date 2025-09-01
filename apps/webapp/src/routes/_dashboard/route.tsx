@@ -29,7 +29,7 @@ export const Route = createFileRoute('/_dashboard')({
 
 function RouteComponent() {
 
-  const [showChatSidebar, setShowChatSidebar] = useState(true);
+  const [showChatSidebar, setShowChatSidebar] = useState(false);
 
   function UnauthRedirect() {
     const router = useRouter();
