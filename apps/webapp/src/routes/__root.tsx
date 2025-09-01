@@ -13,6 +13,7 @@ import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 
 import appCss from '../styles.css?url'
 import { authClient } from '@/lib/auth-client';
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // Server side session request
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
@@ -104,6 +105,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body>
         {children}
         <Toaster position="bottom-right" richColors />
+        {import.meta.env.DEV && (
         <TanstackDevtools
           config={{
             position: 'bottom-left',
@@ -113,8 +115,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               name: 'Tanstack Router',
               render: <TanStackRouterDevtoolsPanel />,
             },
+            {
+              name: 'Tanstack React Query',
+              render: <ReactQueryDevtools />,
+            },
           ]}
-        />
+        />)}
         <Scripts />
       </body>
     </html>
