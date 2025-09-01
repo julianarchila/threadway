@@ -1,5 +1,4 @@
 import { createContext, use, useEffect, useMemo, useState } from 'react'
-import { FunctionOnce } from '@/lib/function-once'
 
 export type ResolvedTheme = 'dark' | 'light'
 export type Theme = ResolvedTheme | 'system'
@@ -24,19 +23,26 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
-const isBrowser = typeof window !== 'undefined'
-
 export function ThemeProvider({
   children,
   defaultTheme = 'system',
   storageKey = 'conar.theme',
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (isBrowser ? (localStorage.getItem(storageKey) as Theme) : defaultTheme) || defaultTheme,
-  )
+  const [theme, setTheme] = useState<Theme>(defaultTheme)
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>('light')
+  const [mounted, setMounted] = useState(false)
+
+  // Handle mounting and initial theme loading
+  useEffect(() => {
+    setMounted(true)
+    const stored = localStorage.getItem(storageKey) as Theme
+    if (stored) {
+      setTheme(stored)
+    }
+  }, [storageKey])
 
   useEffect(() => {
+    if (!mounted) return
     const root = window.document.documentElement
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -58,34 +64,21 @@ export function ThemeProvider({
     updateTheme()
 
     return () => mediaQuery.removeEventListener('change', updateTheme)
-  }, [theme])
+  }, [theme, mounted])
 
   const value = useMemo(() => ({
     theme,
     resolvedTheme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
+    setTheme: (newTheme: Theme) => {
+      if (mounted) {
+        localStorage.setItem(storageKey, newTheme)
+      }
+      setTheme(newTheme)
     },
-  }), [theme, resolvedTheme, storageKey])
+  }), [theme, resolvedTheme, storageKey, mounted])
 
   return (
     <ThemeProviderContext value={value}>
-      <FunctionOnce param={storageKey}>
-        {(storageKey) => {
-          const theme: string | null = localStorage.getItem(storageKey)
-
-          if (
-            theme === 'dark'
-            || (
-              (theme === null || theme === 'system')
-              && window.matchMedia('(prefers-color-scheme: dark)').matches
-            )
-          ) {
-            document.documentElement.classList.add('dark')
-          }
-        }}
-      </FunctionOnce>
       {children}
     </ThemeProviderContext>
   )
