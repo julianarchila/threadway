@@ -1,6 +1,6 @@
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { createFileRoute, Outlet, redirect, useRouter } from '@tanstack/react-router'
-import { AppSidebar } from '@/components/app-sidebar'
+import { AppSidebar } from '@/components/sidebar/app-sidebar'
 
 import {
     Authenticated,
@@ -9,6 +9,8 @@ import {
 } from "convex/react";
 import { useEffect } from 'react';
 import Loader from '@/components/loader';
+import { convexQuery } from '@convex-dev/react-query';
+import { api } from '@whatsapp-mcp-client/backend/convex/api';
 
 export const Route = createFileRoute('/_dashboard')({
     component: RouteComponent,
@@ -16,6 +18,10 @@ export const Route = createFileRoute('/_dashboard')({
         if (!context.userId) {
             throw redirect({ to: "/login" })
         }
+    },
+    loader: async ({context}) => {
+      context.queryClient.prefetchQuery(convexQuery(api.workflows.queries.getUserWorkflows, {}))
+
     }
 })
 
