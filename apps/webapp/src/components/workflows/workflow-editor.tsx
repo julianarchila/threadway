@@ -1,5 +1,3 @@
-"use client";
-
 import "@blocknote/core/fonts/inter.css";
 import { useCreateBlockNote } from "@blocknote/react";
 import { BlockNoteView } from "@blocknote/shadcn";
@@ -43,7 +41,7 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
       </div>
 
       {/* Editor */}
-      <BlockNoteEditor initialContent={initialContent} onContentChange={saveContent} />
+      <BlockNoteEditor key={workflowId} initialContent={initialContent} onContentChange={saveContent} />
     </div>
   );
 }

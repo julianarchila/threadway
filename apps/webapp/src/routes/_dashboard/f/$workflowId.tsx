@@ -8,7 +8,7 @@ export const Route = createFileRoute('/_dashboard/f/$workflowId')({
   component: RouteComponent,
   loader: async ({context, params}) => {
     const { workflowId } = params;
-    context.queryClient.prefetchQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId: workflowId as Id<"workflows"> }));
+    await context.queryClient.prefetchQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId: workflowId as Id<"workflows"> }));
   }
 })
 
