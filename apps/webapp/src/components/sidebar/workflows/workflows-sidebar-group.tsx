@@ -21,7 +21,7 @@ export function WorkflowsSidebarGroup() {
 
   const handleCreateWorkflow = async () => {
     const workflowId = await createWorkflowMutation()
-    router.navigate({ to: `/dashboard/f/${workflowId}` })
+    router.navigate({ to: "/f/$workflowId", params: { workflowId } })
   }
 
   return (
