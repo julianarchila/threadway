@@ -1,16 +1,18 @@
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
-import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, useRouter } from '@tanstack/react-router'
 import { AppSidebar } from '@/components/app-sidebar'
 
 import {
-  Authenticated,
-  Unauthenticated,
-  AuthLoading,
+    Authenticated,
+    Unauthenticated,
+    AuthLoading,
 } from "convex/react";
+import { useEffect } from 'react';
+import Loader from '@/components/loader';
 
 export const Route = createFileRoute('/_dashboard')({
     component: RouteComponent,
-    beforeLoad: async ({context}) => {
+    beforeLoad: async ({ context }) => {
         if (!context.userId) {
             throw redirect({ to: "/login" })
         }
@@ -18,7 +20,20 @@ export const Route = createFileRoute('/_dashboard')({
 })
 
 function RouteComponent() {
-    return <Authenticated>
+
+  function UnauthRedirect() {
+    const router = useRouter();
+    useEffect(() => {
+      const next = window.location.pathname + window.location.search + window.location.hash;
+      router.navigate({ to: `/login?next=${encodeURIComponent(next)}` });
+    }, [router]);
+    return null;
+  }
+
+  return <>
+    <AuthLoading><Loader /></AuthLoading>
+    <Unauthenticated><UnauthRedirect /></Unauthenticated>
+    <Authenticated>
         <SidebarProvider>
         <AppSidebar />
         <main className="flex-1 flex flex-col min-h-screen">
@@ -32,4 +47,6 @@ function RouteComponent() {
         </main>
     </SidebarProvider>
     </Authenticated>
+
+  </>
 }
