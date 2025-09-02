@@ -14,6 +14,7 @@ import { ConvexBetterAuthProvider } from '@convex-dev/better-auth/react'
 import appCss from '../styles.css?url'
 import { authClient } from '@/lib/auth-client';
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { AUTH_QUERY_KEY } from '@/hooks/use-auth-cache';
 
 // Server side session request
 const fetchAuth = createServerFn({ method: 'GET' }).handler(async () => {
@@ -60,7 +61,12 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
   beforeLoad: async (ctx) => {
     // all queries, mutations and action made with TanStack Query will be
     // authenticated by an identity token.
-    const auth = await fetchAuth()
+    const auth = await ctx.context.queryClient.ensureQueryData({
+      queryKey: AUTH_QUERY_KEY,
+      queryFn: () => fetchAuth(),
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
+    })
     const { userId, token } = auth
 
     // During SSR only (the only time serverHttpClient exists),
@@ -76,8 +82,11 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
 })
 
 function RootComponent() {
-
   const context = useRouteContext({ from: Route.id })
+  
+  // Set up auth cache invalidation when session changes
+  useAuthCacheInvalidation()
+  
   return (
     <ConvexBetterAuthProvider
       client={context.convexClient}
@@ -95,6 +104,7 @@ function RootComponent() {
 
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from '@/components/theme-provider';
+import { useAuthCacheInvalidation } from '@/hooks/use-auth-cache';
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (

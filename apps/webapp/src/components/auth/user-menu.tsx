@@ -19,11 +19,13 @@ import { useRouter } from "@tanstack/react-router";
 import { useTheme } from "@/components/theme-provider";
 import { Monitor, Sun, Moon, LogOut, Palette } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useAuthCacheInvalidation } from "@/hooks/use-auth-cache";
 
 export default function UserMenu() {
   const router = useRouter();
   const { data: session, isPending } = authClient.useSession();
   const { setTheme } = useTheme();
+  const { removeAuthCache } = useAuthCacheInvalidation();
 
   if (isPending) {
     return <Skeleton className="h-9 w-24" />;
@@ -81,6 +83,7 @@ export default function UserMenu() {
               authClient.signOut({
                 fetchOptions: {
                   onSuccess: () => {
+                    removeAuthCache();
                     router.navigate({ to: "/" });
                   },
                 },
