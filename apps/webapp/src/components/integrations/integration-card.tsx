@@ -19,7 +19,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useMutation } from "convex/react";
-import { api } from "@whatsapp-mcp-client/backend/convex/api";
+import { api } from "@threadway/backend/convex/api";
 import { toast } from "sonner";
 
 const integrationIcons = {

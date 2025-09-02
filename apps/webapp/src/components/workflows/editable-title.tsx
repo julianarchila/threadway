@@ -2,8 +2,8 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useMutation } from "convex/react";
-import { api } from "@whatsapp-mcp-client/backend/convex/api";
-import type { Id } from "@whatsapp-mcp-client/backend/convex/dataModel";
+import { api } from "@threadway/backend/convex/api";
+import type { Id } from "@threadway/backend/convex/dataModel";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 

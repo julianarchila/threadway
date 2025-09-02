@@ -1,5 +1,5 @@
 {
-  "name": "@whatsapp-mcp-client/backend",
+  "name": "@threadway/backend",
   "version": "1.0.0",
   "scripts": {
     "dev": "convex dev",

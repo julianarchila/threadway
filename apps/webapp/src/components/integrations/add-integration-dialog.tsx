@@ -13,7 +13,7 @@ import { Plus, Loader2 } from "lucide-react";
 import { FormField } from "./form-field";
 import { useState } from "react";
 import { useMutation } from "convex/react";
-import { api } from "@whatsapp-mcp-client/backend/convex/api";
+import { api } from "@threadway/backend/convex/api";
 import { toast } from "sonner";
 
 export function AddIntegrationDialog() {

@@ -3,7 +3,7 @@
 import { FileText } from "lucide-react"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { convexQuery } from "@convex-dev/react-query"
-import { api } from "@whatsapp-mcp-client/backend/convex/api"
+import { api } from "@threadway/backend/convex/api"
 
 import {
   SidebarMenu,

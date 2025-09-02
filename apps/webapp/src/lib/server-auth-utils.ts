@@ -1,4 +1,4 @@
-import { createAuth } from '@whatsapp-mcp-client/backend/lib/auth'
+import { createAuth } from '@threadway/backend/lib/auth'
 import { reactStartHelpers } from '@convex-dev/better-auth/react-start'
 
 export const { fetchSession, reactStartHandler, getCookieName } =

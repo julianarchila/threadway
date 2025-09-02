@@ -1,7 +1,7 @@
 "use client"
 
-import { api } from "@whatsapp-mcp-client/backend/convex/api"
-import type { Id } from "@whatsapp-mcp-client/backend/convex/dataModel"
+import { api } from "@threadway/backend/convex/api"
+import type { Id } from "@threadway/backend/convex/dataModel"
 import { useRef, useEffect } from "react"
 import { useQuery } from "convex/react"
 import { MyIntegrationCard } from "./integration-card"

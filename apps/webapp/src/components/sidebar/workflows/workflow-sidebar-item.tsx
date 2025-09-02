@@ -3,8 +3,8 @@
 import { FileText, MoreHorizontal, Trash2 } from "lucide-react"
 import { Link } from "@tanstack/react-router"
 import { useMutation } from "convex/react"
-import { api } from "@whatsapp-mcp-client/backend/convex/api"
-import type { Id } from "@whatsapp-mcp-client/backend/convex/dataModel"
+import { api } from "@threadway/backend/convex/api"
+import type { Id } from "@threadway/backend/convex/dataModel"
 
 import {
   SidebarMenuButton,

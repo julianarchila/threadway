@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useState, forwardRef, useImperativeHandle } from "react";
 import { useMutation } from "convex/react";
-import { api } from "@whatsapp-mcp-client/backend/convex/api";
+import { api } from "@threadway/backend/convex/api";
 import { toast } from "sonner";
-import type { Id } from "@whatsapp-mcp-client/backend/convex/dataModel";
+import type { Id } from "@threadway/backend/convex/dataModel";
 import { Loader2 } from "lucide-react";
 
 interface DeleteConfirmationDialogProps {

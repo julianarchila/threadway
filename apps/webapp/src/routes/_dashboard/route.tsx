@@ -10,7 +10,7 @@ import {
 import { useEffect, useState } from 'react';
 import Loader from '@/components/loader';
 import { convexQuery } from '@convex-dev/react-query';
-import { api } from '@whatsapp-mcp-client/backend/convex/api';
+import { api } from '@threadway/backend/convex/api';
 import { MessageSquare, X } from 'lucide-react';
 import Chatbot from '@/components/chatbot';
 

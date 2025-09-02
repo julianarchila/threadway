@@ -1,5 +1,5 @@
 {
-  "name": "whatsapp-mcp-client",
+  "name": "threadway",
   "private": true,
   "workspaces": [
     "apps/*",

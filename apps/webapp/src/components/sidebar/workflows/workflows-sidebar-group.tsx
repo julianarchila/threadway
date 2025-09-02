@@ -3,7 +3,7 @@
 import { Plus } from "lucide-react"
 import { useRouter } from "@tanstack/react-router"
 import { useMutation } from "convex/react"
-import { api } from "@whatsapp-mcp-client/backend/convex/api"
+import { api } from "@threadway/backend/convex/api"
 import { Suspense } from "react"
 
 import {
