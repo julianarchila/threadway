@@ -1,108 +1,100 @@
 # Backend Agent Guidelines
 
 ## Commands
-- `pnpm dev` - Start Convex development server with live reload
-- `pnpm dev:setup` - Initialize Convex with configuration setup
-- From root: `pnpm dev:backend` - Start backend only
-- From root: `pnpm check-types` - Type check backend code
+- `pnpm dev` — Start Convex dev server with live reload
+- `pnpm dev:setup` — Initialize Convex with configuration
+- From root: `pnpm dev:backend` — Start backend only
+- From root: `pnpm check-types` — Type check backend
 
-## File Structure
+## Structure
 
-### Root Level Files
-- `schema.ts` - Database schema with tables and indexes
-- `auth.ts` - Better Auth configuration and user management
-- `auth.config.ts` - Authentication provider settings
-- `http.ts` - HTTP routes and webhooks
-- `convex.config.ts` - Convex app configuration with components
+### Root files
+- `schema.ts` — Database schema (tables + indexes)
+- `auth.ts` / `auth.config.ts` — Better Auth setup
+- `http.ts` — HTTP routes and webhooks
+- `convex.config.ts` — Convex app configuration
 
-### Feature Organization
-Organize code by domain/feature in separate folders:
+### Feature folders (by domain)
+- `actions.ts` — External APIs, AI, side effects
+- `mutations.ts` — DB writes
+- `queries.ts` — DB reads
+- `helpers.ts` — Business logic (shared)
+- `utils.ts` — Pure functions
+- `error.ts` — Domain error types
+- `validation.ts` — Zod schemas (when needed)
 
-```
-feature-name/
-├── queries.ts     # Database reads (query functions)
-├── mutations.ts   # Database writes (mutation functions) 
-├── actions.ts     # External API calls, AI, third-party services
-├── helpers.ts     # Shared utilities and business logic
-├── utils.ts       # Pure functions and data transformations
-├── error.ts       # Domain-specific error types
-└── validation.ts  # Zod schemas and input validation
-```
+## Core patterns
 
-## Core Patterns
+### Convex function types
+- `query` — Read-only DB
+- `mutation` — DB writes (atomic)
+- `action` — External calls / Node usage (opt-in via `"use node"`)
+- `internalAction` — Server-side only actions
+- `httpAction` — HTTP endpoints/webhooks
+- `internalQuery` / `internalMutation` — Server-only DB access
 
-### Function Types
-- `query` - Read-only database operations, cached
-- `mutation` - Database writes, transactional
-- `action` - External API calls, file uploads, AI inference
-- `internalAction` - Server-side only actions
-- `httpAction` - HTTP endpoints and webhooks
+### Runtime boundaries
+- Add `"use node"` only in files that import Node-only libs (e.g. Twilio SDK, Composio).
+- Do NOT import Node-only code into non-Node Convex files.
+- Keep `utils.ts` pure (no Node, no I/O).
 
-### Error Handling (neverthrow)
-**ALWAYS use neverthrow Result types instead of try/catch:**
-
-```ts
-// ❌ Avoid try/catch
-try {
-  const result = await riskyOperation();
-  return result;
-} catch (error) {
-  throw new Error('Failed');
-}
-
-// ✅ Use Result types
-import { ok, err, Result } from 'neverthrow';
-
-const safeOperation = async (): Promise<Result<Data, MyError>> => {
-  const result = await externalCall();
-  if (result.isErr()) {
-    return err(new MyError('OPERATION_FAILED', result.error.message));
-  }
-  return ok(result.value);
-};
-```
-
-### Custom Error Types
-Create domain-specific error classes:
-
-```ts
-type MyErrorType = 'VALIDATION_FAILED' | 'NOT_FOUND' | 'EXTERNAL_SERVICE_ERROR';
-
-export class MyError extends Error {
-  constructor(
-    public readonly type: MyErrorType,
-    message: string,
-    public readonly cause?: unknown
-  ) {
-    super(message);
-    this.name = 'MyError';
-  }
-}
-```
+### Error handling
+- Helpers/utils return `neverthrow` Result (no throwing).
+- Convex entrypoints (actions/mutations/queries) unwrap `Result` and MAY throw domain errors.
+- Domain-specific error classes per feature: `AuthError`, `WorkflowError`, `IntegrationsError`, `TwilioError` (with `type` and optional `cause`).
+- Wrap external calls with `fromThrowable` / `fromAsyncThrowable`.
 
 ### Validation
-Use Zod for all input validation:
+- Use Convex `v` validators for function args.
+- Use Zod for complex/external payloads (e.g., Twilio webhooks).
+- Keep lightweight, focused validators in `utils.ts` for simple cases (e.g., phone normalization).
 
-```ts
-import { z } from 'zod';
+### Database & indexes
+- Always query via an index: `.withIndex(...)`.
+- Define indexes explicitly in `schema.ts`.
+- Keep schema enums minimal and in-use (e.g., `connections.status` is `"INITIATED" | "ACTIVE"`).
+- Prefer consistent field names (e.g., `toolkitSlug`).
 
-const MySchema = z.object({
-  phoneNumber: z.string().regex(/^\+[1-9]\d{1,14}$/),
-  message: z.string().min(1).max(1600),
-});
+### Background work
+- Use `ctx.scheduler.runAfter(...)` to offload long-running tasks.
+- Implement as `internalAction`s and keep them idempotent where possible.
+- Never start long-running servers/watchers in Convex functions.
 
-export const validateInput = (input: unknown) => {
-  const result = MySchema.safeParse(input);
-  return result.success ? ok(result.data) : err(new ValidationError(result.error));
-};
-```
+### Third-party integrations
+- Isolate SDK usage behind `"use node"` files.
+- Read configuration via environment variables.
+- Normalize external payloads before using them.
+- Use `neverthrow` for all external API invocations in helpers.
 
-### Database Operations
-- Always use indexes for queries
-- Use `withIndex()` for efficient lookups
-- Handle not found cases with Result types
+### Naming & style
+- Files: kebab-case; Types/Interfaces: PascalCase; functions/vars: camelCase.
+- Use precise, intent-revealing names (e.g., `initiateConnection`, `listUserConnections`, `toolkitSlug`).
+- Keep modules small and cohesive; avoid unnecessary abstractions.
 
-### Third-party Integrations
-- Wrap external calls in Result types using `fromThrowable`
-- Create adapter functions to normalize external APIs
-- Use environment variables for configuration
+### Logging
+- Keep logs minimal and useful: include feature prefix and key ids (e.g., `[integrations] connectionId=... userId=...`).
+- Log only at decision points (success/failure) and external boundaries.
+
+## Feature notes
+
+### Integrations
+- Public action: `initiateConnection` (returns redirect URL).
+- Node-only work (Composio) lives in `"use node"` actions/helpers.
+- Helpers use `neverthrow`; actions unwrap and throw `IntegrationsError`.
+- Background waiter: `awaitConnectionStatus` (internalAction) updates to `ACTIVE`.
+
+### Twilio
+- `httpAction` validates signature, parses with Zod, normalizes payload, then delegates.
+- Node-only SMS/OTP sending in `"use node"` utils using `neverthrow`.
+
+### Agents
+- Use `@convex-dev/agent` component.
+- Maintain a single thread per user (`getUserThread` helper); keep agent config minimal and explicit.
+
+## PR checklist
+- Does helper/utility return `Result` instead of throwing?
+- Do actions/mutations/queries unwrap Results and throw domain errors?
+- Are Node-only imports confined to `"use node"` files?
+- Are queries using proper indexes?
+- Are names and fields consistent (`toolkitSlug`, function names, status enums)?
+- Are magic numbers extracted as module-level `const` where helpful?
