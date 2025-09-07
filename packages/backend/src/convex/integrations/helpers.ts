@@ -52,7 +52,7 @@ export async function createNewConnection(
     throw new Error("Failed to get redirect URL");
   }
 
-  await ctx.runMutation(internal.integrations.mutations.creteInitialConnection, {
+  await ctx.runMutation(internal.integrations.mutations.createPendingConnection, {
     connectionId: connRequest.id,
     userId: userId,
     authConfigId: authConfigId,

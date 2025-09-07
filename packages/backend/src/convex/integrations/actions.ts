@@ -62,7 +62,7 @@ export const awaitConnectionStatus = internalAction({
       console.info(`Connection successful for connectionId: ${connectionId}, toolkit: ${toolkitSlug}`);
 
       try {
-        await ctx.runMutation(internal.integrations.mutations.successfulConnection, {
+        await ctx.runMutation(internal.integrations.mutations.markConnectionAsActive, {
           connectionId,
           tolkitSlug: toolkitSlug,
         });

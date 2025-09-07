@@ -12,6 +12,14 @@ import { internal } from "../_generated/api";
 // Public Mutations
 // =============================================================================
 
+/**
+ * Deletes a connection for the authenticated user.
+ *
+ * @param connectionId - The ID of the connection to delete.
+ * @throws {IntegrationsError} If the user is not authenticated, the connection is not found,
+ * or the user does not have permission to delete the connection.
+ * @returns An object indicating the success of the operation.
+ */
 export const deleteConnection = mutation({
   args: { connectionId: v.id("connections") },
   handler: async (ctx, args) => {
@@ -57,7 +65,15 @@ export const deleteConnection = mutation({
 // Internal Mutations
 // =============================================================================
 
-export const creteInitialConnection = internalMutation({
+/**
+ * Creates a pending connection record in the database.
+ * This is used to track the connection process before it becomes active.
+ *
+ * @param connectionId - The unique identifier for the connection from the external service.
+ * @param userId - The ID of the user initiating the connection.
+ * @param authConfigId - The ID of the authentication configuration used.
+ */
+export const createPendingConnection = internalMutation({
   args: {
     connectionId: v.string(),
     userId: v.id("users"),
@@ -76,7 +92,15 @@ export const creteInitialConnection = internalMutation({
 })
 
 
-export const successfulConnection = internalMutation({
+/**
+ * Marks a pending connection as active.
+ * This is called after the external service confirms the connection is successful.
+ *
+ * @param connectionId - The unique identifier for the connection.
+ * @param tolkitSlug - The slug for the tolkit associated with this connection.
+ * @throws {Error} If the connection is not found.
+ */
+export const markConnectionAsActive = internalMutation({
   args: {
     connectionId: v.string(),
     tolkitSlug: v.string(),
@@ -98,6 +122,13 @@ export const successfulConnection = internalMutation({
 })
 
 
+/**
+ * Removes a connection record from the database.
+ * This is typically used to clean up failed or incomplete connection attempts.
+ *
+ * @param connectionId - The unique identifier for the connection to remove.
+ * @throws {Error} If the connection is not found.
+ */
 export const removeFailedConnection = internalMutation({
   args: {
     connectionId: v.string(),
