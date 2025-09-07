@@ -20,7 +20,7 @@ interface MyIntegrationsSectionProps {
 export function MyIntegrationsSection({ searchTerm, onIntegrationsLoad }: MyIntegrationsSectionProps) {
     const deleteDialogRef = useRef<DeleteConfirmationDialogRef>(null);
 
-    const myIntegrations = useQuery(api.integrations.queries.listUsersConnections);
+    const myIntegrations = useQuery(api.integrations.queries.listUserConnections);
     const searchIntegrations = myIntegrations && searchTerm.trim() ? myIntegrations.filter(integration =>
         integration.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
     ) : undefined;

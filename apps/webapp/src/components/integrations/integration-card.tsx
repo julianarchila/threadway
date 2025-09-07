@@ -94,11 +94,11 @@ export function TemplateIntegrationCard({
   isAlreadyAdded,
 }: TemplateIntegrationCardProps) {
   const IconComponent = integrationIcons[integration.name as keyof typeof integrationIcons] || Hammer;
-  const createConnectionAction = useAction(api.integrations.actions.createConnectionWithUrl)
+  const initiateConnectionAction = useAction(api.integrations.actions.initiateConnection)
 
   const handleConnect = async () => {
     try {
-      const {redirectUrl}= await createConnectionAction({
+      const {redirectUrl}= await initiateConnectionAction({
         authConfigId: integration.authConfigId,
       })
 

@@ -2,8 +2,6 @@ import { query, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { betterAuthComponent } from "../auth";
-
-
 import { TOOLKIT_AUTH_CONFIG } from "../../lib/composio/connections";
 
 // =============================================================================
@@ -11,53 +9,50 @@ import { TOOLKIT_AUTH_CONFIG } from "../../lib/composio/connections";
 // =============================================================================
 
 export const listAvailableIntegrations = query({
-  handler: async (ctx) => {
-    // Convert Map to array structure
+  handler: async (_ctx) => {
     return Array.from(TOOLKIT_AUTH_CONFIG.entries()).map(([name, authConfigId]) => ({
       name,
-      authConfigId
+      authConfigId,
     }));
-  }
-})
+  },
+});
 
-export const listUsersConnections = query({
+export const listUserConnections = query({
   handler: async (ctx) => {
     const userId = await betterAuthComponent.getAuthUserId(ctx);
     if (!userId) {
-      return []
+      return [];
     }
 
-    const connections = await ctx.db.query("connections")
+    const connections = await ctx.db
+      .query("connections")
       .withIndex("by_user", (q) => q.eq("userId", userId as Id<"users">))
-      .filter(q => q.eq(q.field("status"), "ACTIVE"))
-      .collect()
+      .filter((q) => q.eq(q.field("status"), "ACTIVE"))
+      .collect();
 
-    return connections.map(c => ({
+    return connections.map((c) => ({
       _id: c._id,
       authConfigId: c.authConfigId,
       connectionId: c.connectionId,
-      tolkitSlug: c.tolkitSlug,
-      name: c.tolkitSlug ? c.tolkitSlug.toUpperCase() : "UNKNOWN",
-      status: c.status
-    }) )
-
-
-
-  }
-})
+      toolkitSlug: c.toolkitSlug,
+      name: c.toolkitSlug ? c.toolkitSlug.toUpperCase() : "UNKNOWN",
+      status: c.status,
+    }));
+  },
+});
 
 // =============================================================================
 // Internal Queries
 // =============================================================================
 
-
 export const getUserConnectionByAuthConfigId = internalQuery({
   args: { authConfigId: v.string(), userId: v.id("users") },
-  handler: async (ctx, args ) => {
-
-    return await ctx.db.query("connections")
-      .withIndex("by_authConfigId_and_user", (q) => q.eq("authConfigId", args.authConfigId).eq("userId", args.userId))
-      .first()
-
-  }
-})
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("connections")
+      .withIndex("by_authConfigId_and_user", (q) =>
+        q.eq("authConfigId", args.authConfigId).eq("userId", args.userId)
+      )
+      .first();
+  },
+});

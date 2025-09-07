@@ -1,22 +1,34 @@
-
-
 import type { Id } from "../_generated/dataModel";
 import { TOOLKIT_AUTH_CONFIG } from "../../lib/composio/connections";
 import { betterAuthComponent } from "../auth";
-import { ActionCtx, GenericCtx } from "../_generated/server";
+import type { GenericCtx } from "../_generated/server";
+import { ok, err, Result } from "neverthrow";
+import { IntegrationsError } from "./error";
 
-// Helper function to validate auth config ID
-export function validateAuthConfigId(authConfigId: string): void {
-  if (!Array.from(TOOLKIT_AUTH_CONFIG.values()).find(c => c === authConfigId)) {
-    throw new Error("Invalid authConfigId");
+// Precompute for O(1) lookups
+const AUTH_CONFIG_ID_SET = new Set<string>(Array.from(TOOLKIT_AUTH_CONFIG.values()));
+
+/**
+ * Validate an authConfigId against known configurations.
+ * Returns a Result<void, IntegrationsError> instead of throwing.
+ */
+export function validateAuthConfigId(authConfigId: string): Result<void, IntegrationsError> {
+  if (!AUTH_CONFIG_ID_SET.has(authConfigId)) {
+    return err(new IntegrationsError("INTEGRATION_LOOKUP_FAILED", "Invalid authConfigId"));
   }
+  return ok(undefined);
 }
 
-// Helper function to validate authentication
-export async function validateUserAuth(ctx: GenericCtx): Promise<Id<"users">> {
-  const userId = await betterAuthComponent.getAuthUserId(ctx) as Id<"users"> | null;
+/**
+ * Validate that a user is authenticated.
+ * Returns a Result<Id<\"users\">, IntegrationsError> instead of throwing.
+ */
+export async function validateUserAuth(
+  ctx: GenericCtx
+): Promise<Result<Id<"users">, IntegrationsError>> {
+  const userId = (await betterAuthComponent.getAuthUserId(ctx)) as Id<"users"> | null;
   if (!userId) {
-    throw new Error("User not authenticated");
+    return err(new IntegrationsError("INTEGRATION_QUERY_FAILED", "User not authenticated"));
   }
-  return userId;
+  return ok(userId);
 }

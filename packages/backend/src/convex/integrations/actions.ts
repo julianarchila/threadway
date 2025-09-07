@@ -1,46 +1,46 @@
 "use node"
 
+import { v } from "convex/values";
+import { fromAsyncThrowable } from "neverthrow";
+
 import { action, internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
+
 import { composio } from "../../lib/composio";
-import { fromAsyncThrowable } from "neverthrow";
 import { validateAuthConfigId, validateUserAuth } from "./utils";
-import { handleExistingConnection,createNewConnection } from "./helpers";
-import { v } from "convex/values";
+import { handleExistingConnection, createNewConnection } from "./helpers";
 
 // =============================================================================
 // Public Actions
 // =============================================================================
 
-
-export const createConnectionWithUrl = action({
+export const initiateConnection = action({
   args: {
     authConfigId: v.string(),
   },
   handler: async (ctx, args) => {
-    try {
-      // Validate user authentication
-      const userId = await validateUserAuth(ctx);
+    const userResult = await validateUserAuth(ctx);
+    if (userResult.isErr()) throw userResult.error;
+    const userId = userResult.value;
 
-      // Validate auth config ID
-      validateAuthConfigId(args.authConfigId);
+    const authConfigValidation = validateAuthConfigId(args.authConfigId);
+    if (authConfigValidation.isErr()) throw authConfigValidation.error;
 
-      // Check for and handle existing connections
-      const existingConnectionResult = await handleExistingConnection(ctx, userId, args.authConfigId);
-      if (existingConnectionResult) {
-        return existingConnectionResult;
-      }
-
-      // Create new connection
-      return await createNewConnection(ctx, userId, args.authConfigId);
-    } catch (error) {
-      console.error("Error in createConnectionWithUrl:", error);
-      throw error;
+    const existingResult = await handleExistingConnection(ctx, userId, args.authConfigId);
+    if (existingResult.isErr()) throw existingResult.error;
+    if (existingResult.value) {
+      return existingResult.value; // { redirectUrl }
     }
-  }
-})
 
+    const creationResult = await createNewConnection(ctx, userId, args.authConfigId);
+    if (creationResult.isErr()) throw creationResult.error;
+    return creationResult.value; // { redirectUrl }
+  },
+});
 
+// =============================================================================
+// Internal Actions
+// =============================================================================
 
 export const awaitConnectionStatus = internalAction({
   args: {
@@ -49,50 +49,31 @@ export const awaitConnectionStatus = internalAction({
   handler: async (ctx, args) => {
     const { connectionId } = args;
 
-    console.debug(`Starting to await connection status for connectionId: ${connectionId}`);
-
     const result = await fromAsyncThrowable(
-      () => composio.connectedAccounts.waitForConnection(connectionId, 120000),
+      () => composio.connectedAccounts.waitForConnection(connectionId, 120000)
     )();
 
     if (result.isOk()) {
       const connectedAccount = result.value;
       const toolkitSlug = connectedAccount.toolkit?.slug || "";
 
-      console.info(`Connection successful for connectionId: ${connectionId}, toolkit: ${toolkitSlug}`);
-
-      try {
-        await ctx.runMutation(internal.integrations.mutations.markConnectionAsActive, {
-          connectionId,
-          tolkitSlug: toolkitSlug,
-        });
-        console.debug(`Successfully updated connection status for connectionId: ${connectionId}`);
-      } catch (mutationError) {
-        console.error(`Failed to update successful connection status for connectionId: ${connectionId}`, mutationError);
-        throw mutationError;
-      }
+      await ctx.runMutation(internal.integrations.mutations.markConnectionAsActive, {
+        connectionId,
+        toolkitSlug,
+      });
     } else {
-      const error = result.error;
-      console.error(`Connection failed or timed out for connectionId: ${connectionId}`, error);
-
       await ctx.runMutation(internal.integrations.mutations.removeFailedConnection, {
-        connectionId
-      })
+        connectionId,
+      });
     }
-  }
-})
-
-
-
-
-
+  },
+});
 
 export const deleteComposioConnection = internalAction({
   args: {
     connectionId: v.string(),
   },
-  handler: async (ctx, args) => {
-    await composio.connectedAccounts.delete(args.connectionId)
-
-  }
-})
+  handler: async (_ctx, args) => {
+    await composio.connectedAccounts.delete(args.connectionId);
+  },
+});
