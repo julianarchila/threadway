@@ -1,60 +1,76 @@
+"use client"
+
+import { useState } from "react"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Mail,
-  FileText,
-  Database,
-  Hammer,
-  GitBranch,
-  Github,
-  HardDrive,
-  Figma,
-  SunMoon,
-  Trash2,
   ArrowUpRight,
   CheckCircle,
-  SheetIcon
-} from "lucide-react";
-import { useAction, useMutation } from "convex/react";
-import { api } from "@threadway/backend/convex/api";
-import { toast } from "sonner";
-import { Id } from "@threadway/backend/convex/dataModel";
+  Database,
+  Figma,
+  FileText,
+  GitBranch,
+  Github,
+  Hammer,
+  HardDrive,
+  Loader2,
+  Mail,
+  SheetIcon,
+  SunMoon,
+  Trash2,
+} from "lucide-react"
+import { useAction } from "convex/react"
+import { api } from "@threadway/backend/convex/api"
+import type { Id } from "@threadway/backend/convex/dataModel"
+import { toast } from "sonner"
 
-const integrationIcons = {
-  GMAIL: Mail,
-  Notion: FileText,
-  Airtable: Database,
-  LINEAR: GitBranch,
-  GitHub: Github,
-  Supabase: Database,
-  Figma: Figma,
-  Weather: SunMoon,
-  Jira: HardDrive,
-  GOOGLESHEETS: SheetIcon,
-};
-
-interface MyIntegrationCardProps {
-  integration: {
-    _id: Id<"connections">;
-    name: string;
-  };
-  onDelete: (id: string, name: string) => void;
+// Icon helper
+const ICON_MAP: Record<string, React.ComponentType<any>> = {
+  gmail: Mail,
+  googlemail: Mail,
+  notion: FileText,
+  airtable: Database,
+  linear: GitBranch,
+  github: Github,
+  supabase: Database,
+  figma: Figma,
+  weather: SunMoon,
+  jira: HardDrive,
+  googlesheets: SheetIcon,
+  googlesheet: SheetIcon,
+  sheets: SheetIcon,
+  spreadsheet: SheetIcon,
 }
 
-interface TemplateIntegrationCardProps {
-  integration: {
-    name: string;
-    authConfigId: string;
-  };
-  isAlreadyAdded: boolean;
+function normalizeKey(input?: string): string {
+  if (!input) return ""
+  return input.toLowerCase().replace(/[^a-z0-9]/g, "")
 }
 
-export function MyIntegrationCard({ integration, onDelete }: MyIntegrationCardProps) {
-  const IconComponent = integrationIcons[integration.name as keyof typeof integrationIcons] || Hammer;
+function getIntegrationIcon(key?: string) {
+  const normalized = normalizeKey(key)
+  return ICON_MAP[normalized] ?? Hammer
+}
+
+type MyIntegration = {
+  _id: Id<"connections">
+  name: string
+  toolkitSlug?: string | null
+}
+
+type TemplateIntegration = {
+  name: string
+  authConfigId: string
+}
+
+export function MyIntegrationCard({
+  integration,
+  onDelete,
+}: {
+  integration: MyIntegration
+  onDelete: (id: string, name: string) => void
+}) {
+  const IconComponent = getIntegrationIcon(integration.toolkitSlug ?? integration.name)
 
   return (
     <Card className="group hover:shadow-md transition-shadow border-2 border-border/50">
@@ -66,7 +82,7 @@ export function MyIntegrationCard({ integration, onDelete }: MyIntegrationCardPr
             </div>
             <div className="flex-1">
               <CardTitle className="text-base font-medium">{integration.name}</CardTitle>
-              <p className="text-sm text-muted-foreground truncate">{"WIP"}</p>
+              <p className="text-sm text-muted-foreground truncate">WIP</p>
             </div>
           </div>
           <Button
@@ -76,8 +92,8 @@ export function MyIntegrationCard({ integration, onDelete }: MyIntegrationCardPr
             aria-label={`Remove ${integration.name}`}
             title={`Remove ${integration.name}`}
             onClick={(e) => {
-              e.stopPropagation();
-              onDelete(integration._id, integration.name);
+              e.stopPropagation()
+              onDelete(integration._id, integration.name)
             }}
             className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity text-red-500 hover:text-red-700"
           >
@@ -86,46 +102,49 @@ export function MyIntegrationCard({ integration, onDelete }: MyIntegrationCardPr
         </div>
       </CardHeader>
     </Card>
-  );
+  )
 }
 
 export function TemplateIntegrationCard({
   integration,
   isAlreadyAdded,
-}: TemplateIntegrationCardProps) {
-  const IconComponent = integrationIcons[integration.name as keyof typeof integrationIcons] || Hammer;
-  const initiateConnectionAction = useAction(api.integrations.actions.initiateConnection)
+}: {
+  integration: TemplateIntegration
+  isAlreadyAdded: boolean
+}) {
+  const [isConnecting, setIsConnecting] = useState(false)
+  const initiateConnection = useAction(api.integrations.actions.initiateConnection)
+  const IconComponent = getIntegrationIcon(integration.name)
 
   const handleConnect = async () => {
+    if (isAlreadyAdded || isConnecting) return
+    setIsConnecting(true)
     try {
-      const {redirectUrl}= await initiateConnectionAction({
-        authConfigId: integration.authConfigId,
-      })
-
-
-      window.open(redirectUrl, '_blank');
-
-
-      toast.success(`${integration.name} integration added successfully!`);
+      const { redirectUrl } = await initiateConnection({ authConfigId: integration.authConfigId })
+      const opened = window.open(redirectUrl, "_blank")
+      if (!opened) {
+        window.location.assign(redirectUrl)
+      }
     } catch (error: any) {
-      toast.error(error.message || `Failed to add ${integration.name} integration`);
+      toast.error(error?.message ?? `Failed to initiate ${integration.name} connection`)
+    } finally {
+      setIsConnecting(false)
     }
-  };
+  }
 
   return (
     <Card
-      className={`group hover:shadow-md transition-shadow border-2 ${isAlreadyAdded
-        ? 'opacity-50 cursor-not-allowed'
-        : 'cursor-pointer border-border/50 hover:border-primary/20'
-        }`}
-      role={!isAlreadyAdded ? 'button' : undefined}
+      className={`group hover:shadow-md transition-shadow border-2 ${
+        isAlreadyAdded ? "opacity-50 cursor-not-allowed" : "cursor-pointer border-border/50 hover:border-primary/20"
+      }`}
+      role={!isAlreadyAdded ? "button" : undefined}
       tabIndex={!isAlreadyAdded ? 0 : -1}
       aria-disabled={isAlreadyAdded}
       onKeyDown={(e) => {
-        if (isAlreadyAdded) return;
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          handleConnect();
+        if (isAlreadyAdded) return
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          handleConnect()
         }
       }}
       onClick={() => !isAlreadyAdded && handleConnect()}
@@ -137,12 +156,8 @@ export function TemplateIntegrationCard({
               <IconComponent className="h-6 w-6" aria-hidden="true" />
             </div>
             <div>
-              <CardTitle className="text-base font-medium">
-                {integration.name}
-              </CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {"No description available (WIP)"}
-              </p>
+              <CardTitle className="text-base font-medium">{integration.name}</CardTitle>
+              <p className="text-sm text-muted-foreground">No description available (WIP)</p>
             </div>
           </div>
 
@@ -157,17 +172,28 @@ export function TemplateIntegrationCard({
               variant="secondary"
               className="cursor-pointer opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity flex items-center space-x-1"
               type="button"
+              disabled={isConnecting}
+              aria-busy={isConnecting}
               onClick={(e) => {
-                e.stopPropagation();
-                handleConnect();
+                e.stopPropagation()
+                handleConnect()
               }}
             >
-              <span>Connect</span>
-              <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+              {isConnecting ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                  <span>Connecting…</span>
+                </>
+              ) : (
+                <>
+                  <span>Connect</span>
+                  <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                </>
+              )}
             </Button>
           )}
         </div>
       </CardHeader>
     </Card>
-  );
+  )
 }

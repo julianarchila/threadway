@@ -1,39 +1,58 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Input } from "@/components/ui/input";
-import {
-  Blocks,
-} from "lucide-react";
-import { useState } from "react";
+import { Blocks } from "lucide-react";
+import { useMemo, useState } from "react";
 
 import { TemplateIntegrationCard } from "@/components/integrations/integration-card";
 import { MyIntegrationsSection } from "@/components/integrations/my-integrations-section";
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { api } from '@threadway/backend/convex/api';
 import { convexQuery } from '@convex-dev/react-query';
+import { useQuery } from 'convex/react';
+import { api } from '@threadway/backend/convex/api';
+import type { Id } from "@threadway/backend/convex/dataModel";
 
 export const Route = createFileRoute('/_dashboard/integrations')({
   component: IntegrationsPage,
 })
 
+type AvailableIntegration = {
+  name: string
+  authConfigId: string
+}
 
-
-
-
-
-// Available integrations data example
+type MyIntegration = {
+  _id: Id<"connections">
+  connectionId: string
+  authConfigId: string
+  toolkitSlug?: string
+  name: string
+  status: "INITIATED" | "ACTIVE"
+}
 
 function IntegrationsPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [myIntegrations, setMyIntegrations] = useState<any[]>([]);
 
-  const {data: availableIntegrations}= useSuspenseQuery(
+  // Static list of available integrations via react-query
+  const { data: availableIntegrations } = useSuspenseQuery(
     convexQuery(api.integrations.queries.listAvailableIntegrations, {})
-  )
-
-  const filteredIntegrations = availableIntegrations.filter(integration =>
-    integration.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Live user connections via convex subscription
+  const myIntegrations = useQuery(api.integrations.queries.listUserConnections) as MyIntegration[] | undefined;
+
+  const filteredIntegrations = useMemo(() => {
+    const needle = searchTerm.trim().toLowerCase();
+    if (!needle) return availableIntegrations as AvailableIntegration[];
+    return (availableIntegrations as AvailableIntegration[]).filter((integration) =>
+      integration.name.toLowerCase().includes(needle)
+    );
+  }, [availableIntegrations, searchTerm]);
+
+  // Set for quick lookup based on authConfigId (reliable identifier)
+  const myAuthConfigIds = useMemo(() => {
+    return new Set((myIntegrations ?? []).map((m) => m.authConfigId));
+  }, [myIntegrations]);
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6">
@@ -60,7 +79,7 @@ function IntegrationsPage() {
       {/* My Integrations Section */}
       <MyIntegrationsSection
         searchTerm={searchTerm}
-        onIntegrationsLoad={setMyIntegrations}
+        integrations={myIntegrations ?? []}
       />
 
       {/* Available Integration Templates Section */}
@@ -71,13 +90,11 @@ function IntegrationsPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {filteredIntegrations.map((integration) => {
-            const isAlreadyAdded = myIntegrations?.some(myIntegration =>
-              myIntegration.name === integration.name
-            );
+            const isAlreadyAdded = myAuthConfigIds.has(integration.authConfigId);
 
             return (
               <TemplateIntegrationCard
-                key={integration.name}
+                key={integration.authConfigId}
                 integration={integration}
                 isAlreadyAdded={isAlreadyAdded}
               />
