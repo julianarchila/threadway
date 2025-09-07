@@ -2,105 +2,16 @@
 
 import { action, internalAction } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { v } from "convex/values";
-import type { Id } from "../_generated/dataModel";
-import { betterAuthComponent } from "../auth";
 import { composio } from "../../lib/composio";
-import { TOOLKIT_AUTH_CONFIG } from "../../lib/composio/connections";
 import { fromAsyncThrowable } from "neverthrow";
+import { validateAuthConfigId, validateUserAuth } from "./utils";
+import { handleExistingConnection,createNewConnection } from "./helpers";
+import { v } from "convex/values";
 
-// Type definitions
-type ConnectionStatus = "ACTIVE" | "INITIATED" | "INITIALIZING";
+// =============================================================================
+// Public Actions
+// =============================================================================
 
-interface ExistingConnection {
-  connectionId: string;
-  status: ConnectionStatus;
-}
-
-interface ConnectionResponse {
-  redirectUrl: string;
-}
-
-interface ComposioConnectionRequest {
-  id: string;
-  redirectUrl?: string | null;
-}
-
-
-// Helper function to validate authentication
-async function validateUserAuth(ctx: any): Promise<Id<"users">> {
-  const userId = await betterAuthComponent.getAuthUserId(ctx) as Id<"users"> | null;
-  if (!userId) {
-    throw new Error("User not authenticated");
-  }
-  return userId;
-}
-
-// Helper function to validate auth config ID
-function validateAuthConfigId(authConfigId: string): void {
-  if (!Array.from(TOOLKIT_AUTH_CONFIG.values()).find(c => c === authConfigId)) {
-    throw new Error("Invalid authConfigId");
-  }
-}
-
-// Helper function to handle existing connections
-async function handleExistingConnection(
-  ctx: any,
-  userId: Id<"users">,
-  authConfigId: string
-): Promise<ConnectionResponse | null> {
-  const existingConnection = await ctx.runQuery(
-    internal.integrations.queries.getUserConnectionByAuthConfigId,
-    { authConfigId, userId }
-  );
-
-  if (!existingConnection) {
-    return null;
-  }
-
-  if (existingConnection.status === "ACTIVE") {
-    throw new Error("You already have an active connection for this integration");
-  }
-
-  if (existingConnection.status === "INITIATED" || existingConnection.status === "INITIALIZING") {
-    const res = await composio.connectedAccounts.refresh(existingConnection.connectionId);
-    if (res.redirect_url) {
-      await ctx.scheduler.runAfter(100, internal.integrations.actions.awaitConnectionStatus, {
-        connectionId: existingConnection.connectionId,
-      });
-      return { redirectUrl: res.redirect_url };
-    }
-  }
-
-  return null;
-}
-
-// Helper function to create new connection
-async function createNewConnection(
-  ctx: any,
-  userId: Id<"users">,
-  authConfigId: string
-): Promise<ConnectionResponse> {
-  const connRequest: ComposioConnectionRequest = await composio.connectedAccounts.initiate(userId, authConfigId, {});
-
-  console.debug("Connection request", connRequest);
-
-  if (!connRequest.redirectUrl) {
-    throw new Error("Failed to get redirect URL");
-  }
-
-  await ctx.runMutation(internal.integrations.mutations.creteInitialConnection, {
-    connectionId: connRequest.id,
-    userId: userId,
-    authConfigId: authConfigId,
-  });
-
-  await ctx.scheduler.runAfter(100, internal.integrations.actions.awaitConnectionStatus, {
-    connectionId: connRequest.id,
-  });
-
-  return { redirectUrl: connRequest.redirectUrl };
-}
 
 export const createConnectionWithUrl = action({
   args: {

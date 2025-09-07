@@ -1,6 +1,5 @@
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
-import type { Id } from "../_generated/dataModel";
 import { betterAuthComponent } from "../auth";
 import { IntegrationsError } from "./error";
 
@@ -8,6 +7,10 @@ import { internalMutation } from "../_generated/server";
 import { internal } from "../_generated/api";
 
 
+
+// =============================================================================
+// Public Mutations
+// =============================================================================
 
 export const deleteConnection = mutation({
   args: { connectionId: v.id("connections") },
@@ -48,6 +51,11 @@ export const deleteConnection = mutation({
   }
 })
 
+
+
+// =============================================================================
+// Internal Mutations
+// =============================================================================
 
 export const creteInitialConnection = internalMutation({
   args: {

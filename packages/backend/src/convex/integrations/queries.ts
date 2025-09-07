@@ -1,12 +1,15 @@
-import { query } from "../_generated/server";
+import { query, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { betterAuthComponent } from "../auth";
 
 
-// const {TOOLKIT_AUTH_CONFIG} = import("../../lib/composio/connections");
 import { TOOLKIT_AUTH_CONFIG } from "../../lib/composio/connections";
-import { internalQuery } from "../_generated/server";
+
+// =============================================================================
+// Public Queries
+// =============================================================================
+
 export const listAvailableIntegrations = query({
   handler: async (ctx) => {
     // Convert Map to array structure
@@ -43,6 +46,10 @@ export const listUsersConnections = query({
   }
 })
 
+// =============================================================================
+// Internal Queries
+// =============================================================================
+
 
 export const getUserConnectionByAuthConfigId = internalQuery({
   args: { authConfigId: v.string(), userId: v.id("users") },
@@ -51,8 +58,6 @@ export const getUserConnectionByAuthConfigId = internalQuery({
     return await ctx.db.query("connections")
       .withIndex("by_authConfigId_and_user", (q) => q.eq("authConfigId", args.authConfigId).eq("userId", args.userId))
       .first()
-
-
 
   }
 })
