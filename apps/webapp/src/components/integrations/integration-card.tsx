@@ -92,16 +92,10 @@ export function TemplateIntegrationCard({
   isAlreadyAdded,
 }: TemplateIntegrationCardProps) {
   const IconComponent = integrationIcons[integration.name as keyof typeof integrationIcons] || Hammer;
-  const createIntegrationMutation = useMutation(api.integrations.mutations.create);
   const createConnectionAction = useAction(api.integrations.actions.createConnectionWithUrl)
 
   const handleConnect = async () => {
     try {
-      // await createIntegrationMutation({
-      //   name: integration.name,
-      //   mcpUrl: integration.mcpUrl,
-      //   apiKey: "",
-      // });
       const {redirectUrl}= await createConnectionAction({
         authConfigId: integration.authConfigId,
       })

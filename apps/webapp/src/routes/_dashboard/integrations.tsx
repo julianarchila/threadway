@@ -6,7 +6,6 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
-import { AddIntegrationDialog } from "@/components/integrations/add-integration-dialog";
 import { TemplateIntegrationCard } from "@/components/integrations/integration-card";
 import { MyIntegrationsSection } from "@/components/integrations/my-integrations-section";
 import { useSuspenseQuery } from '@tanstack/react-query';
@@ -47,7 +46,7 @@ function IntegrationsPage() {
           </div>
         </div>
 
-        {/* Search and Add Integration */}
+        {/* Search */}
         <div className="flex items-center justify-between gap-4">
           <Input
             value={searchTerm}
@@ -55,8 +54,6 @@ function IntegrationsPage() {
             placeholder="Search integrations..."
             className="w-full"
           />
-
-          <AddIntegrationDialog />
         </div>
       </div>
 
