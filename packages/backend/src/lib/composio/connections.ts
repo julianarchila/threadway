@@ -15,7 +15,7 @@
 type AppEnv = "development" | "production";
 
 export function currentEnv(): AppEnv {
-  const e = (process.env.APP_ENV || process.env.VERCEL_ENV || process.env.NODE_ENV || "development")
+  const e = (process.env.APP_ENV  || "development")
     .toLowerCase();
   return e === "production" ? "production" : "development";
 }
@@ -123,11 +123,3 @@ export function listAvailableIntegrations(): AvailableIntegration[] {
     }];
   });
 }
-
-/**
- * Transitional export:
- * Some existing code may import a Map named TOOLKIT_AUTH_CONFIG. Provide it here
- * as a Map<slug, authConfigId> for the current environment to minimize churn.
- * Callers that need richer data should use listAvailableIntegrations().
- */
-export const TOOLKIT_AUTH_CONFIG = new Map<string, string>(AUTH_CONFIG_ID_BY_SLUG);
