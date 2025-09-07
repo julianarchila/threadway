@@ -164,12 +164,7 @@ export const awaitConnectionStatus = internalAction({
       const error = result.error;
       console.error(`Connection failed or timed out for connectionId: ${connectionId}`, error);
 
-      // TODO: Consider updating the connection status to "FAILED" in the database
-      // This would require adding a failedConnection mutation
-      // await ctx.runMutation(internal.integrations.mutations.failedConnection, {
-      //   connectionId,
-      //   error: error.message || "Connection failed or timed out",
-      // });
+      // TODO: Since connection failed, we might want to delete it from our DB or mark it as FAILED
     }
   }
 })

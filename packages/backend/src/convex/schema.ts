@@ -18,15 +18,6 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_updatedAt", ["userId", "updatedAt"]),
 
-  integrations: defineTable({
-    userId: v.id("users"),
-    name: v.string(),
-    nameLower: v.string(),
-    mcpUrl: v.string(),
-    apiKey: v.optional(v.string()),
-  })
-    .index("by_user", ["userId"])
-    .index("by_user_nameLower", ["userId", "nameLower"]),
 
   connections: defineTable({
     userId: v.id("users"),
