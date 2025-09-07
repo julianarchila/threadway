@@ -88,3 +88,23 @@ export const successfulConnection = internalMutation({
     })
   }
 })
+
+
+export const removeFailedConnection = internalMutation({
+  args: {
+    connectionId: v.string(),
+  },
+  handler: async (ctx, args) => {
+
+    const conn = await ctx.db.query("connections")
+      .withIndex("by_connectionId", (q) => q.eq("connectionId", args.connectionId))
+      .first()
+
+    if (!conn) {
+      throw new Error("Connection not found")
+    }
+
+    await ctx.db.delete(conn._id)
+
+  }
+})
