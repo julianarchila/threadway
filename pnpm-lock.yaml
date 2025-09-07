@@ -286,6 +286,12 @@ importers:
       '@ai-sdk/openai':
         specifier: ^2.0.15
         version: 2.0.15(zod@4.0.14)
+      '@composio/core':
+        specifier: ^0.1.50
+        version: 0.1.50(ws@8.18.3)
+      '@composio/vercel':
+        specifier: ^0.2.6
+        version: 0.2.6(@composio/core@0.1.50(ws@8.18.3))(ai@5.0.27(zod@4.0.14))
       '@convex-dev/agent':
         specifier: ^0.2.0
         version: 0.2.0(@ai-sdk/provider-utils@3.0.7(zod@4.0.14))(ai@5.0.27(zod@4.0.14))(convex-helpers@0.1.104(@standard-schema/spec@1.0.0)(convex@1.25.4(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@4.0.14))(convex@1.25.4(react@19.1.1))(react@19.1.1)
@@ -569,6 +575,21 @@ packages:
   '@colors/colors@1.6.0':
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
     engines: {node: '>=0.1.90'}
+
+  '@composio/client@0.1.0-alpha.31':
+    resolution: {integrity: sha512-DVPVCMDXzoQn1aUZx38e8s5+gA/J/c6FpVfS1rzUnMKCRSuXXrOoKXFAvoRME5pcaKN2Wjux5ARyvIPBugNoMA==}
+
+  '@composio/core@0.1.50':
+    resolution: {integrity: sha512-y8hMut+K/15VuRBWZij3bK9BVBgwF2R2Kprii2OJeaJelHYlxfxciKTfcEIMFG4l8HTe9c2eKu5K8agomTFyXQ==}
+
+  '@composio/json-schema-to-zod@0.1.15':
+    resolution: {integrity: sha512-GaeFd60EozDN4zHZUU4mLp+kqO11ZzUyMaljKbdBNHUsq+TYgomWvoZESyUcDqyvqHx+4+V4Smg91s8Rd7bB4Q==}
+
+  '@composio/vercel@0.2.6':
+    resolution: {integrity: sha512-yGtCN8l1I31O5CspW6p68QF0gUJAJNDc8qH0isPmkeG94kk5FrXPHn8sI0FXJt+ZTXYw0t3Yr+QT8nk3BpEDmQ==}
+    peerDependencies:
+      '@composio/core': 0.1.50
+      ai: ^5.0.16
 
   '@convex-dev/agent@0.2.0':
     resolution: {integrity: sha512-O35N9/LfTzFlA3TR1B0dN2lfepbC00bwL4ZN4Y8KUcMIwbF8W2sKztoN6Bjg/d+wnVknx6bjTYUrazEMf9jM8w==}
@@ -5951,6 +5972,18 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
+  openai@5.19.1:
+    resolution: {integrity: sha512-zSqnUF7oR9ksmpusKkpUgkNrj8Sl57U+OyzO8jzc7LUjTMg4DRfR3uCm+EIMA6iw06sRPNp4t7ojp3sCpEUZRQ==}
+    hasBin: true
+    peerDependencies:
+      ws: ^8.18.0
+      zod: ^3.23.8
+    peerDependenciesMeta:
+      ws:
+        optional: true
+      zod:
+        optional: true
+
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
     engines: {node: '>= 0.8.0'}
@@ -6315,6 +6348,9 @@ packages:
   punycode@2.3.1:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
+
+  pusher-js@8.4.0:
+    resolution: {integrity: sha512-wp3HqIIUc1GRyu1XrP6m2dgyE9MoCsXVsWNlohj0rjSkLf+a0jLvEyVubdg58oMk7bhjBWnFClgp8jfAa6Ak4Q==}
 
   pvtsutils@1.3.6:
     resolution: {integrity: sha512-PLgQXQ6H2FWCaeRak8vvk1GW462lMxB5s3Jm673N82zI4vqtVUPuZdffdZbPDFRoU8kAhItWFtPCWiPpp4/EDg==}
@@ -7091,6 +7127,9 @@ packages:
 
   tw-animate-css@1.3.7:
     resolution: {integrity: sha512-lvLb3hTIpB5oGsk8JmLoAjeCHV58nKa2zHYn8yWOoG5JJusH3bhJlF2DLAZ/5NmJ+jyH3ssiAx/2KmbhavJy/A==}
+
+  tweetnacl@1.0.3:
+    resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
 
   twilio@5.8.0:
     resolution: {integrity: sha512-aJLBvI7ODLmFHI7ZYLBiMZKIdHuF9PrPeRM/GBMDg/AAzGXs4V8gEnNPHyTVThK0/8J48YHSqXMlQ+WJR5nxoQ==}
@@ -8038,6 +8077,33 @@ snapshots:
       mime: 3.0.0
 
   '@colors/colors@1.6.0': {}
+
+  '@composio/client@0.1.0-alpha.31': {}
+
+  '@composio/core@0.1.50(ws@8.18.3)':
+    dependencies:
+      '@composio/client': 0.1.0-alpha.31
+      '@composio/json-schema-to-zod': 0.1.15
+      '@types/json-schema': 7.0.15
+      chalk: 4.1.2
+      openai: 5.19.1(ws@8.18.3)(zod@3.25.76)
+      pusher-js: 8.4.0
+      semver: 7.7.2
+      uuid: 11.1.0
+      zod: 3.25.76
+      zod-to-json-schema: 3.24.6(zod@3.25.76)
+    transitivePeerDependencies:
+      - ws
+
+  '@composio/json-schema-to-zod@0.1.15':
+    dependencies:
+      '@types/json-schema': 7.0.15
+      zod: 3.25.76
+
+  '@composio/vercel@0.2.6(@composio/core@0.1.50(ws@8.18.3))(ai@5.0.27(zod@4.0.14))':
+    dependencies:
+      '@composio/core': 0.1.50(ws@8.18.3)
+      ai: 5.0.27(zod@4.0.14)
 
   '@convex-dev/agent@0.2.0(@ai-sdk/provider-utils@3.0.7(zod@4.0.14))(ai@5.0.27(zod@4.0.14))(convex-helpers@0.1.104(@standard-schema/spec@1.0.0)(convex@1.25.4(react@19.1.1))(react@19.1.1)(typescript@5.9.2)(zod@4.0.14))(convex@1.25.4(react@19.1.1))(react@19.1.1)':
     dependencies:
@@ -13943,6 +14009,11 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
+  openai@5.19.1(ws@8.18.3)(zod@3.25.76):
+    optionalDependencies:
+      ws: 8.18.3
+      zod: 3.25.76
+
   optionator@0.9.4:
     dependencies:
       deep-is: 0.1.4
@@ -14307,6 +14378,10 @@ snapshots:
   punycode.js@2.3.1: {}
 
   punycode@2.3.1: {}
+
+  pusher-js@8.4.0:
+    dependencies:
+      tweetnacl: 1.0.3
 
   pvtsutils@1.3.6:
     dependencies:
@@ -15199,6 +15274,8 @@ snapshots:
 
   tw-animate-css@1.3.7: {}
 
+  tweetnacl@1.0.3: {}
+
   twilio@5.8.0:
     dependencies:
       axios: 1.11.0
@@ -15797,6 +15874,10 @@ snapshots:
       archiver-utils: 5.0.2
       compress-commons: 6.0.2
       readable-stream: 4.7.0
+
+  zod-to-json-schema@3.24.6(zod@3.25.76):
+    dependencies:
+      zod: 3.25.76
 
   zod-to-json-schema@3.24.6(zod@4.0.14):
     dependencies:

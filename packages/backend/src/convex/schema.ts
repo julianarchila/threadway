@@ -7,6 +7,7 @@ export default defineSchema({
     phoneNumber: v.string(),
     name: v.optional(v.string()),
   }).index("by_phone_number", ["phoneNumber"]),
+
   // Tabla para guardar el contenido del editor
   workflows: defineTable({
     content: v.string(), // Contenido del editor Tiptap
@@ -17,13 +18,18 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_updatedAt", ["userId", "updatedAt"]),
 
-  integrations: defineTable({
+  connections: defineTable({
     userId: v.id("users"),
-    name: v.string(),
-    nameLower: v.string(),
-    mcpUrl: v.string(),
-    apiKey: v.optional(v.string()),
+    authConfigId: v.string(),
+    toolkitSlug: v.optional(v.string()),
+    connectionId: v.string(),
+    status: v.union(
+      v.literal("INITIATED"),
+      v.literal("ACTIVE")
+    ),
   })
     .index("by_user", ["userId"])
-    .index("by_user_nameLower", ["userId", "nameLower"]),
+    .index("by_connectionId", ["connectionId"])
+    .index("by_authConfigId", ["authConfigId"])
+    .index("by_authConfigId_and_user", ["authConfigId", "userId"]),
 });

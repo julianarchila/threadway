@@ -8,9 +8,13 @@ export const getWorkflowById = query({
   args: { workflowId: v.id("workflows") },
   handler: async (ctx, { workflowId }) => {
     const userId = await betterAuthComponent.getAuthUserId(ctx)
+    // if (!userId) {
+    //   throw new Error("User not authenticated")
+    // }
     if (!userId) {
-      throw new Error("User not authenticated")
+      return null
     }
+
 
     const workflow = await ctx.db
       .query("workflows")
@@ -29,8 +33,14 @@ export const getWorkflowById = query({
 export const getUserWorkflows = query({
   handler: async (ctx) => {
     const userId = await betterAuthComponent.getAuthUserId(ctx)
+    // if (!userId) {
+    //   throw new Error("User not authenticated")
+    // }
+
+    // There is a bug with betterAuth component and tanstack start,
+    // so for now we will just return an empty array if there is no user
     if (!userId) {
-      throw new Error("User not authenticated")
+      return []
     }
 
     const workflows = await ctx.db
@@ -43,4 +53,4 @@ export const getUserWorkflows = query({
       ...rest,
     }));
   },
-}); 
+});

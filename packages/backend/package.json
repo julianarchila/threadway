@@ -18,6 +18,8 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.15",
+    "@composio/core": "^0.1.50",
+    "@composio/vercel": "^0.2.6",
     "@convex-dev/agent": "^0.2.0",
     "@convex-dev/better-auth": "^0.7.14",
     "@t3-oss/env-core": "^0.13.8",

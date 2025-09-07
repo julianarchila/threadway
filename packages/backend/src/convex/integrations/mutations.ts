@@ -1,125 +1,154 @@
-import { mutation } from "../_generated/server";
+import { mutation, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
-import type { Id } from "../_generated/dataModel";
 import { betterAuthComponent } from "../auth";
 import { IntegrationsError } from "./error";
+import { internal } from "../_generated/api";
 
-import { z } from "zod";
+// =============================================================================
+// Public Mutations
+// =============================================================================
 
-// URL validation schema
-const urlSchema = z
-    .string()
-    .url("Invalid URL format")
-    .refine((u) => {
-        try {
-            const p = new URL(u).protocol;
-            return p === "https:" || p === "http:";
-        } catch {
-            return false;
-        }
-    }, "URL must use http or https");
+/**
+ * Deletes a connection for the authenticated user.
+ *
+ * @param connectionId - The ID of the connection to delete.
+ * @throws {IntegrationsError} If the user is not authenticated, the connection is not found,
+ * or the user does not have permission to delete the connection.
+ * @returns An object indicating the success of the operation.
+ */
+export const deleteConnection = mutation({
+  args: { connectionId: v.id("connections") },
+  handler: async (ctx, args) => {
+    const userId = await betterAuthComponent.getAuthUserId(ctx);
+    if (!userId) {
+      throw new IntegrationsError(
+        "INTEGRATION_DELETION_FAILED",
+        "User not authenticated"
+      );
+    }
 
-// Mutation to create a new integration
-export const create = mutation({
-    args: {
-        name: v.string(),
-        mcpUrl: v.string(),
-        apiKey: v.optional(v.string()),
-    },
-    handler: async (ctx, args) => {
-        const userId = await betterAuthComponent.getAuthUserId(ctx)
-        if (!userId) {
-            throw new IntegrationsError("INTEGRATION_CREATION_FAILED", "User not authenticated")
-        }
+    const connection = await ctx.db.get(args.connectionId);
+    if (!connection) {
+      throw new IntegrationsError(
+        "INTEGRATION_DELETION_FAILED",
+        "Connection not found"
+      );
+    }
 
-        // Normalize and validate inputs
-        const name = args.name.trim();
-        const mcpUrl = args.mcpUrl.trim();
-        const apiKey = typeof args.apiKey === "string" ? args.apiKey.trim() : undefined;
+    if (connection.userId !== userId) {
+      throw new IntegrationsError(
+        "INTEGRATION_DELETION_FAILED",
+        "You do not have permissions to delete this connection"
+      );
+    }
 
-        if (!name) {
-            throw new IntegrationsError(
-                "INTEGRATION_CREATION_FAILED",
-                "Integration name is required"
-            );
-        }
+    await ctx.db.delete(args.connectionId);
 
-        if (!mcpUrl) {
-            throw new IntegrationsError(
-                "INTEGRATION_CREATION_FAILED",
-                "MCP URL is required"
-            );
-        }
+    // Remove the connection from Composio asynchronously
+    await ctx.scheduler.runAfter(
+      0,
+      internal.integrations.actions.deleteComposioConnection,
+      {
+        connectionId: connection.connectionId,
+      }
+    );
 
-        // Validate URL using zod
-        const urlValidation = urlSchema.safeParse(mcpUrl);
-        if (!urlValidation.success) {
-            throw new IntegrationsError(
-                "INTEGRATION_CREATION_FAILED",
-                "Invalid MCP URL format"
-            );
-        }
-
-        // Check if integration with same name already exists
-        const existingIntegration = await ctx.db
-            .query("integrations")
-            .withIndex("by_user_nameLower", (q) =>
-                q.eq("userId", userId as Id<"users">).eq("nameLower", name.toLowerCase())
-            )
-            .first();
-
-        if (existingIntegration) {
-            throw new IntegrationsError(
-                "INTEGRATION_CREATION_FAILED",
-                "You already have an integration with this name"
-            );
-        }
-
-        // Create the integration
-        const integrationId = await ctx.db.insert("integrations", {
-            userId: userId as Id<"users">,
-            name,
-            nameLower: name.toLowerCase(),
-            mcpUrl,
-            apiKey: apiKey || "",
-        });
-
-        return integrationId;
-    },
+    return {
+      success: true,
+      message: "Connection deleted successfully",
+    };
+  },
 });
 
-// Mutation to delete an integration
-export const deleteIntegration = mutation({
-    args: { integrationId: v.id("integrations") },
-    handler: async (ctx, args) => {
-        const userId = await betterAuthComponent.getAuthUserId(ctx)
-        if (!userId) {
-            throw new IntegrationsError("INTEGRATION_DELETION_FAILED", "User not authenticated")
-        }
+// =============================================================================
+// Internal Mutations
+// =============================================================================
 
-        // Get the integration to verify ownership
-        const integration = await ctx.db.get(args.integrationId);
-        if (!integration) {
-            throw new IntegrationsError(
-                "INTEGRATION_DELETION_FAILED",
-                "Integration not found"
-            );
-        }
+/**
+ * Creates a pending connection record in the database.
+ * This is used to track the connection process before it becomes active.
+ *
+ * @param connectionId - The unique identifier for the connection from the external service.
+ * @param userId - The ID of the user initiating the connection.
+ * @param authConfigId - The ID of the authentication configuration used.
+ */
+export const createPendingConnection = internalMutation({
+  args: {
+    connectionId: v.string(),
+    userId: v.id("users"),
+    authConfigId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.insert("connections", {
+      status: "INITIATED",
+      authConfigId: args.authConfigId,
+      userId: args.userId,
+      connectionId: args.connectionId,
+    });
+  },
+});
 
-        // Check if user owns this integration
-        if (integration.userId !== userId) {
-            throw new IntegrationsError(
-                "INTEGRATION_DELETION_FAILED",
-                "You do not have permissions to delete this integration"
-            );
-        }
+/**
+ * Marks a pending connection as active.
+ * This is called after the external service confirms the connection is successful.
+ *
+ * @param connectionId - The unique identifier for the connection.
+ * @param toolkitSlug - The slug for the toolkit associated with this connection.
+ * @throws {IntegrationsError} If the connection is not found.
+ */
+export const markConnectionAsActive = internalMutation({
+  args: {
+    connectionId: v.string(),
+    toolkitSlug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const conn = await ctx.db
+      .query("connections")
+      .withIndex("by_connectionId", (q) =>
+        q.eq("connectionId", args.connectionId)
+      )
+      .first();
 
-        // Delete the integration
-        await ctx.db.delete(args.integrationId);
+    if (!conn) {
+      throw new IntegrationsError(
+        "INTEGRATION_LOOKUP_FAILED",
+        "Connection not found"
+      );
+    }
 
-        return {
-            success: true,
-            message: "Integration deleted successfully",
-        };
-    },
+    await ctx.db.patch(conn._id, {
+      status: "ACTIVE",
+      toolkitSlug: args.toolkitSlug,
+    });
+  },
+});
+
+/**
+ * Removes a connection record from the database.
+ * This is typically used to clean up failed or incomplete connection attempts.
+ *
+ * @param connectionId - The unique identifier for the connection to remove.
+ * @throws {IntegrationsError} If the connection is not found.
+ */
+export const removeFailedConnection = internalMutation({
+  args: {
+    connectionId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const conn = await ctx.db
+      .query("connections")
+      .withIndex("by_connectionId", (q) =>
+        q.eq("connectionId", args.connectionId)
+      )
+      .first();
+
+    if (!conn) {
+      throw new IntegrationsError(
+        "INTEGRATION_LOOKUP_FAILED",
+        "Connection not found"
+      );
+    }
+
+    await ctx.db.delete(conn._id);
+  },
 });
