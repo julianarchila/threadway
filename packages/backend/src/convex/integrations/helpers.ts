@@ -3,11 +3,12 @@
 import { internal } from "../_generated/api";
 import type { Id } from "../_generated/dataModel";
 import { composio } from "../../lib/composio";
+import { ActionCtx } from "../_generated/server";
 
 
 // Helper function to handle existing connections
 export async function handleExistingConnection(
-  ctx: any,
+  ctx: ActionCtx,
   userId: Id<"users">,
   authConfigId: string
 ) {
@@ -40,7 +41,7 @@ export async function handleExistingConnection(
 
 // Helper function to create new connection
 export async function createNewConnection(
-  ctx: any,
+  ctx: ActionCtx,
   userId: Id<"users">,
   authConfigId: string
 ) {
