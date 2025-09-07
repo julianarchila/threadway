@@ -2,18 +2,20 @@ import { query, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
 import { betterAuthComponent } from "../auth";
-import { TOOLKIT_AUTH_CONFIG } from "../../lib/composio/connections";
+import { listAvailableIntegrations as listAvailableIntegrationsLib } from "../../lib/composio/connections";
 
 // =============================================================================
 // Public Queries
 // =============================================================================
 
+/**
+ * Returns the list of available integrations for the current environment.
+ * Only integrations with an authConfigId configured for the active env are returned.
+ * Shape: { slug, authConfigId, displayName?, iconKey?, description? }
+ */
 export const listAvailableIntegrations = query({
   handler: async (_ctx) => {
-    return Array.from(TOOLKIT_AUTH_CONFIG.entries()).map(([name, authConfigId]) => ({
-      name,
-      authConfigId,
-    }));
+    return listAvailableIntegrationsLib();
   },
 });
 

@@ -20,30 +20,50 @@ export const Route = createFileRoute('/_dashboard/integrations')({
   }
 })
 
-type AvailableIntegration = {
+// New shape from API
+type AvailableIntegrationFromApi = {
+  slug: string
+  authConfigId: string
+  displayName?: string
+  iconKey?: string
+  description?: string
+}
+
+// Local shape used by TemplateIntegrationCard
+type TemplateIntegration = {
   name: string
   authConfigId: string
 }
-
 
 function IntegrationsPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
   // Static list of available integrations via react-query
-  const { data: availableIntegrations } = useSuspenseQuery(
+  const { data: availableFromApi } = useSuspenseQuery(
     convexQuery(api.integrations.queries.listAvailableIntegrations, {})
   );
+  
+  const availableTemplates = useMemo<TemplateIntegration[]>(() => {
+    const list = (availableFromApi as AvailableIntegrationFromApi[]) ?? [];
+    return list.map((i) => ({
+      name: i.displayName ?? i.slug,
+      authConfigId: i.authConfigId,
+    }));
+  }, [availableFromApi]);
+
+
 
   // Live user connections via convex subscription
   const myIntegrations = useQuery(api.integrations.queries.listUserConnections) ;
 
+  // Filter by visible label
   const filteredIntegrations = useMemo(() => {
     const needle = searchTerm.trim().toLowerCase();
-    if (!needle) return availableIntegrations as AvailableIntegration[];
-    return (availableIntegrations as AvailableIntegration[]).filter((integration) =>
+    if (!needle) return availableTemplates;
+    return availableTemplates.filter((integration) =>
       integration.name.toLowerCase().includes(needle)
     );
-  }, [availableIntegrations, searchTerm]);
+  }, [availableTemplates, searchTerm]);
 
   // Set for quick lookup based on authConfigId (reliable identifier)
   const myAuthConfigIds = useMemo(() => {

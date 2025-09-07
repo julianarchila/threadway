@@ -1,15 +1,12 @@
 import type { Id } from "../_generated/dataModel";
-import { TOOLKIT_AUTH_CONFIG } from "../../lib/composio/connections";
+import { AUTH_CONFIG_ID_SET } from "../../lib/composio/connections";
 import { betterAuthComponent } from "../auth";
 import type { GenericCtx } from "../_generated/server";
 import { ok, err, Result } from "neverthrow";
 import { IntegrationsError } from "./error";
 
-// Precompute for O(1) lookups
-const AUTH_CONFIG_ID_SET = new Set<string>(Array.from(TOOLKIT_AUTH_CONFIG.values()));
-
 /**
- * Validate an authConfigId against known configurations.
+ * Validate an authConfigId against the env-aware registry.
  * Returns a Result<void, IntegrationsError> instead of throwing.
  */
 export function validateAuthConfigId(authConfigId: string): Result<void, IntegrationsError> {
@@ -21,7 +18,7 @@ export function validateAuthConfigId(authConfigId: string): Result<void, Integra
 
 /**
  * Validate that a user is authenticated.
- * Returns a Result<Id<\"users\">, IntegrationsError> instead of throwing.
+ * Returns a Result<Id<"users">, IntegrationsError> instead of throwing.
  */
 export async function validateUserAuth(
   ctx: GenericCtx
