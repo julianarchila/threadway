@@ -10,10 +10,14 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { convexQuery } from '@convex-dev/react-query';
 import { useQuery } from 'convex/react';
 import { api } from '@threadway/backend/convex/api';
-import type { Id } from "@threadway/backend/convex/dataModel";
 
 export const Route = createFileRoute('/_dashboard/integrations')({
   component: IntegrationsPage,
+
+  loader: async({context}) => {
+    await context.queryClient.prefetchQuery(convexQuery(api.integrations.queries.listAvailableIntegrations, {}));
+    await context.queryClient.prefetchQuery(convexQuery(api.integrations.queries.listUserConnections, {}));
+  }
 })
 
 type AvailableIntegration = {
@@ -21,14 +25,6 @@ type AvailableIntegration = {
   authConfigId: string
 }
 
-type MyIntegration = {
-  _id: Id<"connections">
-  connectionId: string
-  authConfigId: string
-  toolkitSlug?: string
-  name: string
-  status: "INITIATED" | "ACTIVE"
-}
 
 function IntegrationsPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,7 +35,7 @@ function IntegrationsPage() {
   );
 
   // Live user connections via convex subscription
-  const myIntegrations = useQuery(api.integrations.queries.listUserConnections) as MyIntegration[] | undefined;
+  const myIntegrations = useQuery(api.integrations.queries.listUserConnections) ;
 
   const filteredIntegrations = useMemo(() => {
     const needle = searchTerm.trim().toLowerCase();
