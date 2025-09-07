@@ -16,23 +16,23 @@ import type { Id } from "@threadway/backend/convex/dataModel";
 import { Loader2 } from "lucide-react";
 
 interface DeleteConfirmationDialogProps {
-  integrationId?: Id<"integrations">;
+  integrationId?: Id<"connections">;
   integrationName?: string;
 }
 
 export interface DeleteConfirmationDialogRef {
-  openDialog: (id: Id<"integrations">, name: string) => void;
+  openDialog: (id: Id<"connections">, name: string) => void;
 }
 
 export const DeleteConfirmationDialog = forwardRef<DeleteConfirmationDialogRef, DeleteConfirmationDialogProps>(
   (props, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
-    const [currentIntegration, setCurrentIntegration] = useState<{ id: Id<"integrations">; name: string } | null>(null);
-    const deleteIntegrationMutation = useMutation(api.integrations.mutations.deleteIntegration);
+    const [currentIntegration, setCurrentIntegration] = useState<{ id: Id<"connections">; name: string } | null>(null);
+    const deleteIntegrationMutation = useMutation(api.integrations.mutations.deleteConnection);
 
     useImperativeHandle(ref, () => ({
-      openDialog: (id: Id<"integrations">, name: string) => {
+      openDialog: (id: Id<"connections">, name: string) => {
         setCurrentIntegration({ id, name });
         setIsOpen(true);
       }
@@ -43,7 +43,7 @@ export const DeleteConfirmationDialog = forwardRef<DeleteConfirmationDialogRef, 
 
       setIsDeleting(true);
       try {
-        await deleteIntegrationMutation({ integrationId: currentIntegration.id });
+        await deleteIntegrationMutation({ connectionId: currentIntegration.id });
         toast.success("Integration deleted successfully!");
         setIsOpen(false);
         setCurrentIntegration(null);

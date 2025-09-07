@@ -21,6 +21,7 @@ import {
 import { useAction, useMutation } from "convex/react";
 import { api } from "@threadway/backend/convex/api";
 import { toast } from "sonner";
+import { Id } from "@threadway/backend/convex/dataModel";
 
 const integrationIcons = {
   GMAIL: Mail,
@@ -36,9 +37,8 @@ const integrationIcons = {
 
 interface MyIntegrationCardProps {
   integration: {
-    _id: string;
+    _id: Id<"connections">;
     name: string;
-    mcpUrl: string;
   };
   onDelete: (id: string, name: string) => void;
 }
@@ -64,7 +64,7 @@ export function MyIntegrationCard({ integration, onDelete }: MyIntegrationCardPr
             </div>
             <div className="flex-1">
               <CardTitle className="text-base font-medium">{integration.name}</CardTitle>
-              <p className="text-sm text-muted-foreground truncate">{integration.mcpUrl}</p>
+              <p className="text-sm text-muted-foreground truncate">{"WIP"}</p>
             </div>
           </div>
           <Button

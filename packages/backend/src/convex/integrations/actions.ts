@@ -27,7 +27,7 @@ interface ComposioConnectionRequest {
 }
 
 
-// Helper function to validate authentication  
+// Helper function to validate authentication
 async function validateUserAuth(ctx: any): Promise<Id<"users">> {
   const userId = await betterAuthComponent.getAuthUserId(ctx) as Id<"users"> | null;
   if (!userId) {
@@ -45,8 +45,8 @@ function validateAuthConfigId(authConfigId: string): void {
 
 // Helper function to handle existing connections
 async function handleExistingConnection(
-  ctx: any, 
-  userId: Id<"users">, 
+  ctx: any,
+  userId: Id<"users">,
   authConfigId: string
 ): Promise<ConnectionResponse | null> {
   const existingConnection = await ctx.runQuery(
@@ -77,12 +77,12 @@ async function handleExistingConnection(
 
 // Helper function to create new connection
 async function createNewConnection(
-  ctx: any, 
-  userId: Id<"users">, 
+  ctx: any,
+  userId: Id<"users">,
   authConfigId: string
 ): Promise<ConnectionResponse> {
   const connRequest: ComposioConnectionRequest = await composio.connectedAccounts.initiate(userId, authConfigId, {});
-  
+
   console.debug("Connection request", connRequest);
 
   if (!connRequest.redirectUrl) {
@@ -137,7 +137,7 @@ export const awaitConnectionStatus = internalAction({
   },
   handler: async (ctx, args) => {
     const { connectionId } = args;
-    
+
     console.debug(`Starting to await connection status for connectionId: ${connectionId}`);
 
     const result = await fromAsyncThrowable(
@@ -147,9 +147,9 @@ export const awaitConnectionStatus = internalAction({
     if (result.isOk()) {
       const connectedAccount = result.value;
       const toolkitSlug = connectedAccount.toolkit?.slug || "";
-      
+
       console.info(`Connection successful for connectionId: ${connectionId}, toolkit: ${toolkitSlug}`);
-      
+
       try {
         await ctx.runMutation(internal.integrations.mutations.successfulConnection, {
           connectionId,
@@ -163,7 +163,7 @@ export const awaitConnectionStatus = internalAction({
     } else {
       const error = result.error;
       console.error(`Connection failed or timed out for connectionId: ${connectionId}`, error);
-      
+
       // TODO: Consider updating the connection status to "FAILED" in the database
       // This would require adding a failedConnection mutation
       // await ctx.runMutation(internal.integrations.mutations.failedConnection, {
@@ -177,3 +177,14 @@ export const awaitConnectionStatus = internalAction({
 
 
 
+
+
+export const deleteComposioConnection = internalAction({
+  args: {
+    connectionId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await composio.connectedAccounts.delete(args.connectionId)
+
+  }
+})

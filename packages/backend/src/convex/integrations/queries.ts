@@ -79,6 +79,32 @@ export const listAvailableIntegrations = query({
   }
 })
 
+export const listUsersConnections = query({
+  handler: async (ctx) => {
+    const userId = await betterAuthComponent.getAuthUserId(ctx);
+    if (!userId) {
+      return []
+    }
+
+    const connections = await ctx.db.query("connections")
+      .withIndex("by_user", (q) => q.eq("userId", userId as Id<"users">))
+      .filter(q => q.eq(q.field("status"), "ACTIVE"))
+      .collect()
+
+    return connections.map(c => ({
+      _id: c._id,
+      authConfigId: c.authConfigId,
+      connectionId: c.connectionId,
+      tolkitSlug: c.tolkitSlug,
+      name: c.tolkitSlug ? c.tolkitSlug.toUpperCase() : "UNKNOWN",
+      status: c.status
+    }) )
+
+
+
+  }
+})
+
 
 export const getUserConnectionByAuthConfigId = internalQuery({
   args: { authConfigId: v.string(), userId: v.id("users") },

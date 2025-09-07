@@ -6,6 +6,7 @@ import { IntegrationsError } from "./error";
 
 import { z } from "zod";
 import { internalMutation } from "../_generated/server";
+import { internal } from "../_generated/api";
 
 // URL validation schema
 const urlSchema = z
@@ -127,6 +128,44 @@ export const deleteIntegration = mutation({
 
 
 
+export const deleteConnection = mutation({
+  args: { connectionId: v.id("connections") },
+  handler: async (ctx, args) => {
+
+    const userId = await betterAuthComponent.getAuthUserId(ctx)
+    if (!userId) {
+        throw new IntegrationsError("INTEGRATION_DELETION_FAILED", "User not authenticated")
+    }
+
+    const connection = await ctx.db.get(args.connectionId);
+    if (!connection) {
+      throw new IntegrationsError(
+        "INTEGRATION_DELETION_FAILED",
+        "Connection not found"
+      );
+    }
+
+    if (connection.userId !== userId) {
+      throw new IntegrationsError(
+        "INTEGRATION_DELETION_FAILED",
+        "You do not have permissions to delete this connection"
+      );
+    }
+    await ctx.db.delete(args.connectionId);
+
+    // We should remove the connection from Composio as well
+    await ctx.scheduler.runAfter(0, internal.integrations.actions.deleteComposioConnection, {
+      connectionId: connection.connectionId,
+    },
+    )
+
+    return {
+      success: true,
+      message: "Connection deleted successfully",
+    };
+
+  }
+})
 
 
 export const creteInitialConnection = internalMutation({
