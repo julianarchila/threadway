@@ -17,6 +17,7 @@ import {
   Trash2,
   ArrowUpRight,
   CheckCircle,
+  SheetIcon
 } from "lucide-react";
 import { useAction, useMutation } from "convex/react";
 import { api } from "@threadway/backend/convex/api";
@@ -33,6 +34,7 @@ const integrationIcons = {
   Figma: Figma,
   Weather: SunMoon,
   Jira: HardDrive,
+  GOOGLESHEETS: SheetIcon,
 };
 
 interface MyIntegrationCardProps {
