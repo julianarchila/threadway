@@ -18,15 +18,15 @@ import {
   ArrowUpRight,
   CheckCircle,
 } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useAction, useMutation } from "convex/react";
 import { api } from "@threadway/backend/convex/api";
 import { toast } from "sonner";
 
 const integrationIcons = {
-  Gmail: Mail,
+  GMAIL: Mail,
   Notion: FileText,
   Airtable: Database,
-  Linear: GitBranch,
+  LINEAR: GitBranch,
   GitHub: Github,
   Supabase: Database,
   Figma: Figma,
@@ -46,8 +46,7 @@ interface MyIntegrationCardProps {
 interface TemplateIntegrationCardProps {
   integration: {
     name: string;
-    mcpUrl: string;
-    description: string;
+    authConfigId: string;
   };
   isAlreadyAdded: boolean;
 }
@@ -94,14 +93,23 @@ export function TemplateIntegrationCard({
 }: TemplateIntegrationCardProps) {
   const IconComponent = integrationIcons[integration.name as keyof typeof integrationIcons] || Hammer;
   const createIntegrationMutation = useMutation(api.integrations.mutations.create);
+  const createConnectionAction = useAction(api.integrations.actions.createConnectionWithUrl)
 
   const handleConnect = async () => {
     try {
-      await createIntegrationMutation({
-        name: integration.name,
-        mcpUrl: integration.mcpUrl,
-        apiKey: "",
-      });
+      // await createIntegrationMutation({
+      //   name: integration.name,
+      //   mcpUrl: integration.mcpUrl,
+      //   apiKey: "",
+      // });
+      const {redirectUrl}= await createConnectionAction({
+        authConfigId: integration.authConfigId,
+      })
+
+
+      window.open(redirectUrl, '_blank');
+
+
       toast.success(`${integration.name} integration added successfully!`);
     } catch (error: any) {
       toast.error(error.message || `Failed to add ${integration.name} integration`);
@@ -137,7 +145,7 @@ export function TemplateIntegrationCard({
                 {integration.name}
               </CardTitle>
               <p className="text-sm text-muted-foreground">
-                {integration.description}
+                {"No description available (WIP)"}
               </p>
             </div>
           </div>

@@ -19,7 +19,7 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
   const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId }));
   const updateWorkflowMutation = useMutation(api.workflows.mutations.update);
 
-  const initialContent = blocksFromContent(workflow.content);
+  const initialContent = blocksFromContent(workflow?.content);
 
   async function saveContent(jsonBlocks: Block[]) {
     updateWorkflowMutation({
@@ -33,8 +33,8 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
     <div className="w-full max-w-4xl mx-auto px-6 py-8">
       {/* Document Title */}
       <div className="mb-8 px-14">
-        <EditableTitle 
-          title={workflow.title} 
+        <EditableTitle
+          title={workflow?.title || "Untitled Workflow"}
           workflowId={workflowId}
           className="mb-2"
         />

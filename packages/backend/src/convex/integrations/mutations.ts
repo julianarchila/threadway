@@ -5,6 +5,7 @@ import { betterAuthComponent } from "../auth";
 import { IntegrationsError } from "./error";
 
 import { z } from "zod";
+import { internalMutation } from "../_generated/server";
 
 // URL validation schema
 const urlSchema = z
@@ -123,3 +124,47 @@ export const deleteIntegration = mutation({
         };
     },
 });
+
+
+
+
+
+export const creteInitialConnection = internalMutation({
+  args: {
+    connectionId: v.string(),
+    userId: v.id("users"),
+    authConfigId: v.string(),
+  },
+  handler: async (ctx, args) => {
+
+    ctx.db.insert("connections", {
+      status: "INITIATED",
+      authConfigId: args.authConfigId,
+      userId: args.userId,
+      connectionId: args.connectionId,
+    })
+
+  }
+})
+
+
+export const successfulConnection = internalMutation({
+  args: {
+    connectionId: v.string(),
+    tolkitSlug: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const conn = await ctx.db.query("connections")
+      .withIndex("by_connectionId", (q) => q.eq("connectionId", args.connectionId))
+      .first()
+
+    if (!conn) {
+      throw new Error("Connection not found")
+    }
+
+    await ctx.db.patch(conn._id, {
+      status: "ACTIVE",
+      tolkitSlug: args.tolkitSlug,
+    })
+  }
+})

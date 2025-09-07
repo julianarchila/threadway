@@ -64,3 +64,31 @@ export const searchMyIntegrations = query({
         }));
     },
 });
+
+
+// const {TOOLKIT_AUTH_CONFIG} = import("../../lib/composio/connections");
+import { TOOLKIT_AUTH_CONFIG } from "../../lib/composio/connections";
+import { internalQuery } from "../_generated/server";
+export const listAvailableIntegrations = query({
+  handler: async (ctx) => {
+    // Convert Map to array structure
+    return Array.from(TOOLKIT_AUTH_CONFIG.entries()).map(([name, authConfigId]) => ({
+      name,
+      authConfigId
+    }));
+  }
+})
+
+
+export const getUserConnectionByAuthConfigId = internalQuery({
+  args: { authConfigId: v.string(), userId: v.id("users") },
+  handler: async (ctx, args ) => {
+
+    return await ctx.db.query("connections")
+      .withIndex("by_authConfigId_and_user", (q) => q.eq("authConfigId", args.authConfigId).eq("userId", args.userId))
+      .first()
+
+
+
+  }
+})
