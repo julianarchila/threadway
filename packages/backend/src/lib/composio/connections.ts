@@ -45,6 +45,14 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
     description: "Send and receive email",
   },
   {
+    slug: "GOOGLEDRIVE",
+    authConfigId: {
+      development: "ac_hYrKM9uhyXKi"
+    },
+    displayName: "Google Drive",
+    description: "File storage and sharing",
+  },
+  {
     slug: "linear",
     authConfigId: {
       development: "ac_OdwEAmPZscbX",
