@@ -38,7 +38,7 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
     slug: "gmail",
     authConfigId: {
       development: "ac_BuYuRGWQBTA5",
-      // production: "ac_gmail_prod",
+      production: "ac_fVpK8usIralP",
     },
     displayName: "Gmail",
     iconKey: "gmail",
@@ -47,7 +47,8 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
   {
     slug: "GOOGLEDRIVE",
     authConfigId: {
-      development: "ac_hYrKM9uhyXKi"
+      development: "ac_hYrKM9uhyXKi",
+      production: "ac_OL2qxgBotHea"
     },
     displayName: "Google Drive",
     description: "File storage and sharing",
@@ -56,7 +57,7 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
     slug: "linear",
     authConfigId: {
       development: "ac_OdwEAmPZscbX",
-      // production: "ac_linear_prod",
+      production: "ac_gaYu2dgmq4my"
     },
     displayName: "Linear",
     iconKey: "linear",
@@ -66,7 +67,7 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
     slug: "googlesheets",
     authConfigId: {
       development: "ac_q7BfgJYBQERZ",
-      // production: "ac_sheets_prod",
+      production: "ac_r95jYquKMcMZ"
     },
     displayName: "Google Sheets",
     iconKey: "googlesheets",
