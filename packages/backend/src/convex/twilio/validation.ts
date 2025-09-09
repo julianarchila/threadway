@@ -5,8 +5,6 @@ import { ok, err } from 'neverthrow';
 const TwilioBaseSchema = z.object({
   // Core identifiers (required for all messages)
   MessageSid: z.string().min(34).max(34), // 34 character unique identifier
-  SmsSid: z.string().optional(), // Deprecated, same as MessageSid
-  SmsMessageSid: z.string().optional(), // Deprecated, same as MessageSid
   AccountSid: z.string().min(34).max(34), // 34 character account id
   MessagingServiceSid: z.string().optional(), // 34 character messaging service id
   
