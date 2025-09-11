@@ -25,7 +25,7 @@ import { Monitor, Sun, Moon, LogOut, Palette, Phone } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useAuthCacheInvalidation } from "@/hooks/use-auth-cache";
 import { useState } from "react";
-import PhoneAuthForm from "./phone-auth-form";
+import PhoneRegistrationForm from "./phone-registration-form";
 
 export default function UserMenu() {
   const router = useRouter();
@@ -111,7 +111,7 @@ export default function UserMenu() {
 
       <Dialog open={isPhoneDialogOpen} onOpenChange={setIsPhoneDialogOpen}>
         <DialogContent className="max-w-md">
-          <PhoneAuthForm onSuccess={() => setIsPhoneDialogOpen(false)} />
+          <PhoneRegistrationForm onSuccess={() => setIsPhoneDialogOpen(false)} />
         </DialogContent>
       </Dialog>
     </>
