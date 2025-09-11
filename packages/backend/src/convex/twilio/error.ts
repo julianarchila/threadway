@@ -1,6 +1,6 @@
 // Unified error types for Twilio operations
 export type TwilioError = {
-  readonly type: 'CONFIG_MISSING' | 'SEND_FAILED' | 'INVALID_INPUT' | 'VALIDATION_FAILED' | 'WEBHOOK_PARSE_ERROR';
+  readonly type: 'CONFIG_MISSING' | 'SEND_FAILED' | 'INVALID_INPUT' | 'VALIDATION_FAILED' | 'WEBHOOK_PARSE_ERROR' | 'WHATSAPP_SEND_FAIL';
   readonly message: string;
   readonly cause?: unknown;
 };

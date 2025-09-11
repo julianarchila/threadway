@@ -6,14 +6,14 @@ import { normalizeTwilioMessage } from "./normalizer";
 
 export const WhatsappIncomingMessageWebhook = httpAction(async (ctx, request) => {
   console.log('📞 Twilio webhook received');
-  
+
   const signature = request.headers.get('x-twilio-signature') ?? '';
   const url = request.url;
   const formData = await request.formData().catch(() => null);
   const params = Object.fromEntries(formData?.entries() ?? []);
 
   // 1. Validate signature (utility handles headers, URL, and body)
-  const isValidSignature = await ctx.runAction(internal.twilio.actions.validateTwilioSignatureAction, {signature, url, params});
+  const isValidSignature = await ctx.runAction(internal.twilio.actions.validateTwilioSignatureAction, { signature, url, params });
   if (!isValidSignature) {
     console.error('❌ Invalid or missing Twilio signature');
     return new Response('Unauthorized', { status: 401 });
@@ -32,8 +32,8 @@ export const WhatsappIncomingMessageWebhook = httpAction(async (ctx, request) =>
   // 3. Normalize and delegate to chatbot service
   const domain = normalizeTwilioMessage(data);
 
-  // 4. Run agent
-  const result = await ctx.runAction(internal.agent.actions.runAgentAction, { message: domain });
+  // 4. Run agenta asynchronously
+  await ctx.scheduler.runAfter(0, internal.agent.actions.runAgentAction, { message: domain });
 
-  return new Response(result, { status: 200 });
+  return new Response("", { status: 200 });
 })

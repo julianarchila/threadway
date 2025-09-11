@@ -67,6 +67,21 @@ const sendTwilioSMS = (client: Twilio, config: SMSConfig, phoneNumber: string, c
     console.log(`✅ SMS sent successfully (SID: ${message.sid})`);
   });
 
+
+const whatsAppPhoneNumber = "whatsapp:+14155238886"
+const sendTwilioWhatsapp = (client: Twilio, config: SMSConfig, phoneNumber: string, body: string): ResultAsync<void, TwilioError> =>
+  ResultAsync.fromPromise(
+    client.messages.create({
+      body: body,
+      from: whatsAppPhoneNumber,
+      to: phoneNumber,
+    }),
+    (error) => ({ type: 'WHATSAPP_SEND_FAIL' as const, message: `Failed to send WhatsappMessage.\n From: ${whatsAppPhoneNumber} \nTo: ${phoneNumber}`, cause: error })
+  ).map((message) => {
+    console.log(`✅ SMS sent successfully (SID: ${message.sid})`);
+  });
+
+
 // Main SMS function
 export const sendOTP = async (phoneNumber: string, code: string): Promise<Result<void, TwilioError>> => {
   const inputResult = validateInput(phoneNumber, code);
@@ -98,3 +113,21 @@ export const sendOTP = async (phoneNumber: string, code: string): Promise<Result
 };
 
 
+
+
+export const sendWhatsappMessage = async (phoneNumber: string, message: string): Promise<Result<void, TwilioError>> => {
+
+  const configResult = getConfig();
+  if (configResult.isErr()) {
+    return err(configResult.error);
+  }
+
+  const clientResult = createClient(configResult.value);
+  if (clientResult.isErr()) {
+    return err(clientResult.error);
+  }
+
+  const sendResult = await sendTwilioWhatsapp(clientResult.value, configResult.value, phoneNumber, message);
+  return sendResult;
+
+}
