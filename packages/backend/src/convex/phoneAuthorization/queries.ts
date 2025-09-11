@@ -32,26 +32,3 @@ export const getUserAuthorizedPhones = query({
         return authorizedPhones;
     },
 });
-
-// Check if a specific authorized phone has access to a workflow
-export const checkWorkflowAccess = query({
-    args: {
-        authorizedPhoneId: v.id("authorizedPhones"),
-        workflowId: v.id("workflows"),
-    },
-    handler: async (ctx, args) => {
-        const access = await ctx.db
-            .query("phoneWorkflowAccess")
-            .withIndex("by_phone_and_workflow", (q) =>
-                q.eq("authorizedPhoneId", args.authorizedPhoneId)
-                    .eq("workflowId", args.workflowId)
-            )
-            .first();
-
-        return {
-            hasAccess: !!access,
-            accessId: access?._id || null,
-            grantedAt: access?.grantedAt || null,
-        };
-    },
-});
