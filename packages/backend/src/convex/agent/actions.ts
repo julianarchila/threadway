@@ -2,7 +2,7 @@
 import { stepCountIs } from "@convex-dev/agent";
 import { internalAction } from "../_generated/server";
 import type { DomainMessage } from "../twilio/normalizer";
-import { findOrCreateUser, findChatUser } from "../user/helpers";
+import { findChatUser } from "../user/helpers";
 import { getUserThread, agent, loadUserTools, sendErrorMessageToUser, sendMessageToUser } from "./helpers";
 
 const landingPageUrl = "https://threadway.app"
@@ -29,8 +29,6 @@ export const runAgentAction = internalAction({
       console.error("[runAgentAction] Failed to load user tools", toolsRes.error);
       return;
     }
-
-    console.log(`[runAgentAction] Loaded ${toolsRes.value.length} tools for user ${user._id}: `, toolsRes.value);
 
 
     // run agent

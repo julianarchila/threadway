@@ -47,19 +47,43 @@ export const loadUserTools = async (ctx: ActionCtx, userId: Id<"users">) => {
   // const userToolKits = await internal.integrations.queries.getUserConnectedToolkits({userId: args.userId})
   const userToolKits = await ctx.runQuery(internal.integrations.queries.getUserConnectedToolkits, { userId: userId })
   console.debug("[loadUserTools]: User toolkits: ", userToolKits)
-  const toolsRes = await fromAsyncThrowable(() => composio.tools.get(userId, {
-    toolkits: userToolKits
-  }))()
 
-  if (toolsRes.isErr()) return err(new AgentError(
-    "FAILED_TO_LOAD_TOOLS",
-    "Failed too load user tools from composio",
-    toolsRes.error
-  ))
+  if (userToolKits.length === 0) {
+    return ok({});
+  }
 
+  // Fetch top 10 tools per toolkit in parallel
+  const perToolkitFetches = userToolKits.map((toolkit) =>
+    fromAsyncThrowable(() =>
+      composio.tools.get(userId, { toolkits: [toolkit], limit:  20 })
+    )()
+  );
 
+  const perToolkitResults = await Promise.all(perToolkitFetches);
 
-  return ok(toolsRes.value)
+  // Collect successes and merge ToolSets
+  const successfulToolSets = perToolkitResults
+    .filter((r) => r.isOk())
+    .map((r) => r.value );
+
+  const mergedToolSet = successfulToolSets.reduce(
+    (acc, set) => ({ ...acc, ...set }),
+    {}
+  );
+
+  if (Object.keys(mergedToolSet).length > 0) {
+    return ok(mergedToolSet);
+  }
+
+  // If all requests failed, bubble up the first error
+  const firstError = perToolkitResults.find((r) => r.isErr())?.error;
+  return err(
+    new AgentError(
+      "FAILED_TO_LOAD_TOOLS",
+      "Failed too load user tools from composio",
+      firstError
+    )
+  )
 
 }
 
