@@ -46,6 +46,7 @@ export const getUserThread = async (ctx: ActionCtx, userId: Id<"users">) => {
 export const loadUserTools = async (ctx: ActionCtx, userId: Id<"users">) => {
   // const userToolKits = await internal.integrations.queries.getUserConnectedToolkits({userId: args.userId})
   const userToolKits = await ctx.runQuery(internal.integrations.queries.getUserConnectedToolkits, { userId: userId })
+  console.debug("[loadUserTools]: User toolkits: ", userToolKits)
   const toolsRes = await fromAsyncThrowable(() => composio.tools.get(userId, {
     toolkits: userToolKits
   }))()

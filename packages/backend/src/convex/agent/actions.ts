@@ -30,6 +30,9 @@ export const runAgentAction = internalAction({
       return;
     }
 
+    console.log(`[runAgentAction] Loaded ${toolsRes.value.length} tools for user ${user._id}: `, toolsRes.value);
+
+
     // run agent
     const { _id: threadId } = await getUserThread(ctx, user._id);
     const { thread } = await agent.continueThread(ctx, { threadId })

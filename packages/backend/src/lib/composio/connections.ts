@@ -73,6 +73,15 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
     iconKey: "googlesheets",
     description: "Spreadsheet access",
   },
+  {
+    slug: "NOTION",
+    authConfigId: {
+      development: "ac_cH688M0vebJo"
+    },
+    displayName: "Notion",
+    iconKey: "notion",
+    description: "Notion centralizes notes, docs, wikis, and tasks in a unified workspace, letting teams build custom workflows for collaboration and knowledge management",
+  }
 ];
 
 export type ToolkitSlug = typeof INTEGRATIONS[number]["slug"];
