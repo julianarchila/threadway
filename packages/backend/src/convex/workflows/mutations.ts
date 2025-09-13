@@ -1,15 +1,11 @@
 import { mutation } from "../_generated/server";
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import {
-  createWorkflowCreationError,
   createWorkflowNotFoundError,
-  createWorkflowUpdateError,
   createUserNotAuthorizedError,
   createContentTooLongError,
-  createInvalidUserIdError,
-  createInvalidWorkflowIdError
 } from "./error";
-import { betterAuthComponent } from "../auth";
+import { authComponent } from "../auth";
 import type { Id } from "../_generated/dataModel";
 
 // Constantes
@@ -18,8 +14,8 @@ const MAX_CONTENT_LENGTH = 100000; // 100KB
 
 export const create = mutation({
   handler: async (ctx) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx)
-    if (!userId) {
+    const currentUser = await authComponent.safeGetAuthUser(ctx)
+    if (!currentUser || !currentUser.userId) {
       throw new Error("User not authenticated")
     }
 
@@ -29,7 +25,7 @@ export const create = mutation({
     const workflowId = await ctx.db.insert("workflows", {
       title: "New Agent",
       content: "",
-      userId: userId as Id<"users">,
+      userId: currentUser.userId as Id<"users">,
       updatedAt: now,
     })
 
@@ -44,17 +40,18 @@ export const update = mutation({
     content: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx)
-    if (!userId) {
+    const currentUser = await authComponent.safeGetAuthUser(ctx)
+    if (!currentUser || !currentUser.userId) {
       throw new Error("User not authenticated")
     }
+
     const workflow = await ctx.db.get(args.workflowId)
     if (!workflow) {
       throw createWorkflowNotFoundError(args.workflowId)
     }
 
-    if (workflow.userId !== userId) {
-      throw createUserNotAuthorizedError(userId, args.workflowId)
+    if (workflow.userId !== currentUser.userId) {
+      throw createUserNotAuthorizedError(currentUser.userId, args.workflowId)
     }
 
     if (args.content.length > MAX_CONTENT_LENGTH) {
@@ -76,8 +73,8 @@ export const updateTitle = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx)
-    if (!userId) {
+    const currentUser = await authComponent.safeGetAuthUser(ctx)
+    if (!currentUser || !currentUser.userId) {
       throw new Error("User not authenticated")
     }
 
@@ -86,8 +83,8 @@ export const updateTitle = mutation({
       throw createWorkflowNotFoundError(args.workflowId)
     }
 
-    if (workflow.userId !== userId) {
-      throw createUserNotAuthorizedError(userId, args.workflowId)
+    if (workflow.userId !== currentUser.userId) {
+      throw createUserNotAuthorizedError(currentUser.userId, args.workflowId)
     }
 
     // Validate title length (reasonable limit)
@@ -113,8 +110,8 @@ export const deleteWorkflow = mutation({
     id: v.id("workflows"),
   },
   handler: async (ctx, args) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx)
-    if (!userId) {
+    const currentUser = await authComponent.safeGetAuthUser(ctx)
+    if (!currentUser || !currentUser.userId) {
       throw new Error("User not authenticated")
     }
 
@@ -123,8 +120,8 @@ export const deleteWorkflow = mutation({
       throw createWorkflowNotFoundError(args.id)
     }
 
-    if (workflow.userId !== userId) {
-      throw createUserNotAuthorizedError(userId, args.id)
+    if (workflow.userId !== currentUser.userId) {
+      throw createUserNotAuthorizedError(currentUser.userId, args.id)
     }
 
     await ctx.db.delete(args.id)

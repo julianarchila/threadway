@@ -1,11 +1,11 @@
 import { httpRouter } from 'convex/server'
-import { betterAuthComponent } from './auth'
+import { authComponent } from './auth'
 import { createAuth } from '../lib/auth'
 import { WhatsappIncomingMessageWebhook } from './twilio/webhooks'
 
 const http = httpRouter()
 
-betterAuthComponent.registerRoutes(http, createAuth)
+authComponent.registerRoutes(http, createAuth)
 
 http.route({
     path: "/webhooks/twilio",

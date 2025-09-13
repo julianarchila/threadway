@@ -1,9 +1,9 @@
-import type { Id } from "../_generated/dataModel";
+import type { DataModel, Id } from "../_generated/dataModel";
 import { AUTH_CONFIG_ID_SET } from "../../lib/composio/connections";
-import { betterAuthComponent } from "../auth";
-import type { GenericCtx } from "../_generated/server";
+import { authComponent } from "../auth";
 import { ok, err, Result } from "neverthrow";
 import { IntegrationsError } from "./error";
+import { GenericCtx } from "@convex-dev/better-auth";
 
 /**
  * Validate an authConfigId against the env-aware registry.
@@ -21,9 +21,9 @@ export function validateAuthConfigId(authConfigId: string): Result<void, Integra
  * Returns a Result<Id<"users">, IntegrationsError> instead of throwing.
  */
 export async function validateUserAuth(
-  ctx: GenericCtx
+  ctx: any,
 ): Promise<Result<Id<"users">, IntegrationsError>> {
-  const userId = (await betterAuthComponent.getAuthUserId(ctx)) as Id<"users"> | null;
+  const userId = (await authComponent.safeGetAuthUser(ctx))?.userId as Id<"users"> | null;
   if (!userId) {
     return err(new IntegrationsError("INTEGRATION_QUERY_FAILED", "User not authenticated"));
   }

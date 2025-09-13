@@ -1,10 +1,10 @@
-import { convexAdapter } from "@convex-dev/better-auth";
+import { type GenericCtx } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { betterAuth } from "better-auth";
-import { betterAuthComponent } from "../convex/auth";
-import { type GenericCtx } from "../convex/_generated/server";
+import { authComponent } from "../convex/auth";
 import { phoneNumber } from "better-auth/plugins";
 import { internal } from "../convex/_generated/api";
+import { DataModel } from "../convex/_generated/dataModel";
 
 const getSiteUrl = () => {
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
@@ -12,12 +12,12 @@ const getSiteUrl = () => {
 };
 
 
-export const createAuth = (ctx: GenericCtx) =>
+export const createAuth = (ctx: GenericCtx<DataModel>) =>
   // Configure your Better Auth instance here
   betterAuth({
     // All auth requests will be proxied through your next.js server
     baseURL: getSiteUrl(),
-    database: convexAdapter(ctx, betterAuthComponent),
+    database: authComponent.adapter(ctx),
 
     // Simple non-verified email/password to get started
     emailAndPassword: {

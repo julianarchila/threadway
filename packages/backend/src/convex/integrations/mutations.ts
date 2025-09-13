@@ -1,6 +1,6 @@
 import { mutation, internalMutation } from "../_generated/server";
 import { v } from "convex/values";
-import { betterAuthComponent } from "../auth";
+import { authComponent } from "../auth";
 import { IntegrationsError } from "./error";
 import { internal } from "../_generated/api";
 
@@ -19,8 +19,8 @@ import { internal } from "../_generated/api";
 export const deleteConnection = mutation({
   args: { connectionId: v.id("connections") },
   handler: async (ctx, args) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx);
-    if (!userId) {
+    const currentUser = await authComponent.safeGetAuthUser(ctx);
+    if (!currentUser) {
       throw new IntegrationsError(
         "INTEGRATION_DELETION_FAILED",
         "User not authenticated"
@@ -35,7 +35,7 @@ export const deleteConnection = mutation({
       );
     }
 
-    if (connection.userId !== userId) {
+    if (connection.userId !== currentUser.userId) {
       throw new IntegrationsError(
         "INTEGRATION_DELETION_FAILED",
         "You do not have permissions to delete this connection"

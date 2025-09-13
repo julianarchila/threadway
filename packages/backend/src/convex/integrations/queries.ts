@@ -1,7 +1,7 @@
 import { query, internalQuery } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
-import { betterAuthComponent } from "../auth";
+import { authComponent } from "../auth";
 import { listAvailableIntegrations as listAvailableIntegrationsLib } from "../../lib/composio/connections";
 
 // =============================================================================
@@ -21,14 +21,14 @@ export const listAvailableIntegrations = query({
 
 export const listUserConnections = query({
   handler: async (ctx) => {
-    const userId = await betterAuthComponent.getAuthUserId(ctx);
-    if (!userId) {
+    const currentUser = await authComponent.safeGetAuthUser(ctx);
+    if (!currentUser || !currentUser.userId) {
       return [];
     }
 
     const connections = await ctx.db
       .query("connections")
-      .withIndex("by_user", (q) => q.eq("userId", userId as Id<"users">))
+      .withIndex("by_user", (q) => q.eq("userId", currentUser.userId as Id<"users">))
       .filter((q) => q.eq(q.field("status"), "ACTIVE"))
       .collect();
 
