@@ -24,12 +24,15 @@ import { useParams } from '@tanstack/react-router';
 import {
   DefaultChatTransport,
   lastAssistantMessageIsCompleteWithToolCalls,
-  addToolResult,
 } from 'ai';
 import { api } from '@threadway/backend/convex/api';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { convexQuery } from '@convex-dev/react-query';
 import { useCreateBlockNote } from '@blocknote/react';
+import { Id } from '@threadway/backend/convex/dataModel';
+import { PartialBlock } from '@blocknote/core';
+
+import { useMutation } from "convex/react";
 
 const models = [
   {
@@ -50,30 +53,56 @@ const models = [
   },
 ];
 
+function blocksFromContent(content: string | undefined) {
+  // Gets the previously stored editor contents.
+  return content ? (JSON.parse(content) as PartialBlock[]) : undefined;
+}
+
 export default function Chatbot() {
   const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(models[0].value);
 
   const editor = useCreateBlockNote({});
-  
+
   // Obtener el workflowId de los parámetros de la ruta
   const { workflowId } = useParams({ from: '/_dashboard/f/$workflowId' });
 
-  const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId: workflowId }));
-
-  const { messages, sendMessage, status } = useChat( {sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls, async onToolCall({ toolCall }) {
-    console.log('Tool call:', toolCall);
+  const updateWorkflowMutation = useMutation(api.workflows.mutations.update);
 
 
-    if (toolCall.toolName === 'readWorkflowContent') {
-      const content = await editor.blocksToMarkdownLossy(workflow.content);
-      addToolResult({
-        tool: 'readWorkflowContent',
-        toolCallId: toolCall.toolCallId,
-        output: content,
-      })
+  const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId: workflowId as Id<"workflows"> }));
+
+
+  const { messages, sendMessage, status, addToolResult } = useChat({
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls, async onToolCall({ toolCall }) {
+      console.log('Tool call:', toolCall);
+
+
+      if (toolCall.toolName === 'readWorkflowContent') {
+
+        const blocks = blocksFromContent(workflow?.content)
+
+        const content = await editor.blocksToMarkdownLossy(blocks);
+        addToolResult({
+          tool: 'readWorkflowContent',
+          toolCallId: toolCall.toolCallId,
+          output: content,
+        })
+      }
+
+      if (toolCall.toolName === "editWorkflowContent") {
+        console.log('Editing workflow content with:', toolCall.input);
+        // pasar input a blocks
+
+        // pasar blocks a json string
+
+        // llamar mutation para actualizar el workflow
+
+
+      }
+
     }
-  }});
+  });
 
 
 
@@ -101,7 +130,7 @@ export default function Chatbot() {
       {/* Área de mensajes con scroll optimizado */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <Conversation className="h-full">
-        <ConversationContent>
+          <ConversationContent>
             {messages.filter(message => message.role !== 'system').map((message) => (
               <div key={message.id}>
                 <Message from={message.role as 'user' | 'assistant'} key={message.id}>
@@ -116,10 +145,10 @@ export default function Chatbot() {
                       }
                       return null;
                     }) || (
-                      <div className="prose prose-sm max-w-none">
-                        {JSON.stringify(message)}
-                      </div>
-                    )}
+                        <div className="prose prose-sm max-w-none">
+                          {JSON.stringify(message)}
+                        </div>
+                      )}
                   </MessageContent>
                 </Message>
               </div>
@@ -162,8 +191,8 @@ export default function Chatbot() {
                 </PromptInputModelSelectContent>
               </PromptInputModelSelect>
             </PromptInputTools>
-            <PromptInputSubmit 
-              disabled={!input} 
+            <PromptInputSubmit
+              disabled={!input}
               status={status === 'error' ? 'idle' : status as 'idle' | 'streaming' | 'submitted'}
               className="h-8 w-8"
             />
