@@ -76,7 +76,8 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
   {
     slug: "NOTION",
     authConfigId: {
-      development: "ac_cH688M0vebJo"
+      development: "ac_cH688M0vebJo",
+      production: "ac_KO4T-Td0j-AZ"
     },
     displayName: "Notion",
     iconKey: "notion",
