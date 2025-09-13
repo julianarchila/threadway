@@ -1,16 +1,15 @@
 import * as React from "react";
-import { CheckIcon, ChevronsUpDown, Search } from "lucide-react";
+import { CheckIcon, ChevronsUpDown, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import { 
-  getCountries, 
-  getCountryCallingCode, 
-  parsePhoneNumber, 
+import {
+  getCountries,
+  getCountryCallingCode,
+  parsePhoneNumber,
   isValidPhoneNumber,
-  type CountryCode 
+  type CountryCode
 } from "libphonenumber-js";
 
 // Types
@@ -67,9 +66,9 @@ const formatPhoneInput = (value: string): string => {
 
 const filterCountries = (countries: Country[], query: string): Country[] => {
   if (!query) return countries;
-  
+
   const searchTerm = query.toLowerCase();
-  return countries.filter(country => 
+  return countries.filter(country =>
     country.name.toLowerCase().includes(searchTerm) ||
     country.code.toLowerCase().includes(searchTerm) ||
     country.dialCode.includes(searchTerm)
@@ -100,64 +99,77 @@ const CountrySelector: React.FC<{
   onCountrySelect: (country: Country) => void;
   onOpenChange: (open: boolean) => void;
 }> = ({ selectedCountry, countries, searchQuery, isOpen, onSearchChange, onCountrySelect, onOpenChange }) => {
-  const filteredCountries = React.useMemo(() => 
-    filterCountries(countries, searchQuery), 
+  const filteredCountries = React.useMemo(() =>
+    filterCountries(countries, searchQuery),
     [countries, searchQuery]
   );
 
   return (
-    <Popover open={isOpen} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          className="flex gap-2 rounded-e-none rounded-s-lg border-r-0 px-3 focus:z-10 min-w-[120px]"
-        >
-          <span className="text-lg">{selectedCountry.flag}</span>
-          <span className="text-sm text-muted-foreground">
-            {selectedCountry.dialCode}
-          </span>
-          <ChevronsUpDown className="size-4 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[320px] p-0">
-        <div className="flex items-center border-b px-3">
-          <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
-          <Input
-            placeholder="Search countries..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e.target.value)}
-            className="flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 border-0 focus-visible:ring-0"
-          />
+    <div className="relative">
+      <Button
+        type="button"
+        variant="outline"
+        className="flex gap-2 rounded-e-none rounded-s-lg border-r-0 px-3 focus:z-10 min-w-[120px]"
+        onClick={() => onOpenChange(!isOpen)}
+      >
+        <span className="text-lg">{selectedCountry.flag}</span>
+        <span className="text-sm text-muted-foreground">
+          {selectedCountry.dialCode}
+        </span>
+        <ChevronsUpDown className="size-4 opacity-50" />
+      </Button>
+
+      {isOpen && (
+        <div className="absolute top-full left-0 z-50 mt-1 bg-background rounded-lg border shadow-lg w-[320px] sm:w-[320px] max-w-[calc(100vw-2rem)] max-h-[400px] overflow-hidden">
+          <div className="flex items-center justify-between border-b px-3 py-2">
+            <div className="flex items-center flex-1">
+              <Search className="mr-2 h-4 w-4 shrink-0 opacity-50" />
+              <Input
+                placeholder="Search countries..."
+                value={searchQuery}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="border-0 focus-visible:ring-0 px-2"
+                autoFocus
+              />
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onOpenChange(false)}
+              className="h-8 w-8 p-0"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+          <ScrollArea className="h-60">
+            {filteredCountries.length === 0 ? (
+              <div className="p-4 text-sm text-muted-foreground text-center">
+                No countries found.
+              </div>
+            ) : (
+              <div className="p-1">
+                {filteredCountries.map((country) => (
+                  <div
+                    key={country.code}
+                    className="flex items-center gap-3 p-2 cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-sm"
+                    onClick={() => onCountrySelect(country)}
+                  >
+                    <span className="text-lg">{country.flag}</span>
+                    <span className="flex-1 text-sm">{country.name}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {country.dialCode}
+                    </span>
+                    {country.code === selectedCountry.code && (
+                      <CheckIcon className="size-4" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
         </div>
-        <ScrollArea className="h-60">
-          {filteredCountries.length === 0 ? (
-            <div className="p-4 text-sm text-muted-foreground text-center">
-              No countries found.
-            </div>
-          ) : (
-            <div className="p-1">
-              {filteredCountries.map((country) => (
-                <div
-                  key={country.code}
-                  className="flex items-center gap-3 p-2 cursor-pointer hover:bg-accent hover:text-accent-foreground rounded-sm"
-                  onClick={() => onCountrySelect(country)}
-                >
-                  <span className="text-lg">{country.flag}</span>
-                  <span className="flex-1 text-sm">{country.name}</span>
-                  <span className="text-sm text-muted-foreground">
-                    {country.dialCode}
-                  </span>
-                  {country.code === selectedCountry.code && (
-                    <CheckIcon className="size-4" />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-      </PopoverContent>
-    </Popover>
+      )}
+    </div>
   );
 };
 
@@ -165,7 +177,7 @@ const CountrySelector: React.FC<{
 const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
   ({ className, value = "", onChange, onValidationChange, defaultCountry = "US", ...props }, ref) => {
     const countries = useCountries();
-    const [selectedCountry, setSelectedCountry] = React.useState<Country>(() => 
+    const [selectedCountry, setSelectedCountry] = React.useState<Country>(() =>
       countries.find(c => c.code === defaultCountry) || countries[0]
     );
     const [isOpen, setIsOpen] = React.useState(false);
@@ -211,10 +223,10 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
     const handleInputChange = React.useCallback((inputValue: string) => {
       const cleaned = formatPhoneInput(inputValue);
       setNationalNumber(cleaned);
-      
+
       const digits = cleanPhoneNumber(cleaned);
       const fullNumber = selectedCountry.dialCode + digits;
-      
+
       isInternalUpdate.current = true;
       onChange?.(fullNumber);
     }, [selectedCountry.dialCode, onChange]);
@@ -223,10 +235,10 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
       setSelectedCountry(country);
       setIsOpen(false);
       setSearchQuery("");
-      
+
       const digits = cleanPhoneNumber(nationalNumber);
       const fullNumber = country.dialCode + digits;
-      
+
       isInternalUpdate.current = true;
       onChange?.(fullNumber);
     }, [nationalNumber, onChange]);
@@ -251,7 +263,7 @@ const PhoneInput = React.forwardRef<HTMLInputElement, PhoneInputProps>(
           onCountrySelect={handleCountrySelect}
           onOpenChange={handleOpenChange}
         />
-        
+
         <Input
           ref={ref}
           type="tel"

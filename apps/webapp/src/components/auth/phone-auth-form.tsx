@@ -8,11 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
+import { DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
-export default function PhoneAuthForm() {
-  const router = useRouter();
+interface PhoneAuthFormProps {
+  onSuccess?: () => void;
+}
+
+export default function PhoneAuthForm({ onSuccess }: PhoneAuthFormProps) {
   const [step, setStep] = useState<"phone" | "otp">("phone");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isVerifying, setIsVerifying] = useState(false);
@@ -59,7 +62,8 @@ export default function PhoneAuthForm() {
         },
         {
           onSuccess: () => {
-            router.navigate({ to: "/" });
+            toast.success("Phone number registered successfully!");
+            onSuccess?.();
           },
           onError: () => {
             setIsVerifying(false);
@@ -75,15 +79,15 @@ export default function PhoneAuthForm() {
     },
   });
 
-
-
   if (step === "phone") {
     return (
-      <div className="mx-auto w-full mt-10 max-w-md p-6">
-        <h1 className="mb-6 text-center text-3xl font-bold">Welcome</h1>
-        <p className="mb-6 text-center text-gray-600">
-          Enter your phone number to sign in or create an account
-        </p>
+      <div className="w-full">
+        <DialogHeader>
+          <DialogTitle>Register Phone Number</DialogTitle>
+          <DialogDescription>
+            Add your phone number for enhanced security and notifications
+          </DialogDescription>
+        </DialogHeader>
 
         <form
           onSubmit={(e) => {
@@ -91,7 +95,7 @@ export default function PhoneAuthForm() {
             e.stopPropagation();
             phoneForm.handleSubmit();
           }}
-          className="space-y-4"
+          className="space-y-4 mt-4"
         >
           <div>
             <phoneForm.Field name="phoneNumber">
@@ -123,27 +127,23 @@ export default function PhoneAuthForm() {
                 className="w-full"
                 disabled={!state.canSubmit || state.isSubmitting || !isPhoneValid}
               >
-                {state.isSubmitting ? "Sending OTP..." : "Continue"}
+                {state.isSubmitting ? "Sending verification..." : "Send Verification Code"}
               </Button>
             )}
           </phoneForm.Subscribe>
         </form>
-
-        <p className="mt-6 text-center text-sm text-gray-500">
-          We'll send you a verification code to authenticate your account.
-          <br />
-          New users will automatically get an account created.
-        </p>
       </div>
     );
   }
 
   return (
-    <div className="mx-auto w-full mt-10 max-w-md p-6">
-      <h1 className="mb-6 text-center text-3xl font-bold">Verify Code</h1>
-      <p className="mb-6 text-center text-gray-600">
-        Enter the 6-digit code sent to {phoneNumber}
-      </p>
+    <div className="w-full">
+      <DialogHeader>
+        <DialogTitle>Verify Phone Number</DialogTitle>
+        <DialogDescription>
+          Enter the 6-digit code sent to {phoneNumber}
+        </DialogDescription>
+      </DialogHeader>
 
       <form
         onSubmit={(e) => {
@@ -151,7 +151,7 @@ export default function PhoneAuthForm() {
           e.stopPropagation();
           otpForm.handleSubmit();
         }}
-        className="space-y-4"
+        className="space-y-4 mt-4"
       >
         <div>
           <otpForm.Field name="otp">
@@ -192,32 +192,30 @@ export default function PhoneAuthForm() {
               className="w-full"
               disabled={!state.canSubmit || state.isSubmitting || isVerifying}
             >
-              {state.isSubmitting || isVerifying ? "Verifying..." : "Verify & Continue"}
+              {state.isSubmitting || isVerifying ? "Verifying..." : "Verify & Register"}
             </Button>
           )}
         </otpForm.Subscribe>
       </form>
 
-      <div className="mt-4 text-center">
+      <div className="mt-4 space-y-2">
         <Button
           variant="link"
           onClick={() => setStep("phone")}
-          className="text-gray-600 hover:text-gray-800"
+          className="w-full text-gray-600 hover:text-gray-800"
         >
           ← Back to phone number
         </Button>
-      </div>
 
-      <div className="mt-4 text-center">
         <Button
           variant="link"
           onClick={() => {
             setPhoneNumber("");
             phoneForm.reset();
-            toast.info("Resending OTP...");
+            toast.info("Resending verification code...");
             phoneForm.handleSubmit();
           }}
-          className="text-indigo-600 hover:text-indigo-800 text-sm"
+          className="w-full text-indigo-600 hover:text-indigo-800 text-sm"
         >
           Didn't receive code? Resend
         </Button>
