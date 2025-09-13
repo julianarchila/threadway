@@ -20,6 +20,8 @@ import {
 import { useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { Loader } from '@/components/ai-elements/loader';
+import { WorkflowInfo } from '@/components/ai-elements/workflow-info';
+import { useParams } from '@tanstack/react-router';
 
 const models = [
   {
@@ -43,6 +45,9 @@ const models = [
 export default function Chatbot() {
   const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(models[0].value);
+  
+  // Obtener el workflowId de los parámetros de la ruta
+  const { workflowId } = useParams({ from: '/_dashboard/f/$workflowId' });
 
   const { messages, sendMessage, status } = useChat();
 
@@ -56,6 +61,7 @@ export default function Chatbot() {
       {
         body: {
           model,
+          workflowId,
         },
       },
     );
@@ -63,46 +69,87 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 min-h-0">
+    <div className="flex flex-col h-full bg-background">
+      {/* Área de mensajes con scroll optimizado */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         <Conversation className="h-full">
-          <ConversationContent>
-            {(messages as any[]).filter((message: any) => message.role !== 'system').map((message: any) => (
-              <div key={message.id}>
-                <Message from={message.role as 'user' | 'assistant'} key={message.id}>
-                  <MessageContent>
-                    {message.parts?.map((part: any, i: number) => {
-                      if (part.type === 'text') {
-                        return (
-                          <div key={`${message.id}-${i}`} className="prose prose-sm max-w-none">
-                            {part.text}
+          <ConversationContent className="p-2 space-y-3 overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+            {(messages as any[]).filter((message: any) => message.role !== 'system').map((message: any) => {
+              // Detectar si el mensaje contiene información del workflow
+              const isWorkflowInfo = message.role === 'assistant' && 
+                message.parts?.some((part: any) => 
+                  part.type === 'text' && 
+                  (part.text.includes('ID del workflow:') || part.text.includes('workflowId'))
+                );
+
+              return (
+                <div key={message.id} className="w-full">
+                  <Message from={message.role as 'user' | 'assistant'} key={message.id}>
+                    <MessageContent className="max-w-full">
+                      {isWorkflowInfo ? (
+                        <WorkflowInfo 
+                          workflowId={workflowId || 'No disponible'} 
+                          message="Información del workflow actual"
+                        />
+                      ) : (
+                        message.parts?.map((part: any, i: number) => {
+                          if (part.type === 'text') {
+                            return (
+                              <div 
+                                key={`${message.id}-${i}`} 
+                                className="prose prose-sm max-w-none break-words overflow-wrap-anywhere"
+                                style={{
+                                  wordBreak: 'break-word',
+                                  overflowWrap: 'anywhere',
+                                  hyphens: 'auto'
+                                }}
+                              >
+                                {part.text}
+                              </div>
+                            );
+                          }
+                          return null;
+                        }) || (
+                          <div 
+                            className="prose prose-sm max-w-none break-words overflow-wrap-anywhere"
+                            style={{
+                              wordBreak: 'break-word',
+                              overflowWrap: 'anywhere',
+                              hyphens: 'auto'
+                            }}
+                          >
+                            {JSON.stringify(message)}
                           </div>
-                        );
-                      }
-                      return null;
-                    }) || (
-                      <div className="prose prose-sm max-w-none">
-                        {JSON.stringify(message)}
-                      </div>
-                    )}
-                  </MessageContent>
-                </Message>
+                        )
+                      )}
+                    </MessageContent>
+                  </Message>
+                </div>
+              );
+            })}
+            {status === 'submitted' && (
+              <div className="flex justify-start">
+                <Loader />
               </div>
-            ))}
-            {status === 'submitted' && <Loader />}
+            )}
           </ConversationContent>
         </Conversation>
       </div>
 
-      <div className="p-4 border-t">
+      {/* Área de input optimizada para espacios pequeños */}
+      <div className="p-3 border-t bg-background/95 backdrop-blur-sm">
         <PromptInput onSubmit={handleSubmit} className="w-full">
           <PromptInputTextarea
             onChange={(e) => setInput(e.target.value)}
             value={input}
-            placeholder="Ask me anything..."
-            className="min-h-[60px]"
+            placeholder="Pregunta algo sobre el workflow..."
+            className="min-h-[50px] max-h-[120px] resize-none text-sm"
+            style={{
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere'
+            }}
           />
-          <PromptInputToolbar>
+          <PromptInputToolbar className="mt-2">
             <PromptInputTools>
               <PromptInputModelSelect
                 onValueChange={(value) => {
@@ -110,12 +157,12 @@ export default function Chatbot() {
                 }}
                 value={model}
               >
-                <PromptInputModelSelectTrigger>
+                <PromptInputModelSelectTrigger className="h-8 text-xs">
                   <PromptInputModelSelectValue />
                 </PromptInputModelSelectTrigger>
                 <PromptInputModelSelectContent>
                   {models.map((model) => (
-                    <PromptInputModelSelectItem key={model.value} value={model.value}>
+                    <PromptInputModelSelectItem key={model.value} value={model.value} className="text-xs">
                       {model.name}
                     </PromptInputModelSelectItem>
                   ))}
@@ -124,7 +171,8 @@ export default function Chatbot() {
             </PromptInputTools>
             <PromptInputSubmit 
               disabled={!input} 
-              status={status === 'error' ? 'idle' : status as 'idle' | 'streaming' | 'submitted'} 
+              status={status === 'error' ? 'idle' : status as 'idle' | 'streaming' | 'submitted'}
+              className="h-8 w-8"
             />
           </PromptInputToolbar>
         </PromptInput>
