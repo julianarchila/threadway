@@ -1,5 +1,5 @@
 import { SidebarProvider, SidebarTrigger, Sidebar, SidebarContent, SidebarHeader, SidebarInset } from '@/components/ui/sidebar'
-import { createFileRoute, Outlet, redirect, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, useRouter, useRouterState } from '@tanstack/react-router'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 
 import {
@@ -30,6 +30,8 @@ export const Route = createFileRoute('/_dashboard')({
 function RouteComponent() {
 
   const [showChatSidebar, setShowChatSidebar] = useState(false);
+  const { location } = useRouterState();
+  const isWorkflowRoute = location.pathname.startsWith('/f/');
 
   function UnauthRedirect() {
     const router = useRouter();
@@ -49,10 +51,10 @@ function RouteComponent() {
         <SidebarInset 
           className="transition-all duration-300 ease-in-out"
           style={{
-            width: showChatSidebar ? 'calc(100% - 250px)' : '100%',
+            width: showChatSidebar && isWorkflowRoute ? 'calc(100% - 250px)' : '100%',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
-            maxWidth: showChatSidebar ? 'calc(100% - 250px)' : '100%'
+            maxWidth: showChatSidebar && isWorkflowRoute ? 'calc(100% - 250px)' : '100%'
           }}
         >
           <div className="flex items-center p-4 border-b">
@@ -63,8 +65,8 @@ function RouteComponent() {
           </div>
         </SidebarInset>
 
-        {/* Botón flotante para abrir chat - fuera del SidebarInset */}
-        {!showChatSidebar && (
+        {/* Botón flotante para abrir chat - solo en workflows */}
+        {isWorkflowRoute && !showChatSidebar && (
           <button
             onClick={() => setShowChatSidebar(true)}
             className="fixed bottom-6 right-6 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center z-50"
@@ -73,8 +75,8 @@ function RouteComponent() {
           </button>
         )}
 
-        {/* Chat sidebar usando Sidebar de shadcn/ui */}
-        {showChatSidebar && (
+        {/* Chat sidebar usando Sidebar de shadcn/ui - solo en workflows */}
+        {isWorkflowRoute && showChatSidebar && (
           <Sidebar 
             side="right" 
             className="w-80"
