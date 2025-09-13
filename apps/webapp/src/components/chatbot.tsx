@@ -73,65 +73,30 @@ export default function Chatbot() {
       {/* Área de mensajes con scroll optimizado */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <Conversation className="h-full">
-          <ConversationContent className="p-2 space-y-3 overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
-            {(messages as any[]).filter((message: any) => message.role !== 'system').map((message: any) => {
-              // Detectar si el mensaje contiene información del workflow
-              const isWorkflowInfo = message.role === 'assistant' && 
-                message.parts?.some((part: any) => 
-                  part.type === 'text' && 
-                  (part.text.includes('ID del workflow:') || part.text.includes('workflowId'))
-                );
-
-              return (
-                <div key={message.id} className="w-full">
-                  <Message from={message.role as 'user' | 'assistant'} key={message.id}>
-                    <MessageContent className="max-w-full">
-                      {isWorkflowInfo ? (
-                        <WorkflowInfo 
-                          workflowId={workflowId || 'No disponible'} 
-                          message="Información del workflow actual"
-                        />
-                      ) : (
-                        message.parts?.map((part: any, i: number) => {
-                          if (part.type === 'text') {
-                            return (
-                              <div 
-                                key={`${message.id}-${i}`} 
-                                className="prose prose-sm max-w-none break-words overflow-wrap-anywhere"
-                                style={{
-                                  wordBreak: 'break-word',
-                                  overflowWrap: 'anywhere',
-                                  hyphens: 'auto'
-                                }}
-                              >
-                                {part.text}
-                              </div>
-                            );
-                          }
-                          return null;
-                        }) || (
-                          <div 
-                            className="prose prose-sm max-w-none break-words overflow-wrap-anywhere"
-                            style={{
-                              wordBreak: 'break-word',
-                              overflowWrap: 'anywhere',
-                              hyphens: 'auto'
-                            }}
-                          >
-                            {JSON.stringify(message)}
+        <ConversationContent>
+            {messages.filter(message => message.role !== 'system').map((message) => (
+              <div key={message.id}>
+                <Message from={message.role as 'user' | 'assistant'} key={message.id}>
+                  <MessageContent>
+                    {message.parts?.map((part, i) => {
+                      if (part.type === 'text') {
+                        return (
+                          <div key={`${message.id}-${i}`} className="prose prose-sm max-w-none">
+                            {part.text}
                           </div>
-                        )
-                      )}
-                    </MessageContent>
-                  </Message>
-                </div>
-              );
-            })}
-            {status === 'submitted' && (
-              <div className="flex justify-start">
-                <Loader />
+                        );
+                      }
+                      return null;
+                    }) || (
+                      <div className="prose prose-sm max-w-none">
+                        {JSON.stringify(message)}
+                      </div>
+                    )}
+                  </MessageContent>
+                </Message>
               </div>
-            )}
+            ))}
+            {status === 'submitted' && <Loader />}
           </ConversationContent>
         </Conversation>
       </div>
