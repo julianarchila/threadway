@@ -10,11 +10,10 @@ export const ServerRoute = createServerFileRoute('/api/chat').methods({
 
   const {
     messages,
-    model,
-  }: { messages: UIMessage[]; model: string; } = await request.json();
+  }: { messages: UIMessage[]; workflowId?: string } = await request.json();
 
-  // Use OpenAI models directly
-  const selectedModel = openai(model) || openai('gpt-3.5-turbo');
+  // Use OpenAI GPT-5 Mini by default
+  const selectedModel = openai('gpt-5-mini');
 
   const result = streamText({
     model: selectedModel,
