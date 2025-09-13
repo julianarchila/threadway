@@ -20,8 +20,16 @@ import {
 import { useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { Loader } from '@/components/ai-elements/loader';
-import { WorkflowInfo } from '@/components/ai-elements/workflow-info';
 import { useParams } from '@tanstack/react-router';
+import {
+  DefaultChatTransport,
+  lastAssistantMessageIsCompleteWithToolCalls,
+  addToolResult,
+} from 'ai';
+import { api } from '@threadway/backend/convex/api';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { convexQuery } from '@convex-dev/react-query';
+import { useCreateBlockNote } from '@blocknote/react';
 
 const models = [
   {
@@ -45,11 +53,31 @@ const models = [
 export default function Chatbot() {
   const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(models[0].value);
+
+  const editor = useCreateBlockNote({});
   
   // Obtener el workflowId de los parámetros de la ruta
   const { workflowId } = useParams({ from: '/_dashboard/f/$workflowId' });
 
-  const { messages, sendMessage, status } = useChat();
+  const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId: workflowId }));
+
+  const { messages, sendMessage, status } = useChat( {sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls, async onToolCall({ toolCall }) {
+    console.log('Tool call:', toolCall);
+
+
+    if (toolCall.toolName === 'readWorkflowContent') {
+      const content = await editor.blocksToMarkdownLossy(workflow.content);
+      addToolResult({
+        tool: 'readWorkflowContent',
+        toolCallId: toolCall.toolCallId,
+        output: content,
+      })
+    }
+  }});
+
+
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
