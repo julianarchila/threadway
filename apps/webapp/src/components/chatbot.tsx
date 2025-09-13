@@ -17,21 +17,8 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useChat } from '@ai-sdk/react';
-// removed toasts per request
-// import { Response } from '@/components/response';
-// import {
-//   Source,
-//   Sources,
-//   SourcesContent,
-//   SourcesTrigger,
-// } from '@/components/sources';
-// import {
-//   Reasoning,
-//   ReasoningContent,
-//   ReasoningTrigger,
-// } from '@/components/reasoning';
 import { Loader } from '@/components/ai-elements/loader';
 
 const models = [
@@ -56,213 +43,19 @@ const models = [
 export default function Chatbot() {
   const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(models[0].value);
+
   const { messages, sendMessage, status } = useChat();
-  const processedToolIdsRef = useRef<Set<string>>(new Set());
-  const [, setHiddenToolMessageIds] = useState<string[]>([]);
-
-  // --- Simple client-side utilities (no backend) ---
-  function normalize(text: string) {
-    return text.trim();
-  }
-
-  function findTitleInput(): HTMLInputElement | null {
-    const lookup = () => document.querySelector('input[placeholder="Enter workflow title..."]') as HTMLInputElement | null;
-    const input = lookup();
-    if (input) return input;
-    const h1 = document.querySelector('h1[title="Click to edit title"]') as HTMLElement | null;
-    h1?.click();
-    // if not immediately available, wait a tick
-    return lookup();
-  }
-
-  function setInputValue(inputEl: HTMLInputElement, value: string) {
-    const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-    setter?.call(inputEl, value);
-    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-    inputEl.dispatchEvent(new Event('change', { bubbles: true }));
-  }
-
-  function focusProseMirror(): HTMLElement | null {
-    const prose = document.querySelector('.ProseMirror') as HTMLElement | null;
-    prose?.focus();
-    return prose;
-  }
-
-  function setCaretToEnd(el: HTMLElement) {
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    const sel = window.getSelection();
-    if (!sel) return;
-    sel.removeAllRanges();
-    sel.addRange(range);
-  }
-
-  function insertText(text: string) {
-    // Works with ProseMirror contenteditable
-    document.execCommand('insertText', false, text);
-  }
-
-  async function tryHandleLocalCommand(raw: string): Promise<boolean> {
-    const text = normalize(raw);
-
-    // Cambiar título
-    const titleRegexes = [
-      /^edita\s+el\s+t[ií]tulo\s+(?:a|por|:)\s+(.+)$/i,
-      /^cambia\s+el\s+t[ií]tulo\s+(?:a|por|:)\s+(.+)$/i,
-      /^pon(?:e|)\s+el\s+t[ií]tulo\s+(?:a|por|:)\s+(.+)$/i,
-      /^pon(?:e|)\s+el\s+t[ií]tulo\s+(.+)$/i,
-    ];
-    for (const rx of titleRegexes) {
-      const m = text.match(rx);
-      if (m?.[1]) {
-        const newTitle = m[1].trim();
-        // wait up to ~500ms for the input to appear
-        let inputEl: HTMLInputElement | null = null;
-        for (let i = 0; i < 5; i++) {
-          inputEl = findTitleInput();
-          if (inputEl) break;
-          await new Promise(r => setTimeout(r, 100));
-        }
-        if (!inputEl) { return true; }
-        setInputValue(inputEl, newTitle);
-        inputEl.blur();
-        // title updated
-        return true;
-      }
-    }
-
-    // Reemplazar contenido completo
-    const replaceRegexes = [
-      /^reemplaza\s+el\s+contenido\s+(?:por|con|:)\s+([\s\S]+)$/i,
-      /^reemplazar\s+el\s+contenido\s+(?:por|con|:)\s+([\s\S]+)$/i,
-    ];
-    for (const rx of replaceRegexes) {
-      const m = text.match(rx);
-      if (m?.[1]) {
-        // wait up to ~500ms for editor
-        let prose = focusProseMirror();
-        for (let i = 0; !prose && i < 5; i++) {
-          await new Promise(r => setTimeout(r, 100));
-          prose = focusProseMirror();
-        }
-        if (!prose) { return true; }
-        document.execCommand('selectAll', false);
-        insertText(m[1].trim());
-        // content replaced
-        return true;
-      }
-    }
-
-    // Agregar texto al final
-    const addRegexes = [
-      /^agrega(?:r|)\s+texto\s+([\s\S]+)$/i,
-      /^agrega(?:r|)\s+([\s\S]+)$/i,
-    ];
-    for (const rx of addRegexes) {
-      const m = text.match(rx);
-      if (m?.[1]) {
-        let prose = focusProseMirror();
-        for (let i = 0; !prose && i < 5; i++) {
-          await new Promise(r => setTimeout(r, 100));
-          prose = focusProseMirror();
-        }
-        if (!prose) { return true; }
-        setCaretToEnd(prose);
-        insertText('\n' + m[1].trim());
-        // text appended
-        return true;
-      }
-    }
-
-    return false;
-  }
-
-  // Detect and execute tool tags emitted by the assistant
-  useEffect(() => {
-    for (const msg of messages) {
-      if (msg.role !== 'assistant') continue;
-      if (processedToolIdsRef.current.has(msg.id)) continue;
-      const fullText = (msg.parts || [])
-        .map((p: any) => (p?.type === 'text' ? p.text : ''))
-        .join('\n');
-      const m = fullText.match(/<tool\s+name=\"(set_title|replace_content|append_text)\">([\s\S]*?)<\/tool>/i);
-      if (!m) continue;
-      const action = m[1] as 'set_title' | 'replace_content' | 'append_text';
-      const payload = m[2]?.trim() ?? '';
-
-      (async () => {
-        try {
-          if (action === 'set_title') {
-            // wait for title input
-            let inputEl: HTMLInputElement | null = null;
-            for (let i = 0; i < 5; i++) {
-              inputEl = findTitleInput();
-              if (inputEl) break;
-              await new Promise(r => setTimeout(r, 100));
-            }
-            if (inputEl) {
-              setInputValue(inputEl, payload);
-              inputEl.blur();
-            }
-          } else if (action === 'replace_content') {
-            let prose = focusProseMirror();
-            for (let i = 0; !prose && i < 5; i++) {
-              await new Promise(r => setTimeout(r, 100));
-              prose = focusProseMirror();
-            }
-            if (prose) {
-              document.execCommand('selectAll', false);
-              insertText(payload);
-            }
-          } else if (action === 'append_text') {
-            let prose = focusProseMirror();
-            for (let i = 0; !prose && i < 5; i++) {
-              await new Promise(r => setTimeout(r, 100));
-              prose = focusProseMirror();
-            }
-            if (prose) {
-              setCaretToEnd(prose);
-              insertText('\n' + payload);
-            }
-          }
-        } finally {
-          processedToolIdsRef.current.add(msg.id);
-          setHiddenToolMessageIds(prev => (prev.includes(msg.id) ? prev : [...prev, msg.id]));
-        }
-      })();
-    }
-  }, [messages]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = input.trim();
     if (!trimmed) return;
 
-    // Try local client-side command (no backend)
-    const handled = await tryHandleLocalCommand(trimmed);
-    if (handled) {
-      setInput('');
-      return;
-    }
-
-    // Fallback: send to model with tooling instructions
-    const toolPreamble = [
-      '[TOOLING]',
-      'You may decide to perform ONE client-side tool by outputting EXACTLY one line with one of:',
-      '<tool name="set_title">NEW TITLE</tool>',
-      '<tool name="replace_content">NEW CONTENT</tool>',
-      '<tool name="append_text">TEXT TO APPEND</tool>',
-      'If no tool is needed, reply normally. Do not add any extra text when emitting a tool tag.',
-      '[/TOOLING]',
-      '',
-    ].join('\n');
-
     sendMessage(
-      { text: toolPreamble + trimmed },
+      { text: trimmed },
       {
         body: {
-          model: model,
+          model,
         },
       },
     );
@@ -274,11 +67,11 @@ export default function Chatbot() {
       <div className="flex-1 min-h-0">
         <Conversation className="h-full">
           <ConversationContent>
-            {messages.filter(message => message.role !== 'system').map((message) => (
+            {(messages as any[]).filter((message: any) => message.role !== 'system').map((message: any) => (
               <div key={message.id}>
                 <Message from={message.role as 'user' | 'assistant'} key={message.id}>
                   <MessageContent>
-                    {message.parts?.map((part, i) => {
+                    {message.parts?.map((part: any, i: number) => {
                       if (part.type === 'text') {
                         return (
                           <div key={`${message.id}-${i}`} className="prose prose-sm max-w-none">
