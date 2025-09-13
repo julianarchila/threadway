@@ -58,3 +58,18 @@ export const getUserConnectionByAuthConfigId = internalQuery({
       .first();
   },
 });
+
+
+export const getUserConnectedToolkits = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+
+    const connections = await ctx.db
+      .query("connections")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("status"), "ACTIVE"))
+      .collect();
+
+    return connections.map((c) => c.toolkitSlug).filter((s): s is string => typeof s === "string");
+  }
+})

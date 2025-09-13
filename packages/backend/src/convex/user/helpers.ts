@@ -33,3 +33,18 @@ export const findOrCreateUser = async (ctx: ActionCtx, phoneNumber: string) => {
   if (!user) throw new Error("User should exist after creation");
   return user;
 }
+
+/* 
+Use this function to get the user given the phoneNumber from the chat webhook 
+*/
+
+export const findChatUser = async (ctx: ActionCtx, phoneNumber: string) => {
+  const validatedPhoneNumber = validatePhoneNumber(phoneNumber);
+  if (validatedPhoneNumber.isErr()) {
+    throw validatedPhoneNumber.error;
+  }
+
+  let user = await ctx.runQuery(internal.user.queries.getUserByPhoneNumber, { phoneNumber: validatedPhoneNumber.value });
+  return user
+
+}
