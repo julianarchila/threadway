@@ -8,7 +8,7 @@ import type { Id } from "../_generated/dataModel";
 
 export const agent = new Agent(components.agent, {
     name: "My Agent",
-    languageModel: openai("gpt-4o"),
+    languageModel: openai("gpt-5-mini"),
 });
 
 
