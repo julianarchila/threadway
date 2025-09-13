@@ -51,10 +51,10 @@ function RouteComponent() {
         <SidebarInset 
           className="transition-all duration-300 ease-in-out"
           style={{
-            width: showChatSidebar && isWorkflowRoute ? 'calc(100% - 250px)' : '100%',
+            width: showChatSidebar && isWorkflowRoute ? 'calc(100% - 384px)' : '100%',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
-            maxWidth: showChatSidebar && isWorkflowRoute ? 'calc(100% - 250px)' : '100%'
+            maxWidth: showChatSidebar && isWorkflowRoute ? 'calc(100% - 384px)' : '100%'
           }}
         >
           <div className="flex items-center p-4 border-b">
@@ -79,7 +79,7 @@ function RouteComponent() {
         {isWorkflowRoute && showChatSidebar && (
           <Sidebar 
             side="right" 
-            className="w-80"
+            className="w-96 min-w-[320px] max-w-[400px]"
             style={{
               position: 'fixed',
               top: 0,
@@ -91,9 +91,9 @@ function RouteComponent() {
               boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
             }}
           >
-            <SidebarHeader className="p-4 border-b">
+            <SidebarHeader className="p-3 border-b bg-background/95 backdrop-blur-sm">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold">AI Assistant</h2>
+                <h2 className="text-base font-semibold truncate">AI Assistant</h2>
                 <button
                   onClick={() => setShowChatSidebar(false)}
                   className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -102,8 +102,8 @@ function RouteComponent() {
                 </button>
               </div>
             </SidebarHeader>
-            <SidebarContent className="p-0">
-              <div className="flex-1 min-h-0">
+            <SidebarContent className="p-0 flex flex-col h-full">
+              <div className="flex-1 min-h-0 overflow-hidden">
                 <Chatbot />
               </div>
             </SidebarContent>
