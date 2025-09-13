@@ -22,7 +22,6 @@ import { useChat } from '@ai-sdk/react';
 import { Loader } from '@/components/ai-elements/loader';
 import { useParams } from '@tanstack/react-router';
 import {
-  DefaultChatTransport,
   lastAssistantMessageIsCompleteWithToolCalls,
 } from 'ai';
 import { api } from '@threadway/backend/convex/api';
@@ -76,6 +75,9 @@ export default function Chatbot() {
   const { messages, sendMessage, status, addToolResult } = useChat({
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls, async onToolCall({ toolCall }) {
       console.log('Tool call:', toolCall);
+      if (toolCall.dynamic) {
+        return;
+      }
 
 
       if (toolCall.toolName === 'readWorkflowContent') {
@@ -86,19 +88,33 @@ export default function Chatbot() {
         addToolResult({
           tool: 'readWorkflowContent',
           toolCallId: toolCall.toolCallId,
-          output: content,
+          output: content ?? '',
         })
       }
 
       if (toolCall.toolName === "editWorkflowContent") {
         console.log('Editing workflow content with:', toolCall.input);
-        // pasar input a blocks
-
-        // pasar blocks a json string
-
-        // llamar mutation para actualizar el workflow
-
-
+        try {
+          const markdown: string = (toolCall as unknown as { input: { content: string } }).input.content;
+          const parsedBlocks = await editor.tryParseMarkdownToBlocks(markdown);
+          const serialized = JSON.stringify(parsedBlocks ?? []);
+          await updateWorkflowMutation({
+            workflowId: workflowId as Id<'workflows'>,
+            content: serialized,
+          });
+          addToolResult({
+            tool: 'editWorkflowContent',
+            toolCallId: toolCall.toolCallId,
+            output: 'ok',
+          });
+        } catch (err) {
+          console.error('editWorkflowContent failed', err);
+          addToolResult({
+            tool: 'editWorkflowContent',
+            toolCallId: toolCall.toolCallId,
+            output: 'error',
+          });
+        }
       }
 
     }
