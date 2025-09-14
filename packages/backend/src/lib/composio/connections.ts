@@ -51,6 +51,7 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
       production: "ac_OL2qxgBotHea"
     },
     displayName: "Google Drive",
+    iconKey: "googledrive",
     description: "File storage and sharing",
   },
   {

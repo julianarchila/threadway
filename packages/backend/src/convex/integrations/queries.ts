@@ -32,14 +32,26 @@ export const listUserConnections = query({
       .filter((q) => q.eq(q.field("status"), "ACTIVE"))
       .collect();
 
-    return connections.map((c) => ({
-      _id: c._id,
-      authConfigId: c.authConfigId,
-      connectionId: c.connectionId,
-      toolkitSlug: c.toolkitSlug,
-      name: c.toolkitSlug ? c.toolkitSlug.toUpperCase() : "UNKNOWN",
-      status: c.status,
-    }));
+    // Get available integrations to enrich with metadata
+    const availableIntegrations = listAvailableIntegrationsLib();
+    const integrationByAuthConfigId = new Map(
+      availableIntegrations.map(i => [i.authConfigId, i])
+    );
+
+    return connections.map((c) => {
+      const integrationMeta = integrationByAuthConfigId.get(c.authConfigId);
+      return {
+        _id: c._id,
+        authConfigId: c.authConfigId,
+        connectionId: c.connectionId,
+        toolkitSlug: c.toolkitSlug,
+        name: integrationMeta?.displayName ?? (c.toolkitSlug ? c.toolkitSlug.toUpperCase() : "UNKNOWN"),
+        displayName: integrationMeta?.displayName,
+        description: integrationMeta?.description,
+        iconKey: integrationMeta?.iconKey,
+        status: c.status,
+      };
+    });
   },
 });
 

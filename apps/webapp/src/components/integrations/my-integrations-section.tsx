@@ -9,6 +9,9 @@ interface Integration {
   _id: Id<"connections">
   name: string
   toolkitSlug?: string
+  displayName?: string
+  description?: string
+  iconKey?: string
 }
 
 interface MyIntegrationsSectionProps {

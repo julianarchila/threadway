@@ -33,6 +33,8 @@ type AvailableIntegrationFromApi = {
 type TemplateIntegration = {
   name: string
   authConfigId: string
+  description?: string
+  iconKey?: string
 }
 
 function IntegrationsPage() {
@@ -48,6 +50,8 @@ function IntegrationsPage() {
     return list.map((i) => ({
       name: i.displayName ?? i.slug,
       authConfigId: i.authConfigId,
+      description: i.description,
+      iconKey: i.iconKey,
     }));
   }, [availableFromApi]);
 
