@@ -13,7 +13,7 @@ import { useAction } from "convex/react"
 import { api } from "@threadway/backend/convex/api"
 import type { Id } from "@threadway/backend/convex/dataModel"
 import { toast } from "sonner"
-import { getIntegrationIcon } from "./constants"
+import { getIntegrationIcon } from "./icon-map"
 
 type MyIntegration = {
   _id: Id<"connections">
