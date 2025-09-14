@@ -7,7 +7,6 @@ import {
 import { Message, MessageContent } from '@/components/ai-elements/message';
 import {
   PromptInput,
-  PromptInputButton,
   PromptInputModelSelect,
   PromptInputModelSelectContent,
   PromptInputModelSelectItem,
@@ -20,19 +19,19 @@ import {
 } from '@/components/ai-elements/prompt-input';
 import { useState } from 'react';
 import { useChat } from '@ai-sdk/react';
-// import { Response } from '@/components/response';
-// import {
-//   Source,
-//   Sources,
-//   SourcesContent,
-//   SourcesTrigger,
-// } from '@/components/sources';
-// import {
-//   Reasoning,
-//   ReasoningContent,
-//   ReasoningTrigger,
-// } from '@/components/reasoning';
 import { Loader } from '@/components/ai-elements/loader';
+import { useParams } from '@tanstack/react-router';
+import {
+  lastAssistantMessageIsCompleteWithToolCalls,
+} from 'ai';
+import { api } from '@threadway/backend/convex/api';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { convexQuery } from '@convex-dev/react-query';
+import { useCreateBlockNote } from '@blocknote/react';
+import { Id } from '@threadway/backend/convex/dataModel';
+import { PartialBlock } from '@blocknote/core';
+
+import { useMutation } from "convex/react";
 
 const models = [
   {
@@ -53,29 +52,99 @@ const models = [
   },
 ];
 
+function blocksFromContent(content: string | undefined) {
+  // Gets the previously stored editor contents.
+  return content ? (JSON.parse(content) as PartialBlock[]) : undefined;
+}
+
 export default function Chatbot() {
   const [input, setInput] = useState('');
   const [model, setModel] = useState<string>(models[0].value);
-  const { messages, sendMessage, status } = useChat();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (input.trim()) {
-      sendMessage(
-        { text: input },
-        {
-          body: {
-            model: model,
-          },
-        },
-      );
-      setInput('');
+  const editor = useCreateBlockNote({});
+
+  // Obtener el workflowId de los parámetros de la ruta
+  const { workflowId } = useParams({ from: '/_dashboard/f/$workflowId' });
+
+  const updateWorkflowMutation = useMutation(api.workflows.mutations.update);
+
+
+  const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId: workflowId as Id<"workflows"> }));
+
+
+  const { messages, sendMessage, status, addToolResult } = useChat({
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls, async onToolCall({ toolCall }) {
+      console.log('Tool call:', toolCall);
+      if (toolCall.dynamic) {
+        return;
+      }
+
+
+      if (toolCall.toolName === 'readWorkflowContent') {
+
+        const blocks = blocksFromContent(workflow?.content)
+
+        const content = await editor.blocksToMarkdownLossy(blocks);
+        addToolResult({
+          tool: 'readWorkflowContent',
+          toolCallId: toolCall.toolCallId,
+          output: content ?? '',
+        })
+      }
+
+      if (toolCall.toolName === "editWorkflowContent") {
+        console.log('Editing workflow content with:', toolCall.input);
+        try {
+          const markdown: string = (toolCall as unknown as { input: { content: string } }).input.content;
+          const parsedBlocks = await editor.tryParseMarkdownToBlocks(markdown);
+          const serialized = JSON.stringify(parsedBlocks ?? []);
+          await updateWorkflowMutation({
+            workflowId: workflowId as Id<'workflows'>,
+            content: serialized,
+          });
+          addToolResult({
+            tool: 'editWorkflowContent',
+            toolCallId: toolCall.toolCallId,
+            output: 'ok',
+          });
+        } catch (err) {
+          console.error('editWorkflowContent failed', err);
+          addToolResult({
+            tool: 'editWorkflowContent',
+            toolCallId: toolCall.toolCallId,
+            output: 'error',
+          });
+        }
+      }
+
     }
+  });
+
+
+
+
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = input.trim();
+    if (!trimmed) return;
+
+    sendMessage(
+      { text: trimmed },
+      {
+        body: {
+          model,
+          workflowId,
+        },
+      },
+    );
+    setInput('');
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 min-h-0">
+    <div className="flex flex-col h-full bg-background">
+      {/* Área de mensajes con scroll optimizado */}
+      <div className="flex-1 min-h-0 overflow-hidden">
         <Conversation className="h-full">
           <ConversationContent>
             {messages.filter(message => message.role !== 'system').map((message) => (
@@ -92,10 +161,10 @@ export default function Chatbot() {
                       }
                       return null;
                     }) || (
-                      <div className="prose prose-sm max-w-none">
-                        {JSON.stringify(message)}
-                      </div>
-                    )}
+                        <div className="prose prose-sm max-w-none">
+                          {JSON.stringify(message)}
+                        </div>
+                      )}
                   </MessageContent>
                 </Message>
               </div>
@@ -105,15 +174,20 @@ export default function Chatbot() {
         </Conversation>
       </div>
 
-      <div className="p-4 border-t">
+      {/* Área de input optimizada para espacios pequeños */}
+      <div className="p-3 border-t bg-background/95 backdrop-blur-sm">
         <PromptInput onSubmit={handleSubmit} className="w-full">
           <PromptInputTextarea
             onChange={(e) => setInput(e.target.value)}
             value={input}
-            placeholder="Ask me anything..."
-            className="min-h-[60px]"
+            placeholder="Pregunta algo sobre el workflow..."
+            className="min-h-[50px] max-h-[120px] resize-none text-sm"
+            style={{
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere'
+            }}
           />
-          <PromptInputToolbar>
+          <PromptInputToolbar className="mt-2">
             <PromptInputTools>
               <PromptInputModelSelect
                 onValueChange={(value) => {
@@ -121,21 +195,22 @@ export default function Chatbot() {
                 }}
                 value={model}
               >
-                <PromptInputModelSelectTrigger>
+                <PromptInputModelSelectTrigger className="h-8 text-xs">
                   <PromptInputModelSelectValue />
                 </PromptInputModelSelectTrigger>
                 <PromptInputModelSelectContent>
                   {models.map((model) => (
-                    <PromptInputModelSelectItem key={model.value} value={model.value}>
+                    <PromptInputModelSelectItem key={model.value} value={model.value} className="text-xs">
                       {model.name}
                     </PromptInputModelSelectItem>
                   ))}
                 </PromptInputModelSelectContent>
               </PromptInputModelSelect>
             </PromptInputTools>
-            <PromptInputSubmit 
-              disabled={!input} 
-              status={status === 'error' ? 'idle' : status as 'idle' | 'streaming' | 'submitted'} 
+            <PromptInputSubmit
+              disabled={!input}
+              status={status === 'error' ? 'idle' : status as 'idle' | 'streaming' | 'submitted'}
+              className="h-8 w-8"
             />
           </PromptInputToolbar>
         </PromptInput>
