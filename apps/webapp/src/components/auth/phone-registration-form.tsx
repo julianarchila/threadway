@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Phone, MessageCircle } from "lucide-react";
 
 // WhatsApp URL with predefined message
-const WA_URL = `https://wa.me/message/RZEXMJPBWCZRG1?text=${encodeURIComponent("Alo")}`;
+const WA_URL = `https://wa.me/message/RZEXMJPBWCZRG1?text=${encodeURIComponent("Hello! I would like to get started with Threadway.")}`;
 
 interface PhoneRegistrationFormProps {
     onSuccess?: () => void;
@@ -96,9 +96,6 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
         return (
             <div className="w-full max-w-md mx-auto">
                 <DialogHeader className="text-center space-y-3">
-                    <div className="mx-auto w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                        <Phone className="h-6 w-6 text-gray-400 animate-pulse" />
-                    </div>
                     <DialogTitle className="text-lg sm:text-xl">Register Phone Number</DialogTitle>
                     <DialogDescription className="text-sm">
                         Loading your phone number information...
@@ -220,9 +217,6 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
         return (
             <div className="w-full max-w-md mx-auto">
                 <DialogHeader className="text-center space-y-3">
-                    <div className="mx-auto w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
-                        <Phone className="h-6 w-6 text-blue-600" />
-                    </div>
                     <DialogTitle className="text-lg sm:text-xl">Register Phone Number</DialogTitle>
                     <DialogDescription className="text-sm">
                         Add your phone number to start using Threadway via WhatsApp
@@ -287,14 +281,10 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
     return (
         <div className="w-full max-w-md mx-auto">
             <DialogHeader className="text-center space-y-3">
-                <div className="mx-auto w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center">
-                    <MessageCircle className="h-6 w-6 text-indigo-600" />
-                </div>
                 <DialogTitle className="text-lg sm:text-xl">Verify Phone Number</DialogTitle>
                 <DialogDescription className="text-sm">
                     Enter the 6-digit code sent to
-                    <br />
-                    <span className="font-mono font-medium text-foreground">
+                    <span className="font-mono font-medium text-foreground ml-1">
                         {phoneNumber}
                     </span>
                 </DialogDescription>
