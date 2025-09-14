@@ -42,7 +42,7 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
     },
     displayName: "Gmail",
     iconKey: "gmail",
-    description: "Send and receive email",
+    description: "Gmail is Google’s email service, featuring spam protection, search functions, and seamless integration with other G Suite apps for productivity",
   },
   {
     slug: "GOOGLEDRIVE",
@@ -52,7 +52,7 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
     },
     displayName: "Google Drive",
     iconKey: "googledrive",
-    description: "File storage and sharing",
+    description: "Google Drive is a cloud storage solution for uploading, sharing, and collaborating on files across devices, with robust search and offline access",
   },
   {
     slug: "linear",
@@ -62,7 +62,7 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
     },
     displayName: "Linear",
     iconKey: "linear",
-    description: "Issue tracking",
+    description: "Linear is a streamlined issue tracking and project planning tool for modern teams, featuring fast workflows, keyboard shortcuts, and GitHub integrations",
   },
   {
     slug: "googlesheets",
@@ -72,7 +72,7 @@ export const INTEGRATIONS: ReadonlyArray<IntegrationDef> = [
     },
     displayName: "Google Sheets",
     iconKey: "googlesheets",
-    description: "Spreadsheet access",
+    description: "Google Sheets is a cloud-based spreadsheet tool enabling real-time collaboration, data analysis, and integration with other Google Workspace apps",
   },
   {
     slug: "NOTION",
