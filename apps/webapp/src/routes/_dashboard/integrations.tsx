@@ -20,23 +20,6 @@ export const Route = createFileRoute('/_dashboard/integrations')({
   }
 })
 
-// New shape from API
-type AvailableIntegrationFromApi = {
-  slug: string
-  authConfigId: string
-  displayName?: string
-  iconKey?: string
-  description?: string
-}
-
-// Local shape used by TemplateIntegrationCard
-type TemplateIntegration = {
-  name: string
-  authConfigId: string
-  description?: string
-  iconKey?: string
-}
-
 function IntegrationsPage() {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -44,9 +27,9 @@ function IntegrationsPage() {
   const { data: availableFromApi } = useSuspenseQuery(
     convexQuery(api.integrations.queries.listAvailableIntegrations, {})
   );
-  
-  const availableTemplates = useMemo<TemplateIntegration[]>(() => {
-    const list = (availableFromApi as AvailableIntegrationFromApi[]) ?? [];
+
+  const availableTemplates = useMemo(() => {
+    const list = availableFromApi ?? [];
     return list.map((i) => ({
       name: i.displayName ?? i.slug,
       authConfigId: i.authConfigId,

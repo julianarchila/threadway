@@ -12,31 +12,22 @@ import {
 import { useAction } from "convex/react"
 import { api } from "@threadway/backend/convex/api"
 import type { Id } from "@threadway/backend/convex/dataModel"
+import type { FunctionReturnType } from "convex/server"
 import { toast } from "sonner"
 import { getIntegrationIcon } from "./icon-map"
 
-type MyIntegration = {
-  _id: Id<"connections">
-  name: string
-  toolkitSlug?: string | null
-  displayName?: string
-  description?: string
-  iconKey?: string
-}
-
-type TemplateIntegration = {
-  name: string
-  authConfigId: string
-  description?: string
-  iconKey?: string
-}
+type UserConnection = FunctionReturnType<typeof api.integrations.queries.listUserConnections>[number]
+type ConnectableIntegration = { name: string } & Pick<
+  FunctionReturnType<typeof api.integrations.queries.listAvailableIntegrations>[number],
+  "authConfigId" | "description" | "iconKey"
+>
 
 export function MyIntegrationCard({
   integration,
   onDelete,
 }: {
-  integration: MyIntegration
-  onDelete: (id: string, name: string) => void
+  integration: UserConnection
+  onDelete: (id: Id<"connections">, name: string) => void
 }) {
   const IconComponent = getIntegrationIcon(integration.iconKey ?? integration.toolkitSlug ?? integration.name)
 
@@ -81,7 +72,7 @@ export function TemplateIntegrationCard({
   integration,
   isAlreadyAdded,
 }: {
-  integration: TemplateIntegration
+  integration: ConnectableIntegration
   isAlreadyAdded: boolean
 }) {
   const [isConnecting, setIsConnecting] = useState(false)
