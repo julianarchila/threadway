@@ -39,6 +39,17 @@ export const runAgentAction = internalAction({
       system: systemPrompt,
       tools: toolsRes.value,
       stopWhen: stepCountIs(10)
+    }, {
+      contextOptions: {
+        recentMessages: 20,
+        searchOptions: {
+          limit: 10,
+          textSearch: true,
+          vectorSearch: true,
+          messageRange: { before: 2, after: 1 },
+
+        }
+      }
     });
     console.log("🤖 Agent result:", result);
 

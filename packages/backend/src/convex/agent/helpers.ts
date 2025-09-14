@@ -15,6 +15,7 @@ import { sendWhatsappMessage } from "../twilio/utils";
 export const agent = new Agent(components.agent, {
   name: "My Agent",
   languageModel: openai("gpt-5"),
+  textEmbeddingModel: openai.textEmbeddingModel("text-embedding-3-large")
 });
 
 
@@ -55,7 +56,7 @@ export const loadUserTools = async (ctx: ActionCtx, userId: Id<"users">) => {
   // Fetch top 10 tools per toolkit in parallel
   const perToolkitFetches = userToolKits.map((toolkit) =>
     fromAsyncThrowable(() =>
-      composio.tools.get(userId, { toolkits: [toolkit], limit:  20 })
+      composio.tools.get(userId, { toolkits: [toolkit], limit: 20 })
     )()
   );
 
@@ -64,7 +65,7 @@ export const loadUserTools = async (ctx: ActionCtx, userId: Id<"users">) => {
   // Collect successes and merge ToolSets
   const successfulToolSets = perToolkitResults
     .filter((r) => r.isOk())
-    .map((r) => r.value );
+    .map((r) => r.value);
 
   const mergedToolSet = successfulToolSets.reduce(
     (acc, set) => ({ ...acc, ...set }),
