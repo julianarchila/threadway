@@ -6,71 +6,30 @@ import { Button } from "@/components/ui/button"
 import {
   ArrowUpRight,
   CheckCircle,
-  Database,
-  Figma,
-  FileText,
-  GitBranch,
-  Github,
-  Hammer,
-  HardDrive,
   Loader2,
-  Mail,
-  SheetIcon,
-  SunMoon,
   Trash2,
 } from "lucide-react"
 import { useAction } from "convex/react"
 import { api } from "@threadway/backend/convex/api"
 import type { Id } from "@threadway/backend/convex/dataModel"
+import type { FunctionReturnType } from "convex/server"
 import { toast } from "sonner"
+import { getIntegrationIcon } from "./icon-map"
 
-// Icon helper
-const ICON_MAP: Record<string, React.ComponentType<any>> = {
-  gmail: Mail,
-  googlemail: Mail,
-  notion: FileText,
-  airtable: Database,
-  linear: GitBranch,
-  github: Github,
-  supabase: Database,
-  figma: Figma,
-  weather: SunMoon,
-  jira: HardDrive,
-  googlesheets: SheetIcon,
-  googlesheet: SheetIcon,
-  sheets: SheetIcon,
-  spreadsheet: SheetIcon,
-}
-
-function normalizeKey(input?: string): string {
-  if (!input) return ""
-  return input.toLowerCase().replace(/[^a-z0-9]/g, "")
-}
-
-function getIntegrationIcon(key?: string) {
-  const normalized = normalizeKey(key)
-  return ICON_MAP[normalized] ?? Hammer
-}
-
-type MyIntegration = {
-  _id: Id<"connections">
-  name: string
-  toolkitSlug?: string | null
-}
-
-type TemplateIntegration = {
-  name: string
-  authConfigId: string
-}
+type UserConnection = FunctionReturnType<typeof api.integrations.queries.listUserConnections>[number]
+type ConnectableIntegration = { name: string } & Pick<
+  FunctionReturnType<typeof api.integrations.queries.listAvailableIntegrations>[number],
+  "authConfigId" | "description" | "iconKey"
+>
 
 export function MyIntegrationCard({
   integration,
   onDelete,
 }: {
-  integration: MyIntegration
-  onDelete: (id: string, name: string) => void
+  integration: UserConnection
+  onDelete: (id: Id<"connections">, name: string) => void
 }) {
-  const IconComponent = getIntegrationIcon(integration.toolkitSlug ?? integration.name)
+  const IconComponent = getIntegrationIcon(integration.iconKey ?? integration.toolkitSlug ?? integration.name)
 
   return (
     <Card className="group hover:shadow-md transition-shadow border-2 border-border/50">
@@ -81,8 +40,12 @@ export function MyIntegrationCard({
               <IconComponent className="h-6 w-6" aria-hidden="true" />
             </div>
             <div className="flex-1">
-              <CardTitle className="text-base font-medium">{integration.name}</CardTitle>
-              <p className="text-sm text-muted-foreground truncate">WIP</p>
+              <CardTitle className="text-base font-medium">
+                {integration.displayName ?? integration.name}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground line-clamp-2 overflow-hidden">
+                {integration.description || "Connected integration"}
+              </p>
             </div>
           </div>
           <Button
@@ -109,12 +72,12 @@ export function TemplateIntegrationCard({
   integration,
   isAlreadyAdded,
 }: {
-  integration: TemplateIntegration
+  integration: ConnectableIntegration
   isAlreadyAdded: boolean
 }) {
   const [isConnecting, setIsConnecting] = useState(false)
   const initiateConnection = useAction(api.integrations.actions.initiateConnection)
-  const IconComponent = getIntegrationIcon(integration.name)
+  const IconComponent = getIntegrationIcon(integration.iconKey ?? integration.name)
 
   const handleConnect = async () => {
     if (isAlreadyAdded || isConnecting) return
@@ -157,7 +120,9 @@ export function TemplateIntegrationCard({
             </div>
             <div>
               <CardTitle className="text-base font-medium">{integration.name}</CardTitle>
-              <p className="text-sm text-muted-foreground">No description available (WIP)</p>
+              <p className="text-sm text-muted-foreground line-clamp-2 overflow-hidden">
+                {integration.description || "No description available"}
+              </p>
             </div>
           </div>
 

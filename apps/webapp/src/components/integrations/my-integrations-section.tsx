@@ -4,16 +4,14 @@ import type { Id } from "@threadway/backend/convex/dataModel"
 import { useMemo, useState } from "react"
 import { MyIntegrationCard } from "./integration-card"
 import { DeleteConfirmationDialog } from "./delete-confirmation-dialog"
+import type { FunctionReturnType } from "convex/server"
+import { api } from "@threadway/backend/convex/api"
 
-interface Integration {
-  _id: Id<"connections">
-  name: string
-  toolkitSlug?: string
-}
+type UserConnection = FunctionReturnType<typeof api.integrations.queries.listUserConnections>[number]
 
 interface MyIntegrationsSectionProps {
   searchTerm: string
-  integrations: Integration[]
+  integrations: UserConnection[]
 }
 
 export function MyIntegrationsSection({
@@ -52,7 +50,7 @@ export function MyIntegrationsSection({
               key={integration._id}
               integration={integration}
               onDelete={(id, name) =>
-                setToDelete({ id: id as Id<"connections">, name })
+                setToDelete({ id, name })
               }
             />
           ))}

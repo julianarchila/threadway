@@ -169,6 +169,14 @@ body {
   .to-brand {
     --tw-gradient-to: var(--brand-to) var(--tw-gradient-to-position);
   }
+  
+  /* Ensure line-clamp works across all Tailwind versions */
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }
 
 /* BlockNote editor text readability fixes */
