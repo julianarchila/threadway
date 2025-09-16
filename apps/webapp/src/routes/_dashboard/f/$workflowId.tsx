@@ -1,7 +1,5 @@
 import { WorkflowEditor } from '@/components/workflows/workflow-editor';
-import Chatbot from '@/components/chatbot';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { MessageSquare } from 'lucide-react';
+ 
 import { convexQuery } from '@convex-dev/react-query';
 import { createFileRoute} from '@tanstack/react-router'
 import { api } from '@threadway/backend/convex/api';
@@ -23,32 +21,7 @@ function RouteComponent() {
         <WorkflowEditor workflowId={workflowId as Id<"workflows">} />
       </div>
 
-      {/* Desktop chat sidebar */}
-      <div className="w-96 shrink-0 hidden xl:block">
-        <div className="sticky top-4 h-[calc(100vh-2rem)] border-l pl-4">
-          <Chatbot />
-        </div>
-      </div>
-
-      {/* Mobile chat button + sheet */}
-      <Sheet>
-        <SheetTrigger asChild>
-          <button
-            className="fixed bottom-6 right-16 sm:right-12 md:right-16 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center xl:hidden z-50"
-            aria-label="Open chat"
-          >
-            <MessageSquare className="h-5 w-5" />
-          </button>
-        </SheetTrigger>
-        <SheetContent side="right" className="p-0 w-full sm:max-w-md">
-          <SheetHeader className="p-3 border-b bg-background/95 backdrop-blur-sm">
-            <SheetTitle>AI Assistant</SheetTitle>
-          </SheetHeader>
-          <div className="h-full">
-            <Chatbot />
-          </div>
-        </SheetContent>
-      </Sheet>
+      {/* Chat UI moved to dashboard right sidebar */}
     </div>
   );
 }
