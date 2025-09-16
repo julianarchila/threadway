@@ -123,12 +123,12 @@ export default function Chatbot() {
     <div className="flex flex-col h-full bg-background max-w-full overflow-x-hidden">
       {/* Área de mensajes con scroll optimizado */}
       <div className="flex-1 min-h-0 overflow-hidden">
-        <Conversation className="h-full">
+        <Conversation className="h-full text-sm">
           <ConversationContent>
             {messages.filter(message => message.role !== 'system').map((message) => (
               <div key={message.id}>
                 <Message from={message.role as 'user' | 'assistant'} key={message.id}>
-                  <MessageContent className={message.role === 'assistant' ? 'prose prose-base text-foreground break-words' : 'break-words'}>
+                  <MessageContent className={message.role === 'assistant' ? 'prose prose-sm text-foreground break-words' : 'break-words'}>
                     {message.parts?.map((part, i) => {
                       if (part.type === 'text') {
                         return (
@@ -158,15 +158,15 @@ export default function Chatbot() {
         </Conversation>
       </div>
 
-      {/* Área de input amplia con botón dentro del cuadro */}
-      <div className="p-3 border-t bg-background/95 backdrop-blur-sm">
+      {/* Área de input compacta con botón dentro del cuadro */}
+      <div className="p-2 border-t bg-background/95 backdrop-blur-sm">
         <PromptInput onSubmit={handleSubmit} className="w-full">
           <div className="relative">
             <PromptInputTextarea
               onChange={(e) => setInput(e.target.value)}
               value={input}
               placeholder="Escribe tu mensaje..."
-              className="min-h-[96px] md:min-h-[128px] max-h-[240px] pr-10 resize-none text-sm rounded-lg border focus-visible:ring-2"
+              className="min-h-[72px] md:min-h-[96px] max-h-[160px] pr-9 resize-none text-sm rounded-lg border focus-visible:ring-2"
               style={{
                 wordBreak: 'break-word',
                 overflowWrap: 'anywhere'
@@ -175,7 +175,7 @@ export default function Chatbot() {
             <PromptInputSubmit
               disabled={!input}
               status={status === 'error' ? 'idle' : (status as 'idle' | 'streaming' | 'submitted')}
-              className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-sm"
+              className="absolute bottom-1.5 right-1.5 h-7 w-7 rounded-full shadow-sm"
             />
           </div>
         </PromptInput>
