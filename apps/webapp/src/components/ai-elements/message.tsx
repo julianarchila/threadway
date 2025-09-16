@@ -18,16 +18,18 @@ export const Message = React.forwardRef<HTMLDivElement, MessageProps>(
       )}
       {...props}
     >
-      <div
-        className={cn(
-          'max-w-[80%] rounded-lg px-3 py-2',
-          from === 'user'
-            ? 'bg-primary text-primary-foreground ml-auto'
-            : 'bg-muted'
-        )}
-      >
-        {children}
-      </div>
+      {from === 'user' ? (
+        <div
+          className={cn(
+            'relative max-w-[80%] rounded-lg px-3 py-2 ml-auto shadow-sm',
+            'bg-primary text-primary-foreground'
+          )}
+        >
+          {children}
+        </div>
+      ) : (
+        <div className={cn('max-w-[80%]')}>{children}</div>
+      )}
     </div>
   )
 );

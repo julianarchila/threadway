@@ -120,7 +120,7 @@ export default function Chatbot() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-background">
+    <div className="flex flex-col h-full bg-background max-w-full overflow-x-hidden">
       {/* Área de mensajes con scroll optimizado */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <Conversation className="h-full">
@@ -128,7 +128,7 @@ export default function Chatbot() {
             {messages.filter(message => message.role !== 'system').map((message) => (
               <div key={message.id}>
                 <Message from={message.role as 'user' | 'assistant'} key={message.id}>
-                  <MessageContent>
+                  <MessageContent className={message.role === 'assistant' ? 'prose prose-base text-foreground break-words' : 'break-words'}>
                     {message.parts?.map((part, i) => {
                       if (part.type === 'text') {
                         return (
@@ -158,27 +158,26 @@ export default function Chatbot() {
         </Conversation>
       </div>
 
-      {/* Área de input optimizada para espacios pequeños */}
+      {/* Área de input amplia con botón dentro del cuadro */}
       <div className="p-3 border-t bg-background/95 backdrop-blur-sm">
         <PromptInput onSubmit={handleSubmit} className="w-full">
-          <PromptInputTextarea
-            onChange={(e) => setInput(e.target.value)}
-            value={input}
-            placeholder="Pregunta algo sobre el workflow..."
-            className="min-h-[50px] max-h-[120px] resize-none text-sm"
-            style={{
-              wordBreak: 'break-word',
-              overflowWrap: 'anywhere'
-            }}
-          />
-          <PromptInputToolbar className="mt-2">
-            <PromptInputTools />
+          <div className="relative">
+            <PromptInputTextarea
+              onChange={(e) => setInput(e.target.value)}
+              value={input}
+              placeholder="Escribe tu mensaje..."
+              className="min-h-[96px] md:min-h-[128px] max-h-[240px] pr-10 resize-none text-sm rounded-lg border focus-visible:ring-2"
+              style={{
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere'
+              }}
+            />
             <PromptInputSubmit
               disabled={!input}
-              status={status === 'error' ? 'idle' : status as 'idle' | 'streaming' | 'submitted'}
-              className="h-8 w-8"
+              status={status === 'error' ? 'idle' : (status as 'idle' | 'streaming' | 'submitted')}
+              className="absolute bottom-2 right-2 h-8 w-8 rounded-full shadow-sm"
             />
-          </PromptInputToolbar>
+          </div>
         </PromptInput>
       </div>
     </div>
