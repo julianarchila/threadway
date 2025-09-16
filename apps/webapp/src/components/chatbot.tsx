@@ -5,6 +5,7 @@ import {
   ConversationContent,
 } from '@/components/ai-elements/conversation';
 import { Message, MessageContent } from '@/components/ai-elements/message';
+import { Response } from '@/components/ai-elements/response';
 import {
   PromptInput,
   PromptInputSubmit,
@@ -131,17 +132,23 @@ export default function Chatbot() {
                     {message.parts?.map((part, i) => {
                       if (part.type === 'text') {
                         return (
-                          <div key={`${message.id}-${i}`} className="prose prose-sm max-w-none">
-                            {part.text}
-                          </div>
+                          message.role === 'assistant' ? (
+                            <Response key={`${message.id}-${i}`}>
+                              {part.text}
+                            </Response>
+                          ) : (
+                            <div key={`${message.id}-${i}`} className="prose prose-sm max-w-none">
+                              {part.text}
+                            </div>
+                          )
                         );
                       }
                       return null;
                     }) || (
-                        <div className="prose prose-sm max-w-none">
-                          {JSON.stringify(message)}
-                        </div>
-                      )}
+                      <div className="prose prose-sm max-w-none">
+                        {JSON.stringify(message)}
+                      </div>
+                    )}
                   </MessageContent>
                 </Message>
               </div>
