@@ -18,7 +18,7 @@ export const Route = createFileRoute('/_dashboard/f/$workflowId')({
 function RouteComponent() {
   const { workflowId } = Route.useParams();
   return (
-    <div className="flex gap-4 w-full">
+    <div className="flex gap-4 w-full overflow-x-hidden max-w-[100vw]">
       <div className="flex-1 min-w-0">
         <WorkflowEditor workflowId={workflowId as Id<"workflows">} />
       </div>
@@ -34,7 +34,7 @@ function RouteComponent() {
       <Sheet>
         <SheetTrigger asChild>
           <button
-            className="fixed bottom-6 right-6 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center xl:hidden"
+            className="fixed bottom-6 right-16 sm:right-12 md:right-16 h-12 w-12 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200 flex items-center justify-center xl:hidden z-50"
             aria-label="Open chat"
           >
             <MessageSquare className="h-5 w-5" />

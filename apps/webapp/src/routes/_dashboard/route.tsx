@@ -1,5 +1,5 @@
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
-import { createFileRoute, Outlet, redirect, useRouter, useRouterState } from '@tanstack/react-router'
+import { createFileRoute, Outlet, redirect, useRouter } from '@tanstack/react-router'
 import { AppSidebar } from '@/components/sidebar/app-sidebar'
 
 import {
@@ -7,11 +7,11 @@ import {
   Unauthenticated,
   AuthLoading,
 } from "convex/react";
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Loader from '@/components/loader';
 import { convexQuery } from '@convex-dev/react-query';
 import { api } from '@threadway/backend/convex/api';
-import { MessageSquare, X } from 'lucide-react';
+ 
 
 export const Route = createFileRoute('/_dashboard')({
   component: RouteComponent,
@@ -28,9 +28,7 @@ export const Route = createFileRoute('/_dashboard')({
 
 function RouteComponent() {
 
-  const [showChatSidebar, setShowChatSidebar] = useState(false);
-  const { location } = useRouterState();
-  const isWorkflowRoute = false;
+ 
 
   function UnauthRedirect() {
     const router = useRouter();
@@ -47,7 +45,16 @@ function RouteComponent() {
     <Authenticated>
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset className="transition-all duration-300 ease-in-out">
+        <SidebarInset 
+          className="transition-all duration-300 ease-in-out"
+          style={{
+            width: '100%',
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            maxWidth: '100%',
+            overflowX: 'hidden'
+          }}
+        >
           <div className="flex items-center p-4 border-b">
             <SidebarTrigger />
           </div>
