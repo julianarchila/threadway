@@ -10,6 +10,8 @@ import { EditableTitle } from "./editable-title";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { convexQuery } from "@convex-dev/react-query";
 
+import { IntegrationsInWorkflow } from "./integrations-in-workflow";
+
 interface WorkflowEditorProps {
   workflowId: Id<"workflows">;
 }
@@ -31,18 +33,27 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
   // Renders the editor instance using a React component.
   return (
     <div className="w-full max-w-4xl mx-auto px-6 py-8">
-      {/* Document Title */}
+
+
+      {/* Header */}
       <div className="mb-8 px-14">
-        <EditableTitle
-          title={workflow?.title || "Untitled Workflow"}
-          workflowId={workflowId}
-          className="mb-2"
-        />
+        {/* Document Title */}
+        <div className="mb-4">
+          <EditableTitle
+            title={workflow?.title || "Untitled Workflow"}
+            workflowId={workflowId}
+            className="mb-2"
+          />
+        </div>
+
+        {/* Integrations workflow */}
+        <IntegrationsInWorkflow />
+
       </div>
 
       {/* Editor */}
       <BlockNoteEditor key={workflowId} initialContent={initialContent} onContentChange={saveContent} />
-    </div>
+    </div >
   );
 }
 
