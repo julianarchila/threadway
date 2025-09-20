@@ -6,6 +6,7 @@ import { api } from "@threadway/backend/convex/api";
 import type { Id } from "@threadway/backend/convex/dataModel";
 import { useMutation } from "convex/react";
 import type { Block, PartialBlock } from "@blocknote/core";
+import { useEffect, useRef, useState } from "react";
 import { EditableTitle } from "./editable-title";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { convexQuery } from "@convex-dev/react-query";
@@ -24,10 +25,29 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
 
   const initialContent = blocksFromContent(workflow?.content);
 
+  // Tracks when server-side changes (not produced by this editor) arrive
+  const [contentVersion, setContentVersion] = useState(0);
+  const lastSavedContentRef = useRef<string | undefined>(undefined);
+
+  // When Convex pushes an updated workflow content that doesn't match the last
+  // content we saved locally, bump the version to remount the editor with new content.
+  useEffect(() => {
+    const serverContent = workflow?.content;
+    if (serverContent == null) return;
+    if (lastSavedContentRef.current === serverContent) return;
+    setContentVersion((v) => v + 1);
+  }, [workflow?.content]);
+
   async function saveContent(jsonBlocks: Block[]) {
+    const serialized = JSON.stringify(jsonBlocks);
+    // Avoid feedback loops and redundant writes
+    if (serialized === workflow?.content || serialized === lastSavedContentRef.current) {
+      return;
+    }
+    lastSavedContentRef.current = serialized;
     updateWorkflowMutation({
       workflowId,
-      content: JSON.stringify(jsonBlocks),
+      content: serialized,
     });
   }
 
@@ -44,7 +64,7 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
       </div>
 
       {/* Editor */}
-      <BlockNoteEditor key={workflowId} initialContent={initialContent} onContentChange={saveContent} />
+      <BlockNoteEditor key={`${workflowId}:${contentVersion}`} initialContent={initialContent} onContentChange={saveContent} />
     </div>
   );
 }
