@@ -21,6 +21,9 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
   const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId }));
   const updateWorkflowMutation = useMutation(api.workflows.mutations.update);
 
+  console.log("Rendering WorkflowEditor with workflowId:", workflowId, "and workflow:", workflow);
+  console.log("Workflow content:", workflow?.content);
+
   const initialContent = blocksFromContent(workflow?.content);
 
   async function saveContent(jsonBlocks: Block[]) {
