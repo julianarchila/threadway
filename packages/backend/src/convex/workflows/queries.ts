@@ -26,7 +26,7 @@ export const getWorkflowById = query({
     }
 
     return workflow
- }
+  }
 });
 
 // Obtener todos los workflows de un usuario
@@ -49,8 +49,37 @@ export const getUserWorkflows = query({
       .order("desc")
       .collect();
 
-    return workflows.map(({content,userId, ...rest}) => ({
+    return workflows.map(({ content, userId, ...rest }) => ({
       ...rest,
     }));
   },
 });
+
+export const getWorkflowConnections = query({
+  args: { workflowId: v.id("workflows") },
+  handler: async (ctx, { workflowId }) => {
+    const userId = await betterAuthComponent.getAuthUserId(ctx);
+    if (!userId) throw new Error("User not authenticated");
+
+    const workflow = await ctx.db
+      .get(workflowId);
+
+    if (!workflow || workflow.userId !== userId) {
+      throw new Error("Workflow not found");
+    }
+
+    const workflowIntegrations = await ctx.db
+      .query("workflowIntegrations")
+      .withIndex("by_workflow", (q) => q.eq("workflowId", workflowId))
+      .collect();
+
+    const connections = await Promise.all(
+      workflowIntegrations.map((wi) =>
+        ctx.db.get(wi.connectionId)
+      )
+    );
+
+    return connections.filter(Boolean);
+  },
+});
+

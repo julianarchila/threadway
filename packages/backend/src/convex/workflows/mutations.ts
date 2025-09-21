@@ -185,3 +185,50 @@ export const addIntegrationToWorkflow = mutation({
     return integrationId
   }
 })
+
+// Mutation to remove an integration from a workflow
+export const removeIntegrationFromWorkflow = mutation({
+  args: {
+    workflowId: v.id("workflows"),
+    connectionId: v.id("connections"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await betterAuthComponent.getAuthUserId(ctx)
+    if (!userId) {
+      throw new Error("User not authenticated")
+    }
+
+    // Verify that the workflow exists and belongs to the user
+    const workflow = await ctx.db.get(args.workflowId)
+    if (!workflow) {
+      throw createWorkflowNotFoundError(args.workflowId)
+    }
+    if (workflow.userId !== userId) {
+      throw createUserNotAuthorizedError(userId, args.workflowId)
+    }
+
+    // Verify that the connection exists and belongs to the user
+    const connection = await ctx.db.get(args.connectionId)
+    if (!connection) {
+      throw new ConvexError("Connection not found")
+    }
+    if (connection.userId !== userId) {
+      throw new ConvexError("Connection does not belong to user")
+    }
+
+    // Find the existing relationship
+    const existing = await ctx.db
+      .query("workflowIntegrations")
+      .withIndex("by_workflow", (q) => q.eq("workflowId", args.workflowId))
+      .filter((q) => q.eq(q.field("connectionId"), args.connectionId))
+      .first()
+    if (!existing) {
+      throw new ConvexError("Integration not associated with workflow")
+    }
+
+    // Delete the relationship
+    await ctx.db.delete(existing._id)
+
+    return args.connectionId
+  }
+})
