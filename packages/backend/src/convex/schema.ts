@@ -31,4 +31,11 @@ export default defineSchema({
     .index("by_authConfigId", ["authConfigId"])
     .index("by_authConfigId_and_user", ["authConfigId", "userId"]),
 
+  workflowIntegrations: defineTable({
+    workflowId: v.id("workflows"),
+    connectionId: v.id("connections"),
+  })
+    .index("by_workflow", ["workflowId"])
+    .index("by_connection", ["connectionId"]),
+
 });

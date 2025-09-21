@@ -14,13 +14,18 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { convexQuery } from '@convex-dev/react-query';
 import { api } from '@threadway/backend/convex/api';
 import { useQuery, useAction } from 'convex/react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { Loader2, ArrowUpRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { getIntegrationIcon } from "@/components/integrations/icon-map";
+// import { Route } from '@/routes/_dashboard/f/$workflowId';
+
 
 export function IntegrationsInWorkflow() {
+    // const { workflowId } = Route.useParams();
     const [searchTerm, setSearchTerm] = useState("");
+    const inputRef = useRef<HTMLInputElement>(null);
+
     // Static list of available integrations via react-query
     const { data: availableFromApi } = useSuspenseQuery(
         convexQuery(api.integrations.queries.listAvailableIntegrations, {})
@@ -72,9 +77,15 @@ export function IntegrationsInWorkflow() {
         }
     };
 
+    const handleAddIntegration = (isAlreadyAdded: boolean, integration: any) => {
+        if (!isAlreadyAdded) {
+            handleConnect(integration);
+        }
+    }
+
     return (
         <div className="flex justify-start">
-            <DropdownMenu>
+            <DropdownMenu onOpenChange={(open) => { if (open) setSearchTerm(""); }}>
                 <DropdownMenuTrigger asChild>
                     <div>
                         <Button variant="secondary" size="sm" onClick={() => { /* TODO: open integrations modal */ }}>
@@ -83,7 +94,7 @@ export function IntegrationsInWorkflow() {
                         </Button>
                     </div>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-72 p-2" align="end">
+                <DropdownMenuContent className="w-72 p-2 max-h-[300px] overflow-y-auto scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }} align="end">
                     <DropdownMenuLabel className="p-0">
                         <div
                             className="flex items-center gap-2 px-2 py-1.5 bg-transparent"
@@ -96,6 +107,7 @@ export function IntegrationsInWorkflow() {
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 className="h-8 px-2 py-1 text-sm bg-transparent border-none focus-visible:outline-none focus-visible:ring-0"
+                                ref={inputRef}
                             />
                         </div>
                     </DropdownMenuLabel>
@@ -107,16 +119,23 @@ export function IntegrationsInWorkflow() {
                         {filteredIntegrations.map((integration: any) => {
                             const isAlreadyAdded = myAuthConfigIds.has(integration.authConfigId);
                             const IconComponent = getIntegrationIcon(integration.iconKey ?? integration.slug ?? integration.name);
+
+                            setTimeout(() => {
+                                if (inputRef.current) {
+                                    inputRef.current.focus();
+                                }
+                            }, 50);
+
                             return (
                                 <DropdownMenuItem
-                                    autoFocus={false}
                                     key={integration.authConfigId}
                                     className="flex items-center justify-between gap-2 px-3 py-2 hover:bg-accent rounded cursor-pointer"
                                     disabled={isConnecting === integration.authConfigId}
                                     tabIndex={isAlreadyAdded ? -1 : 0}
                                     aria-disabled={isAlreadyAdded}
-                                    onClick={() => {
-                                        if (!isAlreadyAdded) handleConnect(integration);
+                                    onSelect={(event) => {
+                                        event.preventDefault();
+                                        handleAddIntegration(isAlreadyAdded, integration);
                                     }}
                                 >
                                     <span className="flex items-center gap-2">
@@ -141,6 +160,10 @@ export function IntegrationsInWorkflow() {
                     </DropdownMenuGroup>
                 </DropdownMenuContent>
             </DropdownMenu>
+
+            <div>
+                <h4 className="font-medium">Integrations in this Workflow</h4>
+            </div>
         </div>
     );
 }
