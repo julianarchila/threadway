@@ -20,6 +20,7 @@ import { useParams } from '@tanstack/react-router';
 import {
   lastAssistantMessageIsCompleteWithToolCalls,
 } from 'ai';
+import type { UIMessage } from 'ai';
 import { api } from '@threadway/backend/convex/api';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { convexQuery } from '@convex-dev/react-query';
@@ -51,7 +52,20 @@ export default function Chatbot() {
   const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId: workflowId as Id<"workflows"> }));
 
 
+  // Helpers for per-workflow persistence in localStorage
+  const storageKey = workflowId ? `chat:workflow:${workflowId}` : undefined;
+  const initialMessages: UIMessage[] | undefined = (() => {
+    if (typeof window === 'undefined' || !storageKey) return undefined;
+    try {
+      const raw = window.localStorage.getItem(storageKey);
+      return raw ? (JSON.parse(raw) as UIMessage[]) : undefined;
+    } catch {
+      return undefined;
+    }
+  })();
+
   const { messages, sendMessage, status, addToolResult } = useChat({
+    initialMessages,
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls, async onToolCall({ toolCall }) {
       console.log('Tool call:', toolCall);
       if (toolCall.dynamic) {
@@ -98,6 +112,14 @@ export default function Chatbot() {
 
     }
   });
+
+  // Persist messages per workflow to localStorage
+  // Do not block on errors; best-effort persistence.
+  try {
+    if (typeof window !== 'undefined' && storageKey) {
+      window.localStorage.setItem(storageKey, JSON.stringify(messages as UIMessage[]));
+    }
+  } catch {}
 
 
 

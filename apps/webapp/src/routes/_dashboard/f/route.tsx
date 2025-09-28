@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useParams } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
 import { Sidebar, SidebarContent, SidebarHeader } from '@/components/ui/sidebar'
@@ -10,6 +10,7 @@ export const Route = createFileRoute('/_dashboard/f')({
 
 function RouteComponent() {
   const [showChatSidebar, setShowChatSidebar] = useState(false)
+  const { workflowId } = useParams({ from: '/_dashboard/f/$workflowId' })
 
   useEffect(() => {
     function handleOpen() {
@@ -26,22 +27,25 @@ function RouteComponent() {
       <Outlet />
     </div>
 
-    {showChatSidebar && (
-      <Sidebar 
-        side="right" 
-        className="w-96 min-w-[320px] max-w-[400px]"
-        style={{
-          position: 'fixed',
-          top: 0,
-          right: 0,
-          height: '100vh',
-          zIndex: 50,
-          backgroundColor: 'hsl(var(--background))',
-          borderLeft: '1px solid hsl(var(--border))',
-          boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
-        }}
-      >
-        <SidebarHeader className="p-4 border-b bg-background/95 backdrop-blur-sm mt-1">
+    <Sidebar 
+      side="right" 
+      className={
+        `w-96 min-w-[320px] max-w-[400px] transition-transform duration-300 ease-in-out ` +
+        (showChatSidebar ? 'translate-x-0' : 'translate-x-full pointer-events-none opacity-0')
+      }
+      style={{
+        position: 'fixed',
+        top: 0,
+        right: 0,
+        height: '100vh',
+        zIndex: 50,
+        backgroundColor: 'hsl(var(--background))',
+        borderLeft: '1px solid hsl(var(--border))',
+        boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
+      }}
+      aria-hidden={!showChatSidebar}
+    >
+      <SidebarHeader className="p-4 border-b bg-background/95 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold truncate">AI Assistant</h2>
             <button
@@ -57,11 +61,10 @@ function RouteComponent() {
           </div>
         </SidebarHeader>
         <SidebarContent className="p-0 flex flex-col h-full">
-          <div className="flex-1 min-h-0 overflow-hidden">
-            <Chatbot />
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <Chatbot key={workflowId} />
           </div>
         </SidebarContent>
-      </Sidebar>
-    )}
+    </Sidebar>
   </>
 }
