@@ -41,7 +41,7 @@ function RouteComponent() {
           boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'
         }}
       >
-        <SidebarHeader className="p-3 border-b bg-background/95 backdrop-blur-sm">
+        <SidebarHeader className="p-4 border-b bg-background/95 backdrop-blur-sm mt-1">
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold truncate">AI Assistant</h2>
             <button
