@@ -1,31 +1,45 @@
 import { createServerFileRoute } from '@tanstack/react-start/server'
-
-import { streamText, convertToModelMessages } from 'ai';
+import { systemPrompt } from '@/lib/prompts';
+import { streamText, convertToModelMessages, tool } from 'ai';
 import type { UIMessage } from 'ai';
 import { openai } from '@ai-sdk/openai';
+import { z } from 'zod';
 
 export const ServerRoute = createServerFileRoute('/api/chat').methods({
   POST: async ({ request }) => {
 
   const {
     messages,
-    model,
-  }: { messages: UIMessage[]; model: string } = await request.json();
+  }: { messages: UIMessage[]; workflowId?: string } = await request.json();
 
-  // Use OpenAI models directly
-  const selectedModel = openai(model) || openai('gpt-3.5-turbo');
+  // Use OpenAI GPT-5 Mini by default
+  const selectedModel = openai('gpt-5-mini');
 
   const result = streamText({
     model: selectedModel,
     messages: convertToModelMessages(messages),
-    system:
-      'You are a helpful assistant that can answer questions and help with tasks',
+    system: systemPrompt,
+ 
+    tools: {
+ 
+      readWorkflowContent: tool({
+        description: 'Return the current workflow content. Use when you need to read the workflow content.',
+        inputSchema: z.object({}),
+
+
+      }),
+      editWorkflowContent: tool({
+        description: 'Edit the current workflow content. Use when you need to modify the workflow content.',
+        inputSchema: z.object({ content: z.string().min(1) }),
+
+      }),
+    },
   });
 
   // send sources and reasoning back to the client
   return result.toUIMessageStreamResponse({
-    sendSources: true,
-    sendReasoning: true,
+    sendSources: false,
+    sendReasoning: false,
   });
 
   },

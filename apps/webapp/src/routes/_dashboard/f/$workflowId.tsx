@@ -1,4 +1,5 @@
 import { WorkflowEditor } from '@/components/workflows/workflow-editor';
+ 
 import { convexQuery } from '@convex-dev/react-query';
 import { createFileRoute} from '@tanstack/react-router'
 import { api } from '@threadway/backend/convex/api';
@@ -14,5 +15,13 @@ export const Route = createFileRoute('/_dashboard/f/$workflowId')({
 
 function RouteComponent() {
   const { workflowId } = Route.useParams();
-  return <WorkflowEditor workflowId={workflowId as Id<"workflows">} />;
+  return (
+    <div className="flex gap-4 w-full overflow-x-hidden max-w-[100vw]">
+      <div className="flex-1 min-w-0">
+        <WorkflowEditor workflowId={workflowId as Id<"workflows">} />
+      </div>
+
+      {/* Chat UI moved to dashboard right sidebar */}
+    </div>
+  );
 }
