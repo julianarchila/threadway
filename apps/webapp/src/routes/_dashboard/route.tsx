@@ -74,7 +74,7 @@ function RouteComponent() {
         >
           <div className="flex items-center p-4 border-b justify-between">
             <SidebarTrigger />
-            {isWorkflowRoute && (
+            {isWorkflowRoute && !showChatSidebar && (
               <button
                 onClick={() => {
                   window.dispatchEvent(new CustomEvent('open-chat'))
