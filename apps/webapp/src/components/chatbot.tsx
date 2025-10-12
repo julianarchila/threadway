@@ -112,9 +112,12 @@ export default function Chatbot() {
     queryClient.setQueryData(CHAT_CACHE_KEY, messages as UIMessage[])
   }, [queryClient, messages])
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom only when streaming is complete or new message starts
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    // Only scroll when not actively streaming
+    if (status !== 'streaming') {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, status]);
 
 
@@ -171,7 +174,6 @@ export default function Chatbot() {
                 </Message>
               </div>
             ))}
-            {status === 'submitted' && <Loader />}
             <div ref={messagesEndRef} />
           </ConversationContent>
         </Conversation>
