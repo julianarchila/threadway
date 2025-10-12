@@ -176,6 +176,14 @@ export default function Chatbot() {
           <div className="relative">
             <PromptInputTextarea
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  if (input.trim()) {
+                    handleSubmit(e);
+                  }
+                }
+              }}
               value={input}
               placeholder="Escribe tu mensaje..."
               className="min-h-[72px] md:min-h-[96px] max-h-[160px] pr-9 resize-none text-sm rounded-lg border focus-visible:ring-2"
