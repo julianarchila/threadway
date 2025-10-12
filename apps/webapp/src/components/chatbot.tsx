@@ -13,7 +13,7 @@ import {
   PromptInputToolbar,
   PromptInputTools,
 } from '@/components/ai-elements/prompt-input';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { Loader } from '@/components/ai-elements/loader';
 import { useParams } from '@tanstack/react-router';
@@ -40,6 +40,7 @@ function blocksFromContent(content: string | undefined) {
 export default function Chatbot() {
   const [input, setInput] = useState('');
   // Model state removed
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const editor = useCreateBlockNote({});
 
@@ -111,6 +112,11 @@ export default function Chatbot() {
     queryClient.setQueryData(CHAT_CACHE_KEY, messages as UIMessage[])
   }, [queryClient, messages])
 
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, status]);
+
 
 
 
@@ -136,7 +142,7 @@ export default function Chatbot() {
       {/* Área de mensajes con scroll optimizado */}
       <div className="flex-1 min-h-0 overflow-hidden">
         <Conversation className="h-full text-sm">
-          <ConversationContent>
+          <ConversationContent className="overflow-y-auto scrollbar-hide">
             {messages.filter(message => message.role !== 'system').map((message) => (
               <div key={message.id}>
                 <Message from={message.role as 'user' | 'assistant'} key={message.id}>
@@ -166,6 +172,7 @@ export default function Chatbot() {
               </div>
             ))}
             {status === 'submitted' && <Loader />}
+            <div ref={messagesEndRef} />
           </ConversationContent>
         </Conversation>
       </div>
