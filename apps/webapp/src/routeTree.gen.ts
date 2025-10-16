@@ -16,6 +16,7 @@ import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
 import { Route as DashboardIntegrationsRouteImport } from './routes/_dashboard/integrations'
 import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
 import { Route as DashboardFWorkflowIdRouteImport } from './routes/_dashboard/f/$workflowId'
+import { ServerRoute as ApiInngestServerRouteImport } from './routes/api/inngest'
 import { ServerRoute as ApiChatServerRouteImport } from './routes/api/chat'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
 
@@ -44,6 +45,11 @@ const DashboardFWorkflowIdRoute = DashboardFWorkflowIdRouteImport.update({
   id: '/f/$workflowId',
   path: '/f/$workflowId',
   getParentRoute: () => DashboardRouteRoute,
+} as any)
+const ApiInngestServerRoute = ApiInngestServerRouteImport.update({
+  id: '/api/inngest',
+  path: '/api/inngest',
+  getParentRoute: () => rootServerRouteImport,
 } as any)
 const ApiChatServerRoute = ApiChatServerRouteImport.update({
   id: '/api/chat',
@@ -96,27 +102,31 @@ export interface RootRouteChildren {
 }
 export interface FileServerRoutesByFullPath {
   '/api/chat': typeof ApiChatServerRoute
+  '/api/inngest': typeof ApiInngestServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
 }
 export interface FileServerRoutesByTo {
   '/api/chat': typeof ApiChatServerRoute
+  '/api/inngest': typeof ApiInngestServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
 }
 export interface FileServerRoutesById {
   __root__: typeof rootServerRouteImport
   '/api/chat': typeof ApiChatServerRoute
+  '/api/inngest': typeof ApiInngestServerRoute
   '/api/auth/$': typeof ApiAuthSplatServerRoute
 }
 export interface FileServerRouteTypes {
   fileServerRoutesByFullPath: FileServerRoutesByFullPath
-  fullPaths: '/api/chat' | '/api/auth/$'
+  fullPaths: '/api/chat' | '/api/inngest' | '/api/auth/$'
   fileServerRoutesByTo: FileServerRoutesByTo
-  to: '/api/chat' | '/api/auth/$'
-  id: '__root__' | '/api/chat' | '/api/auth/$'
+  to: '/api/chat' | '/api/inngest' | '/api/auth/$'
+  id: '__root__' | '/api/chat' | '/api/inngest' | '/api/auth/$'
   fileServerRoutesById: FileServerRoutesById
 }
 export interface RootServerRouteChildren {
   ApiChatServerRoute: typeof ApiChatServerRoute
+  ApiInngestServerRoute: typeof ApiInngestServerRoute
   ApiAuthSplatServerRoute: typeof ApiAuthSplatServerRoute
 }
 
@@ -161,6 +171,13 @@ declare module '@tanstack/react-router' {
 }
 declare module '@tanstack/react-start/server' {
   interface ServerFileRoutesByPath {
+    '/api/inngest': {
+      id: '/api/inngest'
+      path: '/api/inngest'
+      fullPath: '/api/inngest'
+      preLoaderRoute: typeof ApiInngestServerRouteImport
+      parentRoute: typeof rootServerRouteImport
+    }
     '/api/chat': {
       id: '/api/chat'
       path: '/api/chat'
@@ -203,6 +220,7 @@ export const routeTree = rootRouteImport
   ._addFileTypes<FileRouteTypes>()
 const rootServerRouteChildren: RootServerRouteChildren = {
   ApiChatServerRoute: ApiChatServerRoute,
+  ApiInngestServerRoute: ApiInngestServerRoute,
   ApiAuthSplatServerRoute: ApiAuthSplatServerRoute,
 }
 export const serverRouteTree = rootServerRouteImport
