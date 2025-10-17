@@ -7,6 +7,9 @@ import { normalizeTwilioMessage } from "./normalizer";
 export const WhatsappIncomingMessageWebhook = httpAction(async (ctx, request) => {
   console.log('📞 Twilio webhook received');
 
+  console.log('🔍 Headers:', Array.from(request.headers.entries()));
+  console.log("Raw request:", request);
+
   const signature = request.headers.get('x-twilio-signature') ?? '';
   const url = request.url;
   const formData = await request.formData().catch(() => null);
