@@ -1,4 +1,4 @@
-import { Inngest } from "inngest";
+import { Inngest, NonRetriableError } from "inngest";
 import { verifyWebhook } from "./kapso";
 
 export const inngest = new Inngest({ id: "my-app" });
@@ -19,16 +19,14 @@ const incommingKapsoMessage = inngest.createFunction(
   { id: "incoming-kapso-message" },
   { event: "kapso/whatsapp.message.received" },
   async ({ event, step }) => {
-    // TODO: Validate kapso webhook signature here
 
     const isValid = verifyWebhook(event.data.raw, event.data.sig)
-    console.log(`Kapso webhook valid: ${isValid}`)
+    if (!isValid) {
+      throw new NonRetriableError("failed signature verificatioon")
+    }
 
     const data = JSON.parse(event.data.raw)
 
-    // Extract relevant data from the event
-    /* const from = event.data.raw.conversation.phone_number
-    const body = event.data.raw.message.content */
     const from = data.conversation.phone_number
     const body = data.message.content
 
