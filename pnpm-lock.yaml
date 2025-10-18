@@ -41,6 +41,9 @@ importers:
       '@icons-pack/react-simple-icons':
         specifier: ^13.7.0
         version: 13.7.0(react@19.1.0)
+      '@kapso/whatsapp-cloud-api':
+        specifier: ^0.0.11
+        version: 0.0.11
       '@radix-ui/react-alert-dialog':
         specifier: ^1.1.15
         version: 1.1.15(@types/react-dom@19.1.7(@types/react@19.1.9))(@types/react@19.1.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1410,6 +1413,10 @@ packages:
 
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
+
+  '@kapso/whatsapp-cloud-api@0.0.11':
+    resolution: {integrity: sha512-34QHRFkN0FoY5cEJmdZgvPML3HkKx9AT30XPpzm4JmH6CtU4Sz2hu6ZxrVYugNqUhnjtCfsHSJsTMEKP80NHQw==}
+    engines: {node: '>=20.19'}
 
   '@levischuck/tiny-cbor@0.2.11':
     resolution: {integrity: sha512-llBRm4dT4Z89aRsm6u2oEZ8tfwL/2l6BwpZ7JcyieouniDECM5AqNgr/y08zalEIvW3RSK4upYyybDcmjXqAow==}
@@ -8372,6 +8379,9 @@ packages:
   zod@4.0.14:
     resolution: {integrity: sha512-nGFJTnJN6cM2v9kXL+SOBq3AtjQby3Mv5ySGFof5UGRHrRioSJ5iG680cYNjE/yWk671nROcpPj4hAS8nyLhSw==}
 
+  zod@4.1.12:
+    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
+
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
@@ -9405,6 +9415,10 @@ snapshots:
       '@jridgewell/sourcemap-codec': 1.5.4
 
   '@js-sdsl/ordered-map@4.4.2': {}
+
+  '@kapso/whatsapp-cloud-api@0.0.11':
+    dependencies:
+      zod: 4.1.12
 
   '@levischuck/tiny-cbor@0.2.11': {}
 
@@ -17508,5 +17522,7 @@ snapshots:
   zod@3.25.76: {}
 
   zod@4.0.14: {}
+
+  zod@4.1.12: {}
 
   zwitch@2.0.4: {}

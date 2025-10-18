@@ -1,5 +1,5 @@
 import { Inngest, NonRetriableError } from "inngest";
-import { verifyWebhook } from "./kapso";
+import { verifyWebhook, whatsappClient, KAPSO_PHONE_NUMBER_ID } from "./kapso";
 
 export const inngest = new Inngest({ id: "my-app" });
 
@@ -30,7 +30,12 @@ const incommingKapsoMessage = inngest.createFunction(
     const from = data.conversation.phone_number
     const body = data.message.content
 
-    console.log(`Received message from ${from}: ${body}`)
+    await whatsappClient.messages.sendText({
+      phoneNumberId: KAPSO_PHONE_NUMBER_ID,
+      to: from,
+      body: `You said: ${body}`,
+    })
+
   })
 
 // Add the function to the exported array:
