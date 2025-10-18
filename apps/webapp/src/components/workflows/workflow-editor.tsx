@@ -22,8 +22,6 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
   const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId }));
   const updateWorkflowMutation = useMutation(api.workflows.mutations.update);
 
-  console.log("Rendering WorkflowEditor with workflowId:", workflowId, "and workflow:", workflow);
-  console.log("Workflow content:", workflow?.content);
 
   const initialContent = blocksFromContent(workflow?.content);
 
@@ -38,6 +36,7 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
     const serverContent = workflow?.content;
     if (serverContent == null) return;
     if (lastSavedContentRef.current === serverContent) return;
+    lastSavedContentRef.current = serverContent;
     setContentVersion((v) => v + 1);
   }, [workflow?.content]);
 

@@ -44,8 +44,15 @@ export default function Chatbot() {
 
   // TanStack Query cache persistence (session-only, global)
   const queryClient = useQueryClient()
-  const CHAT_CACHE_KEY = ['chat:messages'] as const
-  const cachedMessages = queryClient.getQueryData(CHAT_CACHE_KEY) as UIMessage[] | undefined
+  // Scope chat cache by workflow to avoid sharing messages across workflows
+  const getChatCacheKey = (
+    wid?: string | Id<'workflows'>
+  ) => (wid ? (['chat:messages', wid] as const) : null)
+
+  const cacheKey = getChatCacheKey(workflowId as string | undefined)
+  const cachedMessages = (cacheKey
+    ? (queryClient.getQueryData(cacheKey) as UIMessage[] | undefined)
+    : undefined)
 
   const { onToolCall } = useChatTools(editor, workflow?.content, workflowId as Id<'workflows'>)
 
@@ -59,8 +66,11 @@ export default function Chatbot() {
 
   // Save messages to Query cache whenever they change
   useEffect(() => {
-    queryClient.setQueryData(CHAT_CACHE_KEY, messages as UIMessage[])
-  }, [queryClient, messages])
+    // Only cache when we have a workflowId to scope the cache
+    if (!workflowId) return
+    const key = ['chat:messages', workflowId] as const
+    queryClient.setQueryData<UIMessage[] | undefined>(key, messages as UIMessage[])
+  }, [queryClient, messages, workflowId])
 
   // Auto-scroll to bottom only when streaming is complete or new message starts
   useEffect(() => {
