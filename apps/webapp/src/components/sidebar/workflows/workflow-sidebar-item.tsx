@@ -1,7 +1,7 @@
 'use client'
 
 import { FileText, MoreHorizontal, Trash2 } from "lucide-react"
-import { Link } from "@tanstack/react-router"
+import { Link, useLocation, useRouter } from "@tanstack/react-router"
 import { useMutation } from "convex/react"
 import { api } from "@threadway/backend/convex/api"
 import type { Id } from "@threadway/backend/convex/dataModel"
@@ -27,9 +27,16 @@ interface WorkflowSidebarItemProps {
 
 export function WorkflowSidebarItem({ workflow }: WorkflowSidebarItemProps) {
   const deleteWorkflowMutation = useMutation(api.workflows.mutations.deleteWorkflow)
+  const router = useRouter()
+  const location = useLocation()
 
   const handleDeleteWorkflow = async () => {
     await deleteWorkflowMutation({ id: workflow._id })
+    // If the current page is this workflow, redirect to home
+    const isViewingThisWorkflow = location.pathname?.includes(`/f/${workflow._id}`)
+    if (isViewingThisWorkflow) {
+      router.navigate({ to: '/' })
+    }
   }
 
   return (

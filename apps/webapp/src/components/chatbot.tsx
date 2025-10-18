@@ -4,18 +4,11 @@ import {
   Conversation,
   ConversationContent,
 } from '@/components/ai-elements/conversation';
-import { Message, MessageContent } from '@/components/ai-elements/message';
-import { Response } from '@/components/ai-elements/response';
-import {
-  PromptInput,
-  PromptInputSubmit,
-  PromptInputTextarea,
-  PromptInputToolbar,
-  PromptInputTools,
-} from '@/components/ai-elements/prompt-input';
+import MessageList from '@/components/ai-elements/message-list';
+import { PromptInput, PromptInputSubmit, PromptInputTextarea } from '@/components/ai-elements/prompt-input';
 import { useEffect, useState, useRef } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { Loader } from '@/components/ai-elements/loader';
+// import { Loader } from '@/components/ai-elements/loader';
 import { useParams } from '@tanstack/react-router';
 import {
   lastAssistantMessageIsCompleteWithToolCalls,
@@ -26,16 +19,12 @@ import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
 import { convexQuery } from '@convex-dev/react-query';
 import { useCreateBlockNote } from '@blocknote/react';
 import { Id } from '@threadway/backend/convex/dataModel';
-import { PartialBlock } from '@blocknote/core';
 
-import { useMutation } from "convex/react";
+import { useChatTools } from '@/hooks/use-chat-tools';
 
 // Model selection removed; always use server default
 
-function blocksFromContent(content: string | undefined) {
-  // Gets the previously stored editor contents.
-  return content ? (JSON.parse(content) as PartialBlock[]) : undefined;
-}
+// moved to lib/blocknote-utils
 
 export default function Chatbot() {
   const [input, setInput] = useState('');
@@ -47,7 +36,7 @@ export default function Chatbot() {
   // Obtener el workflowId de los parámetros de la ruta
   const { workflowId } = useParams({ from: '/_dashboard/f/$workflowId' });
 
-  const updateWorkflowMutation = useMutation(api.workflows.mutations.update);
+  // mutations handled inside useChatTools
 
 
   const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId: workflowId as Id<"workflows"> }));
@@ -58,54 +47,15 @@ export default function Chatbot() {
   const CHAT_CACHE_KEY = ['chat:messages'] as const
   const cachedMessages = queryClient.getQueryData(CHAT_CACHE_KEY) as UIMessage[] | undefined
 
-  const { messages, sendMessage, status, addToolResult } = useChat({
+  const { onToolCall } = useChatTools(editor, workflow?.content, workflowId as Id<'workflows'>)
+
+  const chatOptions: any = {
     initialMessages: cachedMessages,
-    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls, async onToolCall({ toolCall }) {
-      console.log('Tool call:', toolCall);
-      if (toolCall.dynamic) {
-        return;
-      }
+    sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
+    onToolCall,
+  }
 
-
-      if (toolCall.toolName === 'readWorkflowContent') {
-
-        const blocks = blocksFromContent(workflow?.content)
-
-        const content = await editor.blocksToMarkdownLossy(blocks);
-        addToolResult({
-          tool: 'readWorkflowContent',
-          toolCallId: toolCall.toolCallId,
-          output: content ?? '',
-        })
-      }
-
-      if (toolCall.toolName === "editWorkflowContent") {
-        console.log('Editing workflow content with:', toolCall.input);
-        try {
-          const markdown: string = (toolCall as unknown as { input: { content: string } }).input.content;
-          const parsedBlocks = await editor.tryParseMarkdownToBlocks(markdown);
-          const serialized = JSON.stringify(parsedBlocks ?? []);
-          await updateWorkflowMutation({
-            workflowId: workflowId as Id<'workflows'>,
-            content: serialized,
-          });
-          addToolResult({
-            tool: 'editWorkflowContent',
-            toolCallId: toolCall.toolCallId,
-            output: 'ok',
-          });
-        } catch (err) {
-          console.error('editWorkflowContent failed', err);
-          addToolResult({
-            tool: 'editWorkflowContent',
-            toolCallId: toolCall.toolCallId,
-            output: 'error',
-          });
-        }
-      }
-
-    }
-  });
+  const { messages, sendMessage, status } = useChat(chatOptions);
 
   // Save messages to Query cache whenever they change
   useEffect(() => {
@@ -146,34 +96,7 @@ export default function Chatbot() {
       <div className="flex-1 min-h-0 overflow-hidden">
         <Conversation className="h-full text-sm">
           <ConversationContent className="overflow-y-auto scrollbar-hide">
-            {messages.filter(message => message.role !== 'system').map((message) => (
-              <div key={message.id}>
-                <Message from={message.role as 'user' | 'assistant'} key={message.id}>
-                  <MessageContent className={message.role === 'assistant' ? 'prose prose-sm text-foreground break-words' : 'break-words'}>
-                    {message.parts?.map((part, i) => {
-                      if (part.type === 'text') {
-                        return (
-                          message.role === 'assistant' ? (
-                            <Response key={`${message.id}-${i}`}>
-                              {part.text}
-                            </Response>
-                          ) : (
-                            <div key={`${message.id}-${i}`} className="prose prose-sm max-w-none">
-                              {part.text}
-                            </div>
-                          )
-                        );
-                      }
-                      return null;
-                    }) || (
-                      <div className="prose prose-sm max-w-none">
-                        {JSON.stringify(message)}
-                      </div>
-                    )}
-                  </MessageContent>
-                </Message>
-              </div>
-            ))}
+            <MessageList messages={messages} />
             <div ref={messagesEndRef} />
           </ConversationContent>
         </Conversation>

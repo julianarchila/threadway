@@ -2,6 +2,8 @@ import { WorkflowEditor } from '@/components/workflows/workflow-editor';
  
 import { convexQuery } from '@convex-dev/react-query';
 import { createFileRoute} from '@tanstack/react-router'
+import { useEffect } from 'react'
+import { useRouter } from '@tanstack/react-router'
 import { api } from '@threadway/backend/convex/api';
 import { Id } from '@threadway/backend/convex/dataModel';
 
@@ -10,7 +12,14 @@ export const Route = createFileRoute('/_dashboard/f/$workflowId')({
   loader: async ({context, params}) => {
     const { workflowId } = params;
     await context.queryClient.prefetchQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId: workflowId as Id<"workflows"> }));
-  }
+  },
+  errorComponent: () => {
+    const router = useRouter()
+    useEffect(() => {
+      router.navigate({ to: '/' })
+    }, [router])
+    return null
+  },
 })
 
 function RouteComponent() {
