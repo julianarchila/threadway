@@ -14,8 +14,7 @@ import { sendWhatsappMessage } from "../twilio/utils";
 
 export const agent = new Agent(components.agent, {
   name: "My Agent",
-  languageModel: openai("gpt-5"),
-  textEmbeddingModel: openai.textEmbeddingModel("text-embedding-3-large")
+  languageModel: openai("gpt-5-mini"),
 });
 
 
