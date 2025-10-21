@@ -4,7 +4,7 @@ import { v } from "convex/values";
 import { betterAuthComponent } from "../auth";
 import type { Id } from "../_generated/dataModel";
 
-const SUPER_SECRET = "temp-secret"
+const SUPER_SECRET = process.env.AGENT_SECRET
 
 export const getUserByPhoneNumber = query({
   args: v.object({
@@ -14,10 +14,9 @@ export const getUserByPhoneNumber = query({
   handler: async (ctx, args) => {
 
     if (SUPER_SECRET !== args.secret) {
-      throw new Error("GET AWAY")
+      throw new Error("Nope")
     }
 
-    console.debug("Looking for user with phone number:", args.phoneNumber)
 
     return ctx.db.query("users")
       .withIndex("by_phone_number", (q) => q.eq("phoneNumber", args.phoneNumber))

@@ -5,7 +5,7 @@ import { api } from '@threadway/backend/convex/api';
 import { convexClient } from "./convex";
 
 export const inngest = new Inngest({ id: "my-app" });
-const SUPER_SECRET = "temp-secret"
+const SUPER_SECRET = process.env.AGENT_SECRET || ""
 const landingPageUrl = "https://threadway.app"
 const welcomeMessage = `Welcome to Threadway! I'm your personal assistant here to help you manage tasks, answer questions, and automate your notes-to-self pad. To join the waitlist visist: ${landingPageUrl}`
 
@@ -30,6 +30,7 @@ const incommingKapsoMessage = inngest.createFunction(
     if (!isValid) {
       throw new NonRetriableError("failed signature verificatioon")
     }
+
 
     const data = JSON.parse(event.data.raw)
 
