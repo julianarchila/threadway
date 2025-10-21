@@ -6,6 +6,8 @@ import { convexClient } from "./convex";
 
 export const inngest = new Inngest({ id: "my-app" });
 const SUPER_SECRET = "temp-secret"
+const landingPageUrl = "https://threadway.app"
+const welcomeMessage = `Welcome to Threadway! I'm your personal assistant here to help you manage tasks, answer questions, and automate your notes-to-self pad. To join the waitlist visist: ${landingPageUrl}`
 
 // Your new function:
 const helloWorld = inngest.createFunction(
@@ -36,18 +38,26 @@ const incommingKapsoMessage = inngest.createFunction(
 
     const user = await step.run("get-current-user", async () => {
       const user = await convexClient.query(api.agent.queries.getUserByPhoneNumber, {
-        phoneNumber: from,
+        phoneNumber: "+" + from,
         secret: SUPER_SECRET
       })
 
       if (!user) {
-        throw new NonRetriableError("User not found")
+        // TODO: respond to user saying they need to register
+        await whatsappClient.messages.sendText({
+          phoneNumberId: KAPSO_PHONE_NUMBER_ID,
+          to: from,
+          body: welcomeMessage,
+        })
+
+        return null
       }
       return user
-
     })
 
-    console.log("Current user:", user)
+    if (!user) {
+      return
+    }
 
 
     await whatsappClient.messages.sendText({
