@@ -24,3 +24,22 @@ export const getUserByPhoneNumber = query({
 
   }
 })
+
+
+export const getUserConnectedToolkits = query({
+  args: { userId: v.id("users"), secret: v.string() },
+  handler: async (ctx, args) => {
+
+    if (SUPER_SECRET !== args.secret) {
+      throw new Error("Nope")
+    }
+
+    const connections = await ctx.db
+      .query("connections")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("status"), "ACTIVE"))
+      .collect();
+
+    return connections.map((c) => c.toolkitSlug).filter((s): s is string => typeof s === "string");
+  }
+})
