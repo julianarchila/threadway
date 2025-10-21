@@ -42,23 +42,19 @@ const incommingKapsoMessage = inngest.createFunction(
         secret: SUPER_SECRET
       })
 
-      if (!user) {
-        // TODO: respond to user saying they need to register
-        await whatsappClient.messages.sendText({
-          phoneNumberId: KAPSO_PHONE_NUMBER_ID,
-          to: from,
-          body: welcomeMessage,
-        })
-
-        return null
-      }
       return user
     })
 
     if (!user) {
+      await step.run("send-welcome-message", async () => {
+        whatsappClient.messages.sendText({
+          phoneNumberId: KAPSO_PHONE_NUMBER_ID,
+          to: from,
+          body: welcomeMessage,
+        })
+      })
       return
     }
-
 
     await whatsappClient.messages.sendText({
       phoneNumberId: KAPSO_PHONE_NUMBER_ID,
