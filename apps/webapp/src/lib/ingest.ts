@@ -1,7 +1,11 @@
 import { Inngest, NonRetriableError } from "inngest";
 import { verifyWebhook, whatsappClient, KAPSO_PHONE_NUMBER_ID } from "./kapso";
 
+import { api } from '@threadway/backend/convex/api';
+import { convexClient } from "./convex";
+
 export const inngest = new Inngest({ id: "my-app" });
+const SUPER_SECRET = "temp-secret"
 
 // Your new function:
 const helloWorld = inngest.createFunction(
@@ -29,6 +33,22 @@ const incommingKapsoMessage = inngest.createFunction(
 
     const from = data.conversation.phone_number
     const body = data.message.content
+
+    const user = await step.run("get-current-user", async () => {
+      const user = await convexClient.query(api.agent.queries.getUserByPhoneNumber, {
+        phoneNumber: from,
+        secret: SUPER_SECRET
+      })
+
+      if (!user) {
+        throw new NonRetriableError("User not found")
+      }
+      return user
+
+    })
+
+    console.log("Current user:", user)
+
 
     await whatsappClient.messages.sendText({
       phoneNumberId: KAPSO_PHONE_NUMBER_ID,

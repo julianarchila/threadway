@@ -12,6 +12,7 @@ import type * as agent_actions from "../agent/actions.js";
 import type * as agent_error from "../agent/error.js";
 import type * as agent_helpers from "../agent/helpers.js";
 import type * as agent_nodeActions from "../agent/nodeActions.js";
+import type * as agent_queries from "../agent/queries.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as integrations_actions from "../integrations/actions.js";
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   "agent/error": typeof agent_error;
   "agent/helpers": typeof agent_helpers;
   "agent/nodeActions": typeof agent_nodeActions;
+  "agent/queries": typeof agent_queries;
   auth: typeof auth;
   http: typeof http;
   "integrations/actions": typeof integrations_actions;
