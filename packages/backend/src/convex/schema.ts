@@ -1,5 +1,6 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { vMessage, vMessageStatus } from "./validators";
 
 export default defineSchema({
   users: defineTable({
@@ -37,5 +38,28 @@ export default defineSchema({
   })
     .index("by_workflow", ["workflowId"])
     .index("by_connection", ["connectionId"]),
+
+
+
+  // agent stuff
+  thread: defineTable({
+    userId: v.id("users"),
+  })
+    .index("by_user", ["userId"]),
+
+  messages: defineTable({
+    threadID: v.id("thread"),
+    userId: v.id("users"),
+    error: v.optional(v.string()),
+
+    status: vMessageStatus,
+
+    messaage: v.optional(vMessage),
+
+    tool: v.boolean(),
+    text: v.optional(v.string()),
+
+  }),
+
 
 });

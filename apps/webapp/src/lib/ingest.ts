@@ -85,6 +85,11 @@ const incommingKapsoMessage = inngest.createFunction(
     console.debug("[incommingKapsoMessage]: Loaded user tools: ", connectedToolkits)
 
 
+    // call llm
+
+
+
+
     await step.run("echo-message-back", async () => {
 
       await whatsappClient.messages.sendText({

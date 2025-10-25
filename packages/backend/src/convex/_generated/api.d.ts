@@ -31,6 +31,7 @@ import type * as user_error from "../user/error.js";
 import type * as user_helpers from "../user/helpers.js";
 import type * as user_queries from "../user/queries.js";
 import type * as user_utils from "../user/utils.js";
+import type * as validators from "../validators.js";
 import type * as workflows_error from "../workflows/error.js";
 import type * as workflows_mutations from "../workflows/mutations.js";
 import type * as workflows_queries from "../workflows/queries.js";
@@ -73,6 +74,7 @@ declare const fullApi: ApiFromModules<{
   "user/helpers": typeof user_helpers;
   "user/queries": typeof user_queries;
   "user/utils": typeof user_utils;
+  validators: typeof validators;
   "workflows/error": typeof workflows_error;
   "workflows/mutations": typeof workflows_mutations;
   "workflows/queries": typeof workflows_queries;
