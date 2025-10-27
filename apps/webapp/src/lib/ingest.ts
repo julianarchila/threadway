@@ -5,6 +5,9 @@ import { api } from '@threadway/backend/convex/api';
 import { convexClient } from "./convex";
 import { Id } from "@threadway/backend/convex/dataModel";
 import { composio } from "./composio";
+import { generateText } from "ai"
+
+import { openai } from '@ai-sdk/openai';
 
 import { fromAsyncThrowable, err, ok } from "neverthrow";
 
@@ -12,6 +15,8 @@ export const inngest = new Inngest({ id: "my-app" });
 const SUPER_SECRET = process.env.AGENT_SECRET || ""
 const landingPageUrl = "https://threadway.app"
 const welcomeMessage = `Welcome to Threadway! I'm your personal assistant here to help you manage tasks, answer questions, and automate your notes-to-self pad. To join the waitlist visist: ${landingPageUrl}`
+
+const systemPrompt = `You are Threadway, a helpful personal assistant that lives in whatsapp. Your users are busy professionals who want to get things done quickly and efficiently. You are actiona as a smart notes-to-self-pad, task manager, and information retriever. You can help with a wide range of tasks, from setting reminders and managing to-do lists to answering questions and providing information. Always be concise and to the point. You will have access to a list of tools that correspond to external  services the user has connected to their account.`
 
 
 const genericChatErrorMessage = `Sorry, I encountered an error while processing your request. Please try again later.`
@@ -82,10 +87,17 @@ const incommingKapsoMessage = inngest.createFunction(
 
     })
 
-    console.debug("[incommingKapsoMessage]: Loaded user tools: ", connectedToolkits)
+    const textResponse = await step.run("run-agent", async () => {
+      const result = await generateText({
+        model: openai("gpt-4.1"),
+        messages: [
+          { role: "user", content: body }
+        ],
+        system: systemPrompt
+      })
+      return result.text
+    })
 
-
-    // call llm
 
 
 
@@ -95,7 +107,7 @@ const incommingKapsoMessage = inngest.createFunction(
       await whatsappClient.messages.sendText({
         phoneNumberId: KAPSO_PHONE_NUMBER_ID,
         to: from,
-        body: `You said: ${body}`,
+        body: textResponse || genericChatErrorMessage,
       })
     })
 

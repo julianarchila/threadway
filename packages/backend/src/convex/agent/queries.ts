@@ -17,6 +17,8 @@ export const getUserByPhoneNumber = query({
       throw new Error("Nope")
     }
 
+    console.log("Looking up user by phone number:", args.phoneNumber)
+
 
     return ctx.db.query("users")
       .withIndex("by_phone_number", (q) => q.eq("phoneNumber", args.phoneNumber))

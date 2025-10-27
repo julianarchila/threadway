@@ -10,7 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^2.0.15",
+    "@ai-sdk/openai": "^2.0.55",
     "@ai-sdk/react": "^2.0.27",
     "@blocknote/core": "^0.35.0",
     "@blocknote/react": "^0.35.0",
@@ -45,7 +45,7 @@
     "@tanstack/react-start": "^1.131.7",
     "@tanstack/router-plugin": "^1.121.2",
     "@threadway/backend": "workspace:*",
-    "ai": "^5.0.27",
+    "ai": "^5.0.81",
     "better-auth": "1.3.7",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
