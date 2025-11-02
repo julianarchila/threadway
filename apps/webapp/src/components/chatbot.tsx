@@ -127,7 +127,7 @@ export default function Chatbot() {
                 }
               }}
               value={input}
-              placeholder="Escribe tu mensaje..."
+              placeholder="Type your message..."
               className="min-h-[72px] md:min-h-[96px] max-h-[160px] pr-9 resize-none text-sm rounded-lg border focus-visible:ring-2"
               style={{
                 wordBreak: 'break-word',
