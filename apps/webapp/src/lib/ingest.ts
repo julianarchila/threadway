@@ -58,14 +58,6 @@ const incommingKapsoMessage = inngest.createFunction(
     console.log("[agent] user found", { userId: user._id })
 
     // Load user tools
-    const connectedToolkits = await step.run("fetch-connected_toolkits", async () => {
-      const toolsRes = await loadUserTools(user._id)
-      if (toolsRes.isErr()) {
-        await kapsoChannel.sendText(from, genericChatErrorMessage)
-        throw new NonRetriableError("failed to load user tools", toolsRes.error)
-      }
-      return toolsRes.value
-    })
 
     const thread = await step.run("get-or-create-thread", async () => getOrCreateThreadByUser(user._id))
     console.log("[agent] using thread", { threadId: thread._id })
@@ -91,7 +83,8 @@ const incommingKapsoMessage = inngest.createFunction(
         systemPrompt,
         history,
         userInput: body,
-        tools: connectedToolkits,
+        userId: user._id,
+        from,
       })
     })
     console.log("[agent] agent output length", { length: (textResponse || "").length })
