@@ -2,6 +2,8 @@ import { convexClient } from "@/lib/convex";
 import { api } from "@threadway/backend/convex/api";
 import type { Id } from "@threadway/backend/convex/dataModel";
 
+import { ModelMessage, modelMessageSchema } from "ai";
+
 const SUPER_SECRET = process.env.AGENT_SECRET || "";
 
 export async function getOrCreateThreadByUser(userId: Id<"users">) {
@@ -19,60 +21,22 @@ export async function listRecentMessages(params: { threadId: Id<"thread">; limit
   });
 }
 
-type BasicUserMessage = {
-  type: "user";
-  text: string;
-  providerMetadata?: Record<string, unknown>;
-};
-
-type BasicAssistantMessage = {
-  type: "assistant";
-  text: string;
-  providerMetadata?: Record<string, unknown>;
-};
 
 export async function appendMessage(params: {
   threadId: Id<"thread">;
   userId: Id<"users">;
   status: "pending" | "success" | "failed";
-  msg: BasicUserMessage | BasicAssistantMessage;
+  msg: ModelMessage;
   error?: string;
 }) {
-  const { threadId, userId, status, msg, error } = params;
-
-  type StoredTextPart = { type: "text"; text: string; providerMetadata?: Record<string, unknown> };
-  type StoredUserMessage = { role: "user"; content: StoredTextPart[]; providerOptions?: Record<string, unknown> };
-  type StoredAssistantMessage = { role: "assistant"; content: StoredTextPart[]; providerOptions?: Record<string, unknown> };
-
-  const message: StoredUserMessage | StoredAssistantMessage =
-    msg.type === "user"
-      ? (() => {
-          const textPart: StoredTextPart = { type: "text", text: msg.text };
-          if (msg.providerMetadata) textPart.providerMetadata = msg.providerMetadata;
-          return {
-            role: "user",
-            content: [textPart],
-            providerOptions: {},
-          } as StoredUserMessage;
-        })()
-      : (() => {
-          const textPart: StoredTextPart = { type: "text", text: msg.text };
-          if (msg.providerMetadata) textPart.providerMetadata = msg.providerMetadata;
-          return {
-            role: "assistant",
-            content: [textPart],
-            providerOptions: {},
-          } as StoredAssistantMessage;
-        })();
+  const { threadId, userId, status, msg } = params;
 
   return convexClient.mutation(api.agent.mutations.appendMessage, {
     threadId,
     userId,
     status,
-    message,
-    text: undefined,
-    tool: false,
-    error,
+    // @ts-expect-error: Minor difference between the types
+    message: msg,
     secret: SUPER_SECRET,
   });
 }

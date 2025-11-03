@@ -64,7 +64,6 @@ const incommingKapsoMessage = inngest.createFunction(
         await kapsoChannel.sendText(from, genericChatErrorMessage)
         throw new NonRetriableError("failed to load user tools", toolsRes.error)
       }
-      console.log("[agent] loaded user tools", toolsRes.value)
       return toolsRes.value
     })
 
@@ -76,7 +75,10 @@ const incommingKapsoMessage = inngest.createFunction(
         threadId: thread._id,
         userId: user._id,
         status: "pending",
-        msg: { type: "user", text: body, providerMetadata: { sourceId: normalized.sourceId } },
+        msg: {
+          role: "user",
+          content: body
+        }
       })
     )
     console.log("[agent] inbound persisted", { inboundMessageId })
@@ -99,7 +101,7 @@ const incommingKapsoMessage = inngest.createFunction(
         threadId: thread._id,
         userId: user._id,
         status: "pending",
-        msg: { type: "assistant", text: textResponse || genericChatErrorMessage },
+        msg: { role: "assistant", content: textResponse || genericChatErrorMessage },
       })
     )
     console.log("[agent] assistant persisted", { assistantMessageId })

@@ -22,6 +22,11 @@ export const vRole = v.union(
 
 /* ModelMessage Validators */
 
+export const vProviderOptions = v.record(
+  v.string(),
+  v.record(v.string(), v.any())
+)
+
 
 /* ModelMessage Parts */
 export const vTextPart = v.object({
@@ -84,7 +89,12 @@ export const vToolResultPart = v.object({
   toolName: v.string(),
   output: v.optional(vLanguageModelV2ToolResultOutput),
 
-  // ProviderOptions
+  /**
+    Additional provider-specific metadata. They are passed through
+    to the provider from the AI SDK and enable provider-specific
+    functionality that can be fully encapsulated in the provider.
+  */
+  providerOptions: v.optional(vProviderOptions),
 });
 
 export const vUserContent = v.union(

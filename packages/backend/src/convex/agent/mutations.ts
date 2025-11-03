@@ -1,7 +1,7 @@
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
 import type { Id } from "../_generated/dataModel";
-import { vMessage, vMessageStatus } from "../validators";
+import { Message, vMessage, vMessageStatus } from "../validators";
 
 const SUPER_SECRET = process.env.AGENT_SECRET;
 
@@ -44,9 +44,6 @@ export const appendMessage = mutation({
     userId: v.id("users"),
     status: vMessageStatus,
     message: v.optional(vMessage),
-    text: v.optional(v.string()),
-    tool: v.optional(v.boolean()),
-    error: v.optional(v.string()),
     secret: v.string(),
   },
   handler: async (ctx, args) => {
@@ -59,13 +56,18 @@ export const appendMessage = mutation({
       userId: args.userId,
       status: args.status,
       message: args.message,
-      text: args.text,
-      tool: Boolean(args.tool),
-      error: args.error,
+      tool: args.message ? messageContainsTool(args.message) : false,
     });
     return id;
   },
 });
+
+
+const messageContainsTool = (message: Message) => {
+
+  return message.role === "assistant" ? typeof message.content !== "string" ? !!message.content.find((part) => part.type === "tool-result") : false : false;
+
+}
 
 export const setMessageStatus = mutation({
   args: {
