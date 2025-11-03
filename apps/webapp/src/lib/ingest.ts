@@ -64,6 +64,7 @@ const incommingKapsoMessage = inngest.createFunction(
         await kapsoChannel.sendText(from, genericChatErrorMessage)
         throw new NonRetriableError("failed to load user tools", toolsRes.error)
       }
+      console.log("[agent] loaded user tools", toolsRes.value)
       return toolsRes.value
     })
 

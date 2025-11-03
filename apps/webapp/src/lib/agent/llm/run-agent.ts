@@ -1,10 +1,6 @@
 import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
-
-type ModelMessage = {
-  role: "system" | "user" | "assistant" | "tool";
-  content: any;
-};
+import type { ModelMessage } from "ai";
 
 type ToolSet = Record<string, unknown>;
 

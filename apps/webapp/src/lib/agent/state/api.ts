@@ -40,32 +40,36 @@ export async function appendMessage(params: {
 }) {
   const { threadId, userId, status, msg, error } = params;
 
-  const message =
+  type StoredTextPart = { type: "text"; text: string; providerMetadata?: Record<string, unknown> };
+  type StoredUserMessage = { role: "user"; content: StoredTextPart[]; providerOptions?: Record<string, unknown> };
+  type StoredAssistantMessage = { role: "assistant"; content: StoredTextPart[]; providerOptions?: Record<string, unknown> };
+
+  const message: StoredUserMessage | StoredAssistantMessage =
     msg.type === "user"
       ? (() => {
-          const textPart: any = { type: "text", text: msg.text };
+          const textPart: StoredTextPart = { type: "text", text: msg.text };
           if (msg.providerMetadata) textPart.providerMetadata = msg.providerMetadata;
           return {
-            role: "user" as const,
+            role: "user",
             content: [textPart],
             providerOptions: {},
-          };
+          } as StoredUserMessage;
         })()
       : (() => {
-          const textPart: any = { type: "text", text: msg.text };
+          const textPart: StoredTextPart = { type: "text", text: msg.text };
           if (msg.providerMetadata) textPart.providerMetadata = msg.providerMetadata;
           return {
-            role: "assistant" as const,
+            role: "assistant",
             content: [textPart],
             providerOptions: {},
-          };
+          } as StoredAssistantMessage;
         })();
 
   return convexClient.mutation(api.agent.mutations.appendMessage, {
     threadId,
     userId,
     status,
-    message: message as any,
+    message,
     text: undefined,
     tool: false,
     error,

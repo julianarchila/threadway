@@ -59,7 +59,7 @@ export default defineSchema({
     tool: v.boolean(),
     text: v.optional(v.string()),
 
-  }),
+  }).index("by_thread", ["threadId"]),
 
 
 });

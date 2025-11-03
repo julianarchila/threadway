@@ -1,22 +1,6 @@
 import { v, type Infer, type Validator, type Value } from "convex/values";
 
 
-// Support both nested (record<string, record<string, any>>) and flat (record<string, any>) shapes
-// to accommodate different provider metadata/options payloads from clients.
-export const vProviderOptions = v.union(
-  v.record(
-    v.string(),
-    v.record(v.string(), v.any()),
-  ),
-  v.record(v.string(), v.any()),
-);
-const providerOptions = v.optional(vProviderOptions);
-export type ProviderOptions = Infer<typeof providerOptions>;
-
-export const vProviderMetadata = vProviderOptions;
-const providerMetadata = providerOptions;
-export type ProviderMetadata = Infer<typeof providerMetadata>;
-
 export const vThreadStatus = v.union(
   v.literal("active"),
   v.literal("archived"), // unused
@@ -36,27 +20,71 @@ export const vRole = v.union(
   v.literal("tool"),
 );
 
+/* ModelMessage Validators */
+
+
+/* ModelMessage Parts */
 export const vTextPart = v.object({
   type: v.literal("text"),
   text: v.string(),
-  providerOptions,
-  providerMetadata,
 });
 
 export const vImagePart = v.object({
   type: v.literal("image"),
   image: v.union(v.string(), v.bytes()),
-  mimeType: v.optional(v.string()),
-  providerOptions,
+  mediaType: v.optional(v.string()),
 });
 
 export const vFilePart = v.object({
   type: v.literal("file"),
   data: v.union(v.string(), v.bytes()),
   filename: v.optional(v.string()),
-  mimeType: v.string(),
-  providerOptions,
-  providerMetadata,
+  mediaType: v.string(),
+});
+
+export const vToolCallPart = v.object({
+  type: v.literal("tool-call"),
+  toolCallId: v.string(),
+  toolName: v.string(),
+  args: v.any(),
+});
+
+
+export const vLanguageModelV2ToolResultOutput = v.union(
+  v.object({ type: v.literal("text"), value: v.string() }),
+  v.object({ type: v.literal("json"), value: v.any() }),
+  v.object({ type: v.literal("error-text"), value: v.string() }),
+  v.object({ type: v.literal("error-json"), value: v.any() }),
+  v.object({
+    type: v.literal("content"),
+    value: v.array(
+      v.union(
+        v.object({ type: v.literal("text"), text: v.string() }),
+        v.object({
+          type: v.literal("media"),
+          /**
+         Base-64 encoded media data.
+           */
+          data: v.string(),
+          /**
+          IANA media type.
+          @see https://www.iana.org/assignments/media-types/media-types.xhtml
+          */
+          mediaType: v.string(),
+        }),
+      ),
+    ),
+  }),
+);
+
+
+export const vToolResultPart = v.object({
+  type: v.literal("tool-result"),
+  toolCallId: v.string(),
+  toolName: v.string(),
+  output: v.optional(vLanguageModelV2ToolResultOutput),
+
+  // ProviderOptions
 });
 
 export const vUserContent = v.union(
@@ -68,15 +96,11 @@ export const vReasoningPart = v.object({
   type: v.literal("reasoning"),
   text: v.string(),
   signature: v.optional(v.string()),
-  providerOptions,
-  providerMetadata,
 });
 
 export const vRedactedReasoningPart = v.object({
   type: v.literal("redacted-reasoning"),
   data: v.string(),
-  providerOptions,
-  providerMetadata,
 });
 
 export const vReasoningDetails = v.array(
@@ -98,8 +122,6 @@ export const vSourcePart = v.union(
     id: v.string(),
     url: v.string(),
     title: v.optional(v.string()),
-    providerOptions,
-    providerMetadata,
   }),
   v.object({
     type: v.literal("source"),
@@ -108,21 +130,10 @@ export const vSourcePart = v.union(
     mediaType: v.string(),
     title: v.string(),
     filename: v.optional(v.string()),
-    providerOptions,
-    providerMetadata,
   }),
 );
 export type SourcePart = Infer<typeof vSourcePart>;
 
-export const vToolCallPart = v.object({
-  type: v.literal("tool-call"),
-  toolCallId: v.string(),
-  toolName: v.string(),
-  args: v.any(),
-  providerExecuted: v.optional(v.boolean()),
-  providerOptions,
-  providerMetadata,
-});
 
 const vToolResultContent = v.array(
   v.union(
@@ -130,49 +141,12 @@ const vToolResultContent = v.array(
     v.object({
       type: v.literal("image"),
       data: v.string(),
-      mimeType: v.optional(v.string()),
+      mediaType: v.optional(v.string()),
     }),
   ),
 );
 
-export const vToolResultOutput = v.union(
-  v.object({ type: v.literal("text"), value: v.string() }),
-  v.object({ type: v.literal("json"), value: v.any() }),
-  v.object({ type: v.literal("error-text"), value: v.string() }),
-  v.object({ type: v.literal("error-json"), value: v.any() }),
-  v.object({
-    type: v.literal("content"),
-    value: v.array(
-      v.union(
-        v.object({ type: v.literal("text"), text: v.string() }),
-        v.object({
-          type: v.literal("media"),
-          data: v.string(),
-          mediaType: v.string(),
-        }),
-      ),
-    ),
-  }),
-);
 
-export const vToolResultPart = v.object({
-  type: v.literal("tool-result"),
-  toolCallId: v.string(),
-  toolName: v.string(),
-  output: v.optional(vToolResultOutput),
-
-  providerOptions,
-  providerMetadata,
-  providerExecuted: v.optional(v.boolean()),
-
-  // Deprecated in ai v5
-  result: v.optional(v.any()), // either this or output will be present
-  isError: v.optional(v.boolean()),
-  // This is only here b/c steps include it in toolResults
-  // Normal ModelMessage doesn't have this
-  args: v.optional(v.any()),
-  experimental_content: v.optional(vToolResultContent),
-});
 export const vToolContent = v.array(vToolResultPart);
 
 export const vAssistantContent = v.union(
@@ -196,30 +170,26 @@ export type Content = Infer<typeof vContent>;
 export const vUserMessage = v.object({
   role: v.literal("user"),
   content: vUserContent,
-  providerOptions,
 });
 
-export const vAssistantMessage = v.object({
+export const vAssistantModelMessage = v.object({
   role: v.literal("assistant"),
   content: vAssistantContent,
-  providerOptions,
 });
 
 export const vToolMessage = v.object({
   role: v.literal("tool"),
   content: vToolContent,
-  providerOptions,
 });
 
 export const vSystemMessage = v.object({
   role: v.literal("system"),
   content: v.string(),
-  providerOptions,
 });
 
 export const vMessage = v.union(
   vUserMessage,
-  vAssistantMessage,
+  vAssistantModelMessage,
   vToolMessage,
   vSystemMessage,
 );

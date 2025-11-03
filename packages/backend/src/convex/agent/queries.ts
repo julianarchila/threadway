@@ -53,16 +53,14 @@ export const listRecentMessages = query({
       throw new Error("Nope");
     }
 
-    // Note: No index on messages; filter and sort by _creationTime
-    const all = await ctx.db
+    // Use index on threadId, then sort by creation time desc and limit
+    const byThread = await ctx.db
       .query("messages")
+      .withIndex("by_thread", (q) => q.eq("threadId", args.threadId))
       .collect();
 
-    const filtered = all
-      .filter((m) => (m as any).threadId === args.threadId)
+    return byThread
       .sort((a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0))
       .slice(0, Math.max(0, args.limit));
-
-    return filtered;
   },
 });
