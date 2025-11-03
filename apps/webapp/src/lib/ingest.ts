@@ -1,14 +1,14 @@
 import { Inngest, NonRetriableError } from "inngest";
-import { verifyWebhook, whatsappClient, KAPSO_PHONE_NUMBER_ID } from "./kapso";
+import { verifyWebhook } from "./kapso";
 
-import { generateText } from "ai"
-import { openai } from '@ai-sdk/openai';
-
-import { systemPrompt } from "@/agent/prompts"
+import { systemPrompt } from "@/agent/prompts";
 import { getCurrentUser, loadUserTools } from "@/agent/data";
+import { kapsoChannel } from "@/lib/agent/channel";
+import { getOrCreateThreadByUser, listRecentMessages, appendMessage, setMessageStatus } from "@/lib/agent/state/api";
+import { toModelMessages } from "@/lib/agent/state/serializers";
+import { runAgent } from "@/lib/agent/llm/run-agent";
 
 export const inngest = new Inngest({ id: "my-app" });
-const SUPER_SECRET = process.env.AGENT_SECRET || ""
 const landingPageUrl = "https://threadway.app"
 const welcomeMessage = `Welcome to Threadway! I'm your personal assistant here to help you manage tasks, answer questions, and automate your notes-to-self pad. To join the waitlist visist: ${landingPageUrl}`
 
@@ -36,68 +36,79 @@ const incommingKapsoMessage = inngest.createFunction(
       throw new NonRetriableError("failed signature verificatioon")
     }
 
+    console.log("[agent] kapso webhook received");
 
-    const data = JSON.parse(event.data.raw)
-
-    const from = data.conversation.phone_number
-    const body = data.message.content
+    const normalized = kapsoChannel.normalizeInbound(JSON.parse(event.data.raw))
+    const from = normalized.from
+    const body = normalized.text || ""
+    console.log("[agent] normalized inbound", { from, hasText: Boolean(body), sourceId: normalized.sourceId })
 
     const user = await step.run("get-current-user",
       async () => getCurrentUser({ userPhoneNumber: from })
     )
 
     if (!user) {
+      console.log("[agent] user not found, sending welcome", { from })
       await step.run("send-welcome-message", async () => {
-        whatsappClient.messages.sendText({
-          phoneNumberId: KAPSO_PHONE_NUMBER_ID,
-          to: from,
-          body: welcomeMessage,
-        })
+        await kapsoChannel.sendText(from, welcomeMessage)
       })
       return
     }
 
+    console.log("[agent] user found", { userId: user._id })
 
     // Load user tools
     const connectedToolkits = await step.run("fetch-connected_toolkits", async () => {
       const toolsRes = await loadUserTools(user._id)
       if (toolsRes.isErr()) {
-        // send generic error message
-        await whatsappClient.messages.sendText({
-          phoneNumberId: KAPSO_PHONE_NUMBER_ID,
-          to: from,
-          body: genericChatErrorMessage,
-        })
+        await kapsoChannel.sendText(from, genericChatErrorMessage)
         throw new NonRetriableError("failed to load user tools", toolsRes.error)
       }
-
       return toolsRes.value
-
     })
+
+    const thread = await step.run("get-or-create-thread", async () => getOrCreateThreadByUser(user._id))
+    console.log("[agent] using thread", { threadId: thread._id })
+
+    const inboundMessageId = await step.run("persist-inbound", async () =>
+      appendMessage({
+        threadId: thread._id,
+        userId: user._id,
+        status: "pending",
+        msg: { type: "user", text: body, providerMetadata: { sourceId: normalized.sourceId } },
+      })
+    )
+    console.log("[agent] inbound persisted", { inboundMessageId })
+
+    const historyDocs = await step.run("fetch-history", async () => listRecentMessages({ threadId: thread._id, limit: 20 }))
+    const history = toModelMessages(historyDocs).reverse()
 
     const textResponse = await step.run("run-agent", async () => {
-      const result = await generateText({
-        model: openai("gpt-4.1"),
-        messages: [
-          { role: "user", content: body }
-        ],
-        system: systemPrompt
-      })
-      return result.text
-    })
-
-
-
-
-
-    await step.run("echo-message-back", async () => {
-
-      await whatsappClient.messages.sendText({
-        phoneNumberId: KAPSO_PHONE_NUMBER_ID,
-        to: from,
-        body: textResponse || genericChatErrorMessage,
+      return runAgent({
+        systemPrompt,
+        history,
+        userInput: body,
+        tools: connectedToolkits,
       })
     })
+    console.log("[agent] agent output length", { length: (textResponse || "").length })
+
+    const assistantMessageId = await step.run("persist-assistant", async () =>
+      appendMessage({
+        threadId: thread._id,
+        userId: user._id,
+        status: "pending",
+        msg: { type: "assistant", text: textResponse || genericChatErrorMessage },
+      })
+    )
+    console.log("[agent] assistant persisted", { assistantMessageId })
+
+    await step.run("send-response", async () => {
+      await kapsoChannel.sendText(from, textResponse || genericChatErrorMessage)
+      await setMessageStatus({ messageId: inboundMessageId as any, status: "success" })
+      await setMessageStatus({ messageId: assistantMessageId as any, status: "success" })
+    })
+    console.log("[agent] response sent and statuses updated")
 
   })
 

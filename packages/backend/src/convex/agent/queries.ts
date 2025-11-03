@@ -45,3 +45,24 @@ export const getUserConnectedToolkits = query({
     return connections.map((c) => c.toolkitSlug).filter((s): s is string => typeof s === "string");
   }
 })
+
+export const listRecentMessages = query({
+  args: { threadId: v.id("thread"), limit: v.number(), secret: v.string() },
+  handler: async (ctx, args) => {
+    if (SUPER_SECRET !== args.secret) {
+      throw new Error("Nope");
+    }
+
+    // Note: No index on messages; filter and sort by _creationTime
+    const all = await ctx.db
+      .query("messages")
+      .collect();
+
+    const filtered = all
+      .filter((m) => (m as any).threadId === args.threadId)
+      .sort((a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0))
+      .slice(0, Math.max(0, args.limit));
+
+    return filtered;
+  },
+});

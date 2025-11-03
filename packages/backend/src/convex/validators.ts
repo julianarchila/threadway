@@ -1,8 +1,13 @@
 import { v, type Infer, type Validator, type Value } from "convex/values";
 
 
-export const vProviderOptions = v.record(
-  v.string(),
+// Support both nested (record<string, record<string, any>>) and flat (record<string, any>) shapes
+// to accommodate different provider metadata/options payloads from clients.
+export const vProviderOptions = v.union(
+  v.record(
+    v.string(),
+    v.record(v.string(), v.any()),
+  ),
   v.record(v.string(), v.any()),
 );
 const providerOptions = v.optional(vProviderOptions);

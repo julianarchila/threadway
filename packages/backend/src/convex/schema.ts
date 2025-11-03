@@ -48,13 +48,13 @@ export default defineSchema({
     .index("by_user", ["userId"]),
 
   messages: defineTable({
-    threadID: v.id("thread"),
+    threadId: v.id("thread"),
     userId: v.id("users"),
     error: v.optional(v.string()),
 
     status: vMessageStatus,
 
-    messaage: v.optional(vMessage),
+    message: v.optional(vMessage),
 
     tool: v.boolean(),
     text: v.optional(v.string()),
