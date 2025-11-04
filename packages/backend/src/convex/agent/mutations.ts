@@ -56,6 +56,7 @@ export const appendMessage = mutation({
       userId: args.userId,
       status: args.status,
       message: args.message,
+      text: args.message ? extractTextFromMessage(args.message) : undefined,
       tool: args.message ? messageContainsTool(args.message) : false,
     });
     return id;
@@ -73,6 +74,85 @@ const messageContainsTool = (message: Message) => {
   return content.some(
     (part) => part && (part.type === "tool-call" || part.type === "tool-result"),
   );
+}
+
+// Extract readable text from messages for indexing in `messages.text`.
+const extractTextFromMessage = (message: Message): string | undefined => {
+  try {
+    if (message.role === "system") {
+      return typeof message.content === "string" ? message.content : undefined;
+    }
+
+    if (message.role === "user") {
+      const c: any = message.content as any;
+      if (typeof c === "string") return c;
+      if (Array.isArray(c)) {
+        const parts: string[] = [];
+        for (const part of c) {
+          if (part && typeof part === "object" && part.type === "text" && typeof part.text === "string") {
+            parts.push(part.text);
+          }
+        }
+        return parts.length ? parts.join("\n") : undefined;
+      }
+      return undefined;
+    }
+
+    if (message.role === "assistant") {
+      const c: any = message.content as any;
+      if (typeof c === "string") return c;
+      if (Array.isArray(c)) {
+        const parts: string[] = [];
+        for (const part of c) {
+          if (!part || typeof part !== "object") continue;
+          if (part.type === "text" && typeof part.text === "string") {
+            parts.push(part.text);
+          }
+          if (part.type === "tool-result" && part.output) {
+            const out: any = part.output;
+            if (out.type === "text" && typeof out.value === "string") {
+              parts.push(out.value);
+            } else if (out.type === "content" && Array.isArray(out.value)) {
+              for (const entry of out.value) {
+                if (entry && typeof entry === "object" && entry.type === "text" && typeof entry.text === "string") {
+                  parts.push(entry.text);
+                }
+              }
+            }
+          }
+        }
+        return parts.length ? parts.join("\n") : undefined;
+      }
+      return undefined;
+    }
+
+    if (message.role === "tool") {
+      const c: any = message.content as any;
+      if (Array.isArray(c)) {
+        const parts: string[] = [];
+        for (const part of c) {
+          if (part && typeof part === "object" && part.type === "tool-result" && part.output) {
+            const out: any = part.output;
+            if (out.type === "text" && typeof out.value === "string") {
+              parts.push(out.value);
+            } else if (out.type === "content" && Array.isArray(out.value)) {
+              for (const entry of out.value) {
+                if (entry && typeof entry === "object" && entry.type === "text" && typeof entry.text === "string") {
+                  parts.push(entry.text);
+                }
+              }
+            }
+          }
+        }
+        return parts.length ? parts.join("\n") : undefined;
+      }
+      return undefined;
+    }
+
+    return undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 export const setMessageStatus = mutation({
@@ -115,6 +195,7 @@ export const appendMessages = mutation({
         userId: args.userId,
         status: args.status,
         message,
+        text: extractTextFromMessage(message),
         tool: messageContainsTool(message),
       });
       ids.push(id);

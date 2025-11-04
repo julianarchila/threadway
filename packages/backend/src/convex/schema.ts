@@ -59,7 +59,14 @@ export default defineSchema({
     tool: v.boolean(),
     text: v.optional(v.string()),
 
-  }).index("by_thread", ["threadId"]),
+  })
+    .index("by_thread", ["threadId"])
+    .searchIndex("text_search", {
+      searchField: "text",
+      filterFields: ["userId", "threadId"],
+    })
+
+
 
 
 });
