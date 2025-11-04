@@ -49,15 +49,15 @@ export async function runAgent(params: {
       system: params.systemPrompt,
       tools: toolsRes.value,
       stopWhen: stepCountIs(10),
-      onStepFinish: async (step) => {
-        await appendMessages({
-          userId: params.userId,
-          threadId: params.threadId,
-          msgs: step.response.messages,
-          status: "success",
-        });
-      }
     });
+
+    await appendMessages({
+      userId: params.userId,
+      threadId: params.threadId,
+      msgs: result.response.messages,
+      status: "success",
+    })
+
     return ok(result.text ?? "");
   } catch (e) {
     console.error("Error during text generation:", e);
