@@ -44,8 +44,7 @@ export async function runAgent(params: {
 
   try {
     const result = await generateText({
-      // model: openai("gpt-5-mini"),
-      model: 'anthropic/claude-sonnet-4',
+      model: ai.gateway("openai/gpt-5"),
       messages: messages,
       system: params.systemPrompt,
       tools: toolsRes.value,
@@ -61,6 +60,7 @@ export async function runAgent(params: {
     });
     return ok(result.text ?? "");
   } catch (e) {
+    console.error("Error during text generation:", e);
     return err(new AgentError("FAILED_TO_GENERATE_TEXT", "Text generation failed", e));
   }
 }
