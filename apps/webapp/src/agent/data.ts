@@ -1,37 +1,12 @@
 
 import { convexClient } from "@/lib/convex";
 import { api } from '@threadway/backend/convex/api';
-
 import { fromAsyncThrowable, err, ok } from "neverthrow";
-
 import { Id } from "@threadway/backend/convex/dataModel";
-
 import { composio } from "@/lib/composio";
+import { AgentError } from "@/lib/agent/core/errors";
 
-const SUPER_SECRET = process.env.AGENT_SECRET || ""
-
-type GetCurrentUserParams = {
-  userPhoneNumber: string;
-}
-
-export const getCurrentUser = async (params: GetCurrentUserParams) => {
-
-  // check if phone number has "+" at the start, if not add it
-  let phoneNumber = params.userPhoneNumber;
-  if (!phoneNumber.startsWith("+")) {
-    phoneNumber = "+" + phoneNumber;
-  }
-
-  const user = await convexClient.query(api.agent.queries.getUserByPhoneNumber, {
-    phoneNumber: phoneNumber,
-    secret: SUPER_SECRET
-  })
-
-  return user
-
-}
-
-
+const SUPER_SECRET = process.env.AGENT_SECRET || "";
 
 export const loadUserTools = async (userId: Id<"users">) => {
   // const userToolKits = await internal.integrations.queries.getUserConnectedToolkits({userId: args.userId})
@@ -74,21 +49,10 @@ export const loadUserTools = async (userId: Id<"users">) => {
   return err(
     new AgentError(
       "FAILED_TO_LOAD_TOOLS",
-      "Failed too load user tools from composio",
+      "Failed to load user tools from composio",
       firstError
     )
   )
 
 }
-
-type AgentErrorType = "FAILED_TO_LOAD_TOOLS" | "FAILED_TO_CREATE_AGENT" | "FAILED_TO_CONTINUE_THREAD" | "FAILED_TO_GENERATE_TEXT";
-
-export class AgentError extends Error {
-  readonly name = 'IntegrationsError';
-  constructor(public readonly type: AgentErrorType, message: string, public readonly cause?: unknown) {
-    super(message);
-    if (Error.captureStackTrace) {
-      Error.captureStackTrace(this, AgentError)
-    }
-  }
-}
+ 
