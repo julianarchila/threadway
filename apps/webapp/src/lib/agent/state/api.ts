@@ -2,7 +2,7 @@ import { convexClient } from "@/lib/convex";
 import { api } from "@threadway/backend/convex/api";
 import type { Id } from "@threadway/backend/convex/dataModel";
 
-import { ModelMessage, modelMessageSchema } from "ai";
+import { ModelMessage } from "ai";
 
 const SUPER_SECRET = process.env.AGENT_SECRET || "";
 

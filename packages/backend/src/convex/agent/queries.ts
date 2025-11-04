@@ -47,7 +47,12 @@ export const getUserConnectedToolkits = query({
 })
 
 export const listRecentMessages = query({
-  args: { threadId: v.id("thread"), limit: v.number(), secret: v.string() },
+  args: {
+    threadId: v.id("thread"),
+    limit: v.number(),
+    secret: v.string(),
+    excludeTools: v.optional(v.boolean()),
+  },
   handler: async (ctx, args) => {
     if (SUPER_SECRET !== args.secret) {
       throw new Error("Nope");
@@ -59,7 +64,10 @@ export const listRecentMessages = query({
       .withIndex("by_thread", (q) => q.eq("threadId", args.threadId))
       .collect();
 
-    return byThread
+    const excludeTools = args.excludeTools ?? true;
+    const messages = excludeTools ? byThread.filter((m) => !m.tool) : byThread;
+
+    return messages
       .sort((a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0))
       .slice(0, Math.max(0, args.limit));
   },

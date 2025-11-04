@@ -44,7 +44,7 @@ export async function runAgent(params: {
 
   try {
     const result = await generateText({
-      model: ai.gateway("openai/gpt-5"),
+      model: ai.gateway("anthropic/claude-sonnet-4.5"),
       messages: messages,
       system: params.systemPrompt,
       tools: toolsRes.value,
