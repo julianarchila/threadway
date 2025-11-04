@@ -64,9 +64,15 @@ export const appendMessage = mutation({
 
 
 const messageContainsTool = (message: Message) => {
+  if (message.role === "tool") return true;
+  if (message.role !== "assistant") return false;
 
-  return message.role === "assistant" ? typeof message.content !== "string" ? !!message.content.find((part) => part.type === "tool-result") : false : false;
+  const content = message.content;
+  if (!Array.isArray(content)) return false;
 
+  return content.some(
+    (part) => part && (part.type === "tool-call" || part.type === "tool-result"),
+  );
 }
 
 export const setMessageStatus = mutation({
