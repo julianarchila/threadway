@@ -2,8 +2,7 @@ import { Inngest, NonRetriableError } from "inngest";
 import { verifyWebhook } from "./kapso";
 
 import { systemPrompt } from "@/agent/prompts";
-import { getCurrentUser, loadUserTools } from "@/agent/data";
-import { kapsoChannel } from "@/lib/agent/channel";
+import { getCurrentUser, loadUserTools } from "@/agent/data"; import { kapsoChannel } from "@/lib/agent/channel";
 import { getOrCreateThreadByUser, listRecentMessages, appendMessage, setMessageStatus } from "@/lib/agent/state/api";
 import { toModelMessages } from "@/lib/agent/state/serializers";
 import { runAgent } from "@/lib/agent/llm/run-agent";
@@ -85,24 +84,15 @@ const incommingKapsoMessage = inngest.createFunction(
         userInput: body,
         userId: user._id,
         from,
+        threadId: thread._id
       })
     })
     console.log("[agent] agent output length", { length: (textResponse || "").length })
 
-    const assistantMessageId = await step.run("persist-assistant", async () =>
-      appendMessage({
-        threadId: thread._id,
-        userId: user._id,
-        status: "pending",
-        msg: { role: "assistant", content: textResponse || genericChatErrorMessage },
-      })
-    )
-    console.log("[agent] assistant persisted", { assistantMessageId })
-
     await step.run("send-response", async () => {
       await kapsoChannel.sendText(from, textResponse || genericChatErrorMessage)
       await setMessageStatus({ messageId: inboundMessageId as any, status: "success" })
-      await setMessageStatus({ messageId: assistantMessageId as any, status: "success" })
+      /*       await setMessageStatus({ messageId: assistantMessageId as any, status: "success" }) */
     })
     console.log("[agent] response sent and statuses updated")
 

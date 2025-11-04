@@ -6,6 +6,7 @@ import { loadUserTools } from "@/agent/data";
 import { Id } from "@threadway/backend/convex/dataModel";
 
 import { initLogger, wrapAISDK } from "braintrust";
+import { appendMessages } from "@/lib/agent/state/api";
 
 
 import { kapsoChannel } from "@/lib/agent/channel";
@@ -29,6 +30,7 @@ export async function runAgent(params: {
   userInput: string;
   userId: Id<"users">;
   from: string;
+  threadId: Id<"thread">;
 }): Promise<string> {
 
   console.log("params: ", params)
@@ -49,8 +51,18 @@ export async function runAgent(params: {
     messages: messages,
     system: params.systemPrompt,
     tools: toolsRes.value,
-    stopWhen: stepCountIs(10)
+    stopWhen: stepCountIs(10),
+    onStepFinish: async (step) => {
+      await appendMessages({
+        userId: params.userId,
+        threadId: params.threadId,
+        msgs: step.response.messages,
+        status: "success",
+      });
+    }
   });
+
+  result.content
   return result.text ?? "";
 }
 

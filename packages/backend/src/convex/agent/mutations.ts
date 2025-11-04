@@ -89,4 +89,32 @@ export const setMessageStatus = mutation({
   },
 });
 
+export const appendMessages = mutation({
+  args: {
+    threadId: v.id("thread"),
+    userId: v.id("users"),
+    status: vMessageStatus,
+    messages: v.array(vMessage),
+    secret: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (SUPER_SECRET !== args.secret) {
+      throw new Error("Nope");
+    }
+
+    const ids: Id<"messages">[] = [];
+    for (const message of args.messages) {
+      const id = await ctx.db.insert("messages", {
+        threadId: args.threadId,
+        userId: args.userId,
+        status: args.status,
+        message,
+        tool: messageContainsTool(message),
+      });
+      ids.push(id);
+    }
+    return ids;
+  },
+});
+
 

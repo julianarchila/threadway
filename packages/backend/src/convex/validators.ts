@@ -32,6 +32,7 @@ export const vProviderOptions = v.record(
 export const vTextPart = v.object({
   type: v.literal("text"),
   text: v.string(),
+  providerOptions: v.optional(vProviderOptions),
 });
 
 export const vImagePart = v.object({
@@ -51,7 +52,10 @@ export const vToolCallPart = v.object({
   type: v.literal("tool-call"),
   toolCallId: v.string(),
   toolName: v.string(),
-  args: v.any(),
+  // Some providers emit `args`, others emit `input`.
+  args: v.optional(v.any()),
+  input: v.optional(v.any()),
+  providerOptions: v.optional(vProviderOptions),
 });
 
 
@@ -104,8 +108,10 @@ export const vUserContent = v.union(
 
 export const vReasoningPart = v.object({
   type: v.literal("reasoning"),
-  text: v.string(),
+  text: v.optional(v.string()),
   signature: v.optional(v.string()),
+
+  providerOptions: v.optional(vProviderOptions),
 });
 
 export const vRedactedReasoningPart = v.object({

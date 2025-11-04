@@ -54,4 +54,22 @@ export async function setMessageStatus(params: {
   });
 }
 
+export async function appendMessages(params: {
+  threadId: Id<"thread">;
+  userId: Id<"users">;
+  status: "pending" | "success" | "failed";
+  msgs: ModelMessage[];
+}) {
+  const { threadId, userId, status, msgs } = params;
+
+  return convexClient.mutation(api.agent.mutations.appendMessages, {
+    threadId,
+    userId,
+    status,
+    // @ts-expect-error: Minor difference between the types
+    messages: msgs,
+    secret: SUPER_SECRET,
+  });
+}
+
 
