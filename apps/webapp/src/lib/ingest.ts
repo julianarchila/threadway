@@ -9,6 +9,7 @@ import { toModelMessages } from "@/lib/agent/state/serializers";
 import { runAgent } from "@/lib/agent/llm/run-agent";
 import { GENERIC_CHAT_ERROR_MESSAGE, WELCOME_MESSAGE } from "@/lib/agent/core/constants";
 import type { AgentErrorType } from "@/lib/agent/core/errors";
+import { routeWorkflow } from "@/lib/agent/workflows/router";
 
 export const inngest = new Inngest({ id: "my-app" });
 // Your new function:
@@ -71,37 +72,30 @@ const incomingKapsoMessage = inngest.createFunction(
     const historyDocs = await step.run("fetch-history", async () => listRecentMessages({ threadId: thread._id, limit: 20 }))
     const history = toModelMessages(historyDocs).reverse()
 
-    const agentResult = await step.run("run-agent", async () => {
-      const result = await runAgent({
-        systemPrompt,
-        history,
-        userInput: body,
+    const routing = await step.run("route-workflow", async () => {
+      const result = await routeWorkflow({
         userId: user._id,
-        from,
-        threadId: thread._id
+        userInput: body,
+        context: history.slice(-4),
       })
       return result.match(
         (value) => ({ ok: true as const, value }),
-        (error) => ({ ok: false as const, error: { message: error.message, type: error.type as AgentErrorType } })
+        (error) => ({ ok: false as const, error: { message: error.message } })
       )
     })
-    if (!agentResult.ok) {
-      console.error("[agent] agent error", agentResult.error);
-      await step.run("send-error-response", async () => {
-        await kapsoChannel.sendText(from, GENERIC_CHAT_ERROR_MESSAGE)
-        await setMessageStatus({ messageId: inboundMessageId as any, status: "failed", error: agentResult.error.message })
-      })
-      return;
+
+    if (!routing.ok) {
+      console.error("[router] error", routing.error);
+    } else {
+      const { decision, workflowsConsidered, selected } = routing.value;
+      console.log("[router] decision", { decision, workflowsConsidered, selectedId: selected?._id, selectedTitle: selected?.title });
     }
 
-    const textResponse = agentResult.value;
-    console.log("[agent] agent output length", { length: (textResponse || "").length })
-
-    await step.run("send-response", async () => {
-      await kapsoChannel.sendText(from, textResponse || GENERIC_CHAT_ERROR_MESSAGE)
+    await step.run("send-router-ack", async () => {
+      await kapsoChannel.sendText(from, "Ok")
       await setMessageStatus({ messageId: inboundMessageId as any, status: "success" })
     })
-    console.log("[agent] response sent and statuses updated")
+    return;
 
   })
 

@@ -114,3 +114,58 @@ export const listRecentMessages = query({
     return mergedAsc.sort((a, b) => (b._creationTime ?? 0) - (a._creationTime ?? 0));
   },
 });
+
+export const listUserWorkflowsWithIntegrations = query({
+  args: { userId: v.id("users"), secret: v.string() },
+  handler: async (ctx, args) => {
+    if (SUPER_SECRET !== args.secret) {
+      throw new Error("Nope");
+    }
+
+    const workflows = await ctx.db
+      .query("workflows")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+
+    const results: Array<{
+      _id: Id<"workflows">;
+      title: string;
+      content: string;
+      updatedAt: number;
+      toolkitSlugs: string[];
+    }> = [];
+
+    for (const wf of workflows) {
+      const links = await ctx.db
+        .query("workflowIntegrations")
+        .withIndex("by_workflow", (q) => q.eq("workflowId", wf._id))
+        .collect();
+
+      const connections = await Promise.all(
+        links.map((l) => ctx.db.get(l.connectionId))
+      );
+
+      const toolkitSlugs = Array.from(
+        new Set(
+          connections
+            .filter((c): c is NonNullable<typeof c> => Boolean(c))
+            .filter((c) => c.status === "ACTIVE")
+            .map((c) => c.toolkitSlug)
+            .filter((s): s is string => typeof s === "string")
+        )
+      );
+
+      results.push({
+        _id: wf._id as Id<"workflows">,
+        title: wf.title,
+        content: wf.content,
+        updatedAt: wf.updatedAt,
+        toolkitSlugs,
+      });
+    }
+
+    // Sort by most recently updated first
+    results.sort((a, b) => b.updatedAt - a.updatedAt);
+    return results;
+  },
+});
