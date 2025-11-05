@@ -5,8 +5,11 @@ import { getCurrentUser } from "@/lib/agent/state/users";
 import { kapsoChannel } from "@/lib/agent/channel";
 import { getOrCreateThreadByUser, listRecentMessages, appendMessage, setMessageStatus } from "@/lib/agent/state/api";
 import { toModelMessages } from "@/lib/agent/state/serializers";
-import { WELCOME_MESSAGE } from "@/lib/agent/core/constants";
+import { WELCOME_MESSAGE, GENERIC_CHAT_ERROR_MESSAGE } from "@/lib/agent/core/constants";
 import { routeWorkflow } from "@/lib/agent/workflows/router";
+import { runWorkflow } from "@/lib/agent/workflows/runner";
+import { runAgent } from "@/lib/agent/llm/run-agent";
+import { systemPrompt } from "@/agent/prompts";
 
 export const inngest = new Inngest({ id: "my-app" });
 // Your new function:
@@ -86,13 +89,71 @@ const incomingKapsoMessage = inngest.createFunction(
     } else {
       const { decision, workflowsConsidered, selected } = routing.value;
       console.log("[router] decision", { decision, workflowsConsidered, selectedId: selected?._id, selectedTitle: selected?.title });
+
+      if (decision.action === "RUN" && selected) {
+        const runRes = await step.run("run-workflow", async () => {
+          const res = await runWorkflow({
+            userId: user._id,
+            workflow: selected,
+            threadId: thread._id,
+            history,
+            userInput: body,
+          });
+          return res.match(
+            (value) => ({ ok: true as const, value }),
+            (error) => ({ ok: false as const, error: { message: error.message } })
+          )
+        })
+
+        if (!runRes.ok) {
+          console.error("[workflow] runner error", runRes.error);
+          await step.run("send-error-response", async () => {
+            await kapsoChannel.sendText(from, GENERIC_CHAT_ERROR_MESSAGE)
+            await setMessageStatus({ messageId: inboundMessageId as any, status: "failed", error: runRes.error.message })
+          })
+          return;
+        }
+
+        const textResponse = runRes.value;
+        await step.run("send-response", async () => {
+          await kapsoChannel.sendText(from, textResponse || GENERIC_CHAT_ERROR_MESSAGE)
+          await setMessageStatus({ messageId: inboundMessageId as any, status: "success" })
+        })
+        console.log("[workflow] response sent and statuses updated")
+        return;
+      }
     }
 
-    await step.run("send-router-ack", async () => {
-      await kapsoChannel.sendText(from, "Ok")
+    // Fallback to generic chat agent
+    const agentResult = await step.run("run-agent", async () => {
+      const result = await runAgent({
+        systemPrompt,
+        history,
+        userInput: body,
+        userId: user._id,
+        from,
+        threadId: thread._id
+      })
+      return result.match(
+        (value) => ({ ok: true as const, value }),
+        (error) => ({ ok: false as const, error: { message: error.message } })
+      )
+    })
+    if (!agentResult.ok) {
+      console.error("[agent] agent error", agentResult.error);
+      await step.run("send-error-response", async () => {
+        await kapsoChannel.sendText(from, GENERIC_CHAT_ERROR_MESSAGE)
+        await setMessageStatus({ messageId: inboundMessageId as any, status: "failed", error: agentResult.error.message })
+      })
+      return;
+    }
+
+    const textResponse = agentResult.value;
+    await step.run("send-response", async () => {
+      await kapsoChannel.sendText(from, textResponse || GENERIC_CHAT_ERROR_MESSAGE)
       await setMessageStatus({ messageId: inboundMessageId as any, status: "success" })
     })
-    return;
+    console.log("[agent] response sent and statuses updated")
 
   })
 
