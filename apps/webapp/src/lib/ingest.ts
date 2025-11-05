@@ -1,14 +1,11 @@
 import { Inngest, NonRetriableError } from "inngest";
 import { verifyWebhook } from "./kapso";
 
-import { systemPrompt } from "@/agent/prompts";
 import { getCurrentUser } from "@/lib/agent/state/users";
 import { kapsoChannel } from "@/lib/agent/channel";
 import { getOrCreateThreadByUser, listRecentMessages, appendMessage, setMessageStatus } from "@/lib/agent/state/api";
 import { toModelMessages } from "@/lib/agent/state/serializers";
-import { runAgent } from "@/lib/agent/llm/run-agent";
-import { GENERIC_CHAT_ERROR_MESSAGE, WELCOME_MESSAGE } from "@/lib/agent/core/constants";
-import type { AgentErrorType } from "@/lib/agent/core/errors";
+import { WELCOME_MESSAGE } from "@/lib/agent/core/constants";
 import { routeWorkflow } from "@/lib/agent/workflows/router";
 
 export const inngest = new Inngest({ id: "my-app" });

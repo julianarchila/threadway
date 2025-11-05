@@ -1,5 +1,5 @@
 import * as ai from "ai";
-import { stepCountIs, type ModelMessage } from "ai";
+import type { ModelMessage } from "ai";
 import { initLogger, wrapAISDK } from "braintrust";
 import { z } from "zod";
 import { err, ok, Result } from "neverthrow";
@@ -18,7 +18,7 @@ if (process.env.BRAINTRUST_API_KEY) {
   });
 }
 
-const { generateText } = wrapAISDK(ai);
+const { generateObject } = wrapAISDK(ai);
 
 const RouterDecisionSchema = z.object({
   action: z.union([z.literal("RUN"), z.literal("SKIP")]),
@@ -70,20 +70,14 @@ Output STRICT JSON with keys: action (RUN|SKIP), workflowId (when RUN), confiden
       workflows: wfSummaries,
     };
 
-    const result = await generateText({
+    const { object } = await generateObject({
       model: ai.gateway("anthropic/claude-sonnet-4.5"),
       system,
       prompt: JSON.stringify(user),
-      stopWhen: stepCountIs(3),
+      schema: RouterDecisionSchema,
     });
 
-    const parsed = safeParseJson(result.text ?? "{}");
-    const validated = RouterDecisionSchema.safeParse(parsed);
-    if (!validated.success) {
-      return ok({ decision: { action: "SKIP", confidence: 0, reason: "invalid-json" }, workflowsConsidered: wfSummaries.length });
-    }
-
-    const decision = validated.data;
+    const decision = object;
     // confidence threshold and connection availability
     if (decision.action === "RUN" && decision.workflowId) {
       const selected = capped.find((w) => String(w._id) === decision.workflowId);
@@ -120,17 +114,6 @@ function compactContent(c: any): any {
   return c;
 }
 
-function safeParseJson(s: string) {
-  try {
-    const start = s.indexOf("{");
-    const end = s.lastIndexOf("}");
-    if (start >= 0 && end > start) {
-      return JSON.parse(s.slice(start, end + 1));
-    }
-    return JSON.parse(s);
-  } catch {
-    return {};
-  }
-}
+// no-op
 
 
