@@ -1,5 +1,6 @@
 import * as ai from "ai";
 import { stepCountIs, type ModelMessage } from "ai";
+import { initLogger, wrapAISDK } from "braintrust";
 import { z } from "zod";
 import { err, ok, Result } from "neverthrow";
 import type { Id } from "@threadway/backend/convex/dataModel";
@@ -8,6 +9,16 @@ import { convexClient } from "@/lib/convex";
 import { api } from "@threadway/backend/convex/api";
 
 const SUPER_SECRET = process.env.AGENT_SECRET || "";
+
+// Initialize Braintrust logging (same pattern as run-agent.ts)
+if (process.env.BRAINTRUST_API_KEY) {
+  initLogger({
+    projectName: process.env.BRAINTRUST_PROJECT_NAME || "Threadway",
+    apiKey: process.env.BRAINTRUST_API_KEY,
+  });
+}
+
+const { generateText } = wrapAISDK(ai);
 
 const RouterDecisionSchema = z.object({
   action: z.union([z.literal("RUN"), z.literal("SKIP")]),
@@ -59,7 +70,7 @@ Output STRICT JSON with keys: action (RUN|SKIP), workflowId (when RUN), confiden
       workflows: wfSummaries,
     };
 
-    const result = await ai.generateText({
+    const result = await generateText({
       model: ai.gateway("anthropic/claude-sonnet-4.5"),
       system,
       prompt: JSON.stringify(user),
