@@ -14,6 +14,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteRouteImport } from './routes/_dashboard/route'
 import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
 import { Route as DashboardIntegrationsRouteImport } from './routes/_dashboard/integrations'
+import { Route as DashboardFRouteRouteImport } from './routes/_dashboard/f/route'
 import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
 import { Route as DashboardFWorkflowIdRouteImport } from './routes/_dashboard/f/$workflowId'
 import { ServerRoute as ApiInngestServerRouteImport } from './routes/api/inngest'
@@ -36,15 +37,20 @@ const DashboardIntegrationsRoute = DashboardIntegrationsRouteImport.update({
   path: '/integrations',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardFRouteRoute = DashboardFRouteRouteImport.update({
+  id: '/f',
+  path: '/f',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const authLoginIndexRoute = authLoginIndexRouteImport.update({
   id: '/(auth)/login/',
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardFWorkflowIdRoute = DashboardFWorkflowIdRouteImport.update({
-  id: '/f/$workflowId',
-  path: '/f/$workflowId',
-  getParentRoute: () => DashboardRouteRoute,
+  id: '/$workflowId',
+  path: '/$workflowId',
+  getParentRoute: () => DashboardFRouteRoute,
 } as any)
 const ApiInngestServerRoute = ApiInngestServerRouteImport.update({
   id: '/api/inngest',
@@ -63,12 +69,14 @@ const ApiAuthSplatServerRoute = ApiAuthSplatServerRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/f': typeof DashboardFRouteRouteWithChildren
   '/integrations': typeof DashboardIntegrationsRoute
   '/': typeof DashboardIndexRoute
   '/f/$workflowId': typeof DashboardFWorkflowIdRoute
   '/login': typeof authLoginIndexRoute
 }
 export interface FileRoutesByTo {
+  '/f': typeof DashboardFRouteRouteWithChildren
   '/integrations': typeof DashboardIntegrationsRoute
   '/': typeof DashboardIndexRoute
   '/f/$workflowId': typeof DashboardFWorkflowIdRoute
@@ -77,6 +85,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_dashboard': typeof DashboardRouteRouteWithChildren
+  '/_dashboard/f': typeof DashboardFRouteRouteWithChildren
   '/_dashboard/integrations': typeof DashboardIntegrationsRoute
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/f/$workflowId': typeof DashboardFWorkflowIdRoute
@@ -84,12 +93,13 @@ export interface FileRoutesById {
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/integrations' | '/' | '/f/$workflowId' | '/login'
+  fullPaths: '/f' | '/integrations' | '/' | '/f/$workflowId' | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/integrations' | '/' | '/f/$workflowId' | '/login'
+  to: '/f' | '/integrations' | '/' | '/f/$workflowId' | '/login'
   id:
     | '__root__'
     | '/_dashboard'
+    | '/_dashboard/f'
     | '/_dashboard/integrations'
     | '/_dashboard/'
     | '/_dashboard/f/$workflowId'
@@ -153,6 +163,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardIntegrationsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/_dashboard/f': {
+      id: '/_dashboard/f'
+      path: '/f'
+      fullPath: '/f'
+      preLoaderRoute: typeof DashboardFRouteRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/(auth)/login/': {
       id: '/(auth)/login/'
       path: '/login'
@@ -162,10 +179,10 @@ declare module '@tanstack/react-router' {
     }
     '/_dashboard/f/$workflowId': {
       id: '/_dashboard/f/$workflowId'
-      path: '/f/$workflowId'
+      path: '/$workflowId'
       fullPath: '/f/$workflowId'
       preLoaderRoute: typeof DashboardFWorkflowIdRouteImport
-      parentRoute: typeof DashboardRouteRoute
+      parentRoute: typeof DashboardFRouteRoute
     }
   }
 }
@@ -195,16 +212,28 @@ declare module '@tanstack/react-start/server' {
   }
 }
 
-interface DashboardRouteRouteChildren {
-  DashboardIntegrationsRoute: typeof DashboardIntegrationsRoute
-  DashboardIndexRoute: typeof DashboardIndexRoute
+interface DashboardFRouteRouteChildren {
   DashboardFWorkflowIdRoute: typeof DashboardFWorkflowIdRoute
 }
 
+const DashboardFRouteRouteChildren: DashboardFRouteRouteChildren = {
+  DashboardFWorkflowIdRoute: DashboardFWorkflowIdRoute,
+}
+
+const DashboardFRouteRouteWithChildren = DashboardFRouteRoute._addFileChildren(
+  DashboardFRouteRouteChildren,
+)
+
+interface DashboardRouteRouteChildren {
+  DashboardFRouteRoute: typeof DashboardFRouteRouteWithChildren
+  DashboardIntegrationsRoute: typeof DashboardIntegrationsRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardFRouteRoute: DashboardFRouteRouteWithChildren,
   DashboardIntegrationsRoute: DashboardIntegrationsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
-  DashboardFWorkflowIdRoute: DashboardFWorkflowIdRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(

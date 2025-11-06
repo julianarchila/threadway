@@ -6,6 +6,7 @@ import { api } from "@threadway/backend/convex/api";
 import type { Id } from "@threadway/backend/convex/dataModel";
 import { useMutation } from "convex/react";
 import type { Block, PartialBlock } from "@blocknote/core";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { EditableTitle } from "./editable-title";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { convexQuery } from "@convex-dev/react-query";
@@ -21,13 +22,57 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
   const { data: workflow } = useSuspenseQuery(convexQuery(api.workflows.queries.getWorkflowById, { workflowId }));
   const updateWorkflowMutation = useMutation(api.workflows.mutations.update);
 
+
   const initialContent = blocksFromContent(workflow?.content);
 
+  // Tracks when server-side changes (not produced by this editor) arrive
+  const [contentVersion, setContentVersion] = useState(0);
+  const lastSavedContentRef = useRef<string | undefined>(undefined);
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // When Convex pushes an updated workflow content that doesn't match the last
+  // content we saved locally, bump the version to remount the editor with new content.
+  useEffect(() => {
+    const serverContent = workflow?.content;
+    if (serverContent == null) return;
+    if (lastSavedContentRef.current === serverContent) return;
+    lastSavedContentRef.current = serverContent;
+    setContentVersion((v) => v + 1);
+  }, [workflow?.content]);
+
+  // Debounced save function to handle fast typing
+  const debouncedSave = useCallback((jsonBlocks: Block[]) => {
+    // Clear any existing timeout
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    // Set a new timeout
+    saveTimeoutRef.current = setTimeout(async () => {
+      const serialized = JSON.stringify(jsonBlocks);
+      // Avoid feedback loops and redundant writes
+      if (serialized === workflow?.content || serialized === lastSavedContentRef.current) {
+        return;
+      }
+      lastSavedContentRef.current = serialized;
+      updateWorkflowMutation({
+        workflowId,
+        content: serialized,
+      });
+    }, 500); // 500ms delay
+  }, [workflow?.content, workflowId, updateWorkflowMutation]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, []);
+
   async function saveContent(jsonBlocks: Block[]) {
-    updateWorkflowMutation({
-      workflowId,
-      content: JSON.stringify(jsonBlocks),
-    });
+    debouncedSave(jsonBlocks);
   }
 
   // Renders the editor instance using a React component.
@@ -52,8 +97,8 @@ export function WorkflowEditor({ workflowId }: WorkflowEditorProps) {
       </div>
 
       {/* Editor */}
-      <BlockNoteEditor key={workflowId} initialContent={initialContent} onContentChange={saveContent} />
-    </div >
+      <BlockNoteEditor key={`${workflowId}:${contentVersion}`} initialContent={initialContent} onContentChange={saveContent} />
+    </div>
   );
 }
 
