@@ -68,7 +68,8 @@ export async function runWorkflow(params: {
 }
 
 function buildWorkflowSystemPrompt(workflow: WorkflowWithIntegrations): string {
-  const header = `You are Threadway, a WhatsApp automation agent. Execute the selected workflow faithfully and produce concise, WhatsApp-friendly responses.`;
+  const header = `You are Threadway, a WhatsApp automation agent. You will have acess to a list of tools that correspond to external services the end user has given you acess to. You will use these tools to complete the workflow you have to run. Here you can see the workflow title, the workflow content (what the user wants to do) and the chat history is part of the conversation so you can understand the context of the conversation. Execute the selected workflow faithfully and produce concise, WhatsApp-friendly responses.`;
+
   const title = `Workflow: ${workflow.title}`;
   const content = workflow.content || "";
   const guidelines = `Guidelines:\n- Keep outputs short and actionable.\n- If a required connection is missing at runtime, explain what is needed.\n- Prefer structured bullet points when listing results.`;
