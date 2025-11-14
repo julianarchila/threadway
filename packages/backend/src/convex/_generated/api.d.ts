@@ -11,7 +11,9 @@
 import type * as agent_actions from "../agent/actions.js";
 import type * as agent_error from "../agent/error.js";
 import type * as agent_helpers from "../agent/helpers.js";
+import type * as agent_mutations from "../agent/mutations.js";
 import type * as agent_nodeActions from "../agent/nodeActions.js";
+import type * as agent_queries from "../agent/queries.js";
 import type * as auth from "../auth.js";
 import type * as http from "../http.js";
 import type * as integrations_actions from "../integrations/actions.js";
@@ -30,6 +32,7 @@ import type * as user_error from "../user/error.js";
 import type * as user_helpers from "../user/helpers.js";
 import type * as user_queries from "../user/queries.js";
 import type * as user_utils from "../user/utils.js";
+import type * as validators from "../validators.js";
 import type * as workflows_error from "../workflows/error.js";
 import type * as workflows_mutations from "../workflows/mutations.js";
 import type * as workflows_queries from "../workflows/queries.js";
@@ -52,7 +55,9 @@ declare const fullApi: ApiFromModules<{
   "agent/actions": typeof agent_actions;
   "agent/error": typeof agent_error;
   "agent/helpers": typeof agent_helpers;
+  "agent/mutations": typeof agent_mutations;
   "agent/nodeActions": typeof agent_nodeActions;
+  "agent/queries": typeof agent_queries;
   auth: typeof auth;
   http: typeof http;
   "integrations/actions": typeof integrations_actions;
@@ -71,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   "user/helpers": typeof user_helpers;
   "user/queries": typeof user_queries;
   "user/utils": typeof user_utils;
+  validators: typeof validators;
   "workflows/error": typeof workflows_error;
   "workflows/mutations": typeof workflows_mutations;
   "workflows/queries": typeof workflows_queries;
