@@ -176,7 +176,7 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="space-y-4 mt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
                     {/* Option 1: Connect existing WhatsApp Business - Only coexistence mode */}
                     <button
                         onClick={async () => {
@@ -193,9 +193,9 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                                 console.error(error);
                             }
                         }}
-                        className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-400 transition-all text-left group"
+                        className="p-5 bg-transparent rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-all text-left group cursor-pointer"
                     >
-                        <div className="flex items-start gap-4">
+                        <div className="flex flex-col items-center text-center gap-3">
                             <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 transition-colors">
                                 <MessageCircle className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
                             </div>
@@ -206,7 +206,7 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                                 <p className="text-sm text-muted-foreground mb-2">
                                     Link your existing WhatsApp Business account and keep using your app.
                                 </p>
-                                <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                                <div className="flex items-center justify-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                                     <span>Start Setup</span>
                                     <ExternalLink className="h-3 w-3" />
                                 </div>
@@ -230,9 +230,9 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                                 console.error(error);
                             }
                         }}
-                        className="w-full p-4 sm:p-5 bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-teal-500 dark:hover:border-teal-400 transition-all text-left group"
+                        className="p-5 bg-transparent rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-teal-500 dark:hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-950/20 transition-all text-left group cursor-pointer"
                     >
-                        <div className="flex items-start gap-4">
+                        <div className="flex flex-col items-center text-center gap-3">
                             <div className="p-3 bg-teal-50 dark:bg-teal-950/30 rounded-lg group-hover:bg-teal-100 dark:group-hover:bg-teal-900/50 transition-colors">
                                 <Phone className="h-6 w-6 text-teal-600 dark:text-teal-400" />
                             </div>
@@ -243,20 +243,19 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                                 <p className="text-sm text-muted-foreground mb-2">
                                     We'll provision a new US phone number for your WhatsApp Business API.
                                 </p>
-                                <div className="flex items-center gap-2 text-xs text-teal-600 dark:text-teal-400 font-medium">
+                                <div className="flex items-center justify-center gap-2 text-xs text-teal-600 dark:text-teal-400 font-medium">
                                     <span>Start Setup</span>
                                     <ExternalLink className="h-3 w-3" />
                                 </div>
                             </div>
                         </div>
                     </button>
-
-                    <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800">
-                        <p className="text-xs text-muted-foreground">
-                            <strong>Note:</strong> You'll be redirected to complete the WhatsApp setup securely.
-                            The process takes about 5 minutes.
-                        </p>
-                    </div>
+                </div>
+                <div className="mt-4 p-3 bg-gray-50 dark:bg-card rounded-lg border border-gray-200 dark:border-gray-800">
+                    <p className="text-xs text-muted-foreground">
+                        <strong>Note:</strong> You'll be redirected to complete the WhatsApp setup securely.
+                        The process takes about 5 minutes.
+                    </p>
                 </div>
             </div>
         );
