@@ -16,6 +16,8 @@ import { Route as DashboardIndexRouteImport } from './routes/_dashboard/index'
 import { Route as DashboardIntegrationsRouteImport } from './routes/_dashboard/integrations'
 import { Route as DashboardFRouteRouteImport } from './routes/_dashboard/f/route'
 import { Route as authLoginIndexRouteImport } from './routes/(auth)/login/index'
+import { Route as DashboardWhatsappFailedRouteImport } from './routes/_dashboard/whatsapp/failed'
+import { Route as DashboardWhatsappConnectedRouteImport } from './routes/_dashboard/whatsapp/connected'
 import { Route as DashboardFWorkflowIdRouteImport } from './routes/_dashboard/f/$workflowId'
 import { ServerRoute as ApiChatServerRouteImport } from './routes/api/chat'
 import { ServerRoute as ApiAuthSplatServerRouteImport } from './routes/api/auth/$'
@@ -46,6 +48,17 @@ const authLoginIndexRoute = authLoginIndexRouteImport.update({
   path: '/login/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardWhatsappFailedRoute = DashboardWhatsappFailedRouteImport.update({
+  id: '/whatsapp/failed',
+  path: '/whatsapp/failed',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardWhatsappConnectedRoute =
+  DashboardWhatsappConnectedRouteImport.update({
+    id: '/whatsapp/connected',
+    path: '/whatsapp/connected',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardFWorkflowIdRoute = DashboardFWorkflowIdRouteImport.update({
   id: '/$workflowId',
   path: '/$workflowId',
@@ -67,6 +80,8 @@ export interface FileRoutesByFullPath {
   '/integrations': typeof DashboardIntegrationsRoute
   '/': typeof DashboardIndexRoute
   '/f/$workflowId': typeof DashboardFWorkflowIdRoute
+  '/whatsapp/connected': typeof DashboardWhatsappConnectedRoute
+  '/whatsapp/failed': typeof DashboardWhatsappFailedRoute
   '/login': typeof authLoginIndexRoute
 }
 export interface FileRoutesByTo {
@@ -74,6 +89,8 @@ export interface FileRoutesByTo {
   '/integrations': typeof DashboardIntegrationsRoute
   '/': typeof DashboardIndexRoute
   '/f/$workflowId': typeof DashboardFWorkflowIdRoute
+  '/whatsapp/connected': typeof DashboardWhatsappConnectedRoute
+  '/whatsapp/failed': typeof DashboardWhatsappFailedRoute
   '/login': typeof authLoginIndexRoute
 }
 export interface FileRoutesById {
@@ -83,13 +100,29 @@ export interface FileRoutesById {
   '/_dashboard/integrations': typeof DashboardIntegrationsRoute
   '/_dashboard/': typeof DashboardIndexRoute
   '/_dashboard/f/$workflowId': typeof DashboardFWorkflowIdRoute
+  '/_dashboard/whatsapp/connected': typeof DashboardWhatsappConnectedRoute
+  '/_dashboard/whatsapp/failed': typeof DashboardWhatsappFailedRoute
   '/(auth)/login/': typeof authLoginIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/f' | '/integrations' | '/' | '/f/$workflowId' | '/login'
+  fullPaths:
+    | '/f'
+    | '/integrations'
+    | '/'
+    | '/f/$workflowId'
+    | '/whatsapp/connected'
+    | '/whatsapp/failed'
+    | '/login'
   fileRoutesByTo: FileRoutesByTo
-  to: '/f' | '/integrations' | '/' | '/f/$workflowId' | '/login'
+  to:
+    | '/f'
+    | '/integrations'
+    | '/'
+    | '/f/$workflowId'
+    | '/whatsapp/connected'
+    | '/whatsapp/failed'
+    | '/login'
   id:
     | '__root__'
     | '/_dashboard'
@@ -97,6 +130,8 @@ export interface FileRouteTypes {
     | '/_dashboard/integrations'
     | '/_dashboard/'
     | '/_dashboard/f/$workflowId'
+    | '/_dashboard/whatsapp/connected'
+    | '/_dashboard/whatsapp/failed'
     | '/(auth)/login/'
   fileRoutesById: FileRoutesById
 }
@@ -167,6 +202,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authLoginIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_dashboard/whatsapp/failed': {
+      id: '/_dashboard/whatsapp/failed'
+      path: '/whatsapp/failed'
+      fullPath: '/whatsapp/failed'
+      preLoaderRoute: typeof DashboardWhatsappFailedRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/_dashboard/whatsapp/connected': {
+      id: '/_dashboard/whatsapp/connected'
+      path: '/whatsapp/connected'
+      fullPath: '/whatsapp/connected'
+      preLoaderRoute: typeof DashboardWhatsappConnectedRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/_dashboard/f/$workflowId': {
       id: '/_dashboard/f/$workflowId'
       path: '/$workflowId'
@@ -211,12 +260,16 @@ interface DashboardRouteRouteChildren {
   DashboardFRouteRoute: typeof DashboardFRouteRouteWithChildren
   DashboardIntegrationsRoute: typeof DashboardIntegrationsRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
+  DashboardWhatsappConnectedRoute: typeof DashboardWhatsappConnectedRoute
+  DashboardWhatsappFailedRoute: typeof DashboardWhatsappFailedRoute
 }
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardFRouteRoute: DashboardFRouteRouteWithChildren,
   DashboardIntegrationsRoute: DashboardIntegrationsRoute,
   DashboardIndexRoute: DashboardIndexRoute,
+  DashboardWhatsappConnectedRoute: DashboardWhatsappConnectedRoute,
+  DashboardWhatsappFailedRoute: DashboardWhatsappFailedRoute,
 }
 
 const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
