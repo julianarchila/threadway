@@ -143,8 +143,8 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                                 </p>
                                 <p className="font-medium text-sm sm:text-base text-green-900 dark:text-green-100">
                                     {whatsappStatus.connectionType === "coexistence"
-                                        ? "Coexistence Mode (App + API)"
-                                        : "Dedicated Mode (API Only)"}
+                                        ? "Connected (App + Automation)"
+                                        : "Connected (Automation Only)"}
                                 </p>
                             </div>
                             <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200 whitespace-nowrap">
@@ -176,14 +176,14 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                     </DialogDescription>
                 </DialogHeader>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    {/* Option 1: Connect existing WhatsApp Business - Only coexistence mode */}
+                <div className="mt-6 space-y-3">
+                    {/* Option 1: Connect existing WhatsApp Business */}
                     <button
                         onClick={async () => {
                             try {
                                 const result = await createSetupLink({
                                     provisionPhoneNumber: false,
-                                    connectionTypes: ["coexistence"], // Solo coexistence - mantiene la app activa
+                                    connectionTypes: ["coexistence"],
                                 });
 
                                 // Open Kapso setup link in new tab
@@ -193,34 +193,29 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                                 console.error(error);
                             }
                         }}
-                        className="p-5 bg-transparent rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-emerald-500 dark:hover:border-emerald-400 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/20 transition-all text-left group cursor-pointer"
+                        className="w-full text-left p-4 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-emerald-500 dark:hover:border-emerald-600 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 transition-all group cursor-pointer"
                     >
-                        <div className="flex flex-col items-center text-center gap-3">
-                            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg group-hover:bg-emerald-100 dark:group-hover:bg-emerald-900/50 transition-colors">
-                                <MessageCircle className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-base mb-1">
-                                    Connect Your WhatsApp Business
-                                </h3>
-                                <p className="text-sm text-muted-foreground mb-2">
-                                    Link your existing WhatsApp Business account and keep using your app.
+                        <div className="flex items-start gap-3">
+                            <MessageCircle className="h-5 w-5 text-muted-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors mt-0.5 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-foreground mb-1.5 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors">
+                                    Connect your WhatsApp Business
                                 </p>
-                                <div className="flex items-center justify-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-medium">
-                                    <span>Start Setup</span>
-                                    <ExternalLink className="h-3 w-3" />
-                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                    Keep using your WhatsApp app normally while we automate your messages.
+                                </p>
                             </div>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors flex-shrink-0 mt-0.5" />
                         </div>
                     </button>
 
-                    {/* Option 2: Request a new phone number - Only dedicated mode */}
+                    {/* Option 2: Get dedicated number */}
                     <button
                         onClick={async () => {
                             try {
                                 const result = await createSetupLink({
                                     provisionPhoneNumber: true,
-                                    connectionTypes: ["dedicated"], // Solo dedicated - API only
+                                    connectionTypes: ["dedicated"],
                                 });
 
                                 // Open Kapso setup link in new tab
@@ -230,32 +225,28 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                                 console.error(error);
                             }
                         }}
-                        className="p-5 bg-transparent rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-teal-500 dark:hover:border-teal-400 hover:bg-teal-50/50 dark:hover:bg-teal-950/20 transition-all text-left group cursor-pointer"
+                        className="w-full text-left p-4 rounded-lg border border-gray-200 dark:border-gray-800 hover:border-emerald-500 dark:hover:border-emerald-600 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 transition-all group cursor-pointer"
                     >
-                        <div className="flex flex-col items-center text-center gap-3">
-                            <div className="p-3 bg-teal-50 dark:bg-teal-950/30 rounded-lg group-hover:bg-teal-100 dark:group-hover:bg-teal-900/50 transition-colors">
-                                <Phone className="h-6 w-6 text-teal-600 dark:text-teal-400" />
-                            </div>
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-base mb-1">
-                                    Get a New WhatsApp Number
-                                </h3>
-                                <p className="text-sm text-muted-foreground mb-2">
-                                    We'll provision a new US phone number for your WhatsApp Business API.
+                        <div className="flex items-start gap-3">
+                            <Phone className="h-5 w-5 text-muted-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors mt-0.5 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-foreground mb-1.5 group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors">
+                                    Get a new dedicated number
                                 </p>
-                                <div className="flex items-center justify-center gap-2 text-xs text-teal-600 dark:text-teal-400 font-medium">
-                                    <span>Start Setup</span>
-                                    <ExternalLink className="h-3 w-3" />
-                                </div>
+                                <p className="text-xs text-muted-foreground leading-relaxed">
+                                    We'll provide a new number exclusively for automated messages.
+                                </p>
                             </div>
+                            <ExternalLink className="h-4 w-4 text-muted-foreground group-hover:text-emerald-600 dark:group-hover:text-emerald-500 transition-colors flex-shrink-0 mt-0.5" />
                         </div>
                     </button>
-                </div>
-                <div className="mt-4 p-3 bg-gray-50 dark:bg-card rounded-lg border border-gray-200 dark:border-gray-800">
-                    <p className="text-xs text-muted-foreground">
-                        <strong>Note:</strong> You'll be redirected to complete the WhatsApp setup securely.
-                        The process takes about 5 minutes.
-                    </p>
+
+                    {/* Setup info */}
+                    <div className="mt-4 p-3 bg-gray-50 dark:bg-card rounded-md border border-gray-200">
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                            Note: You'll be redirected to complete the connection. Takes about 5 minutes.
+                        </p>
+                    </div>
                 </div>
             </div>
         );
