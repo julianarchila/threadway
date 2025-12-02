@@ -2,7 +2,7 @@ import { httpRouter } from 'convex/server'
 import { betterAuthComponent } from './auth'
 import { createAuth } from '../lib/auth'
 import { WhatsappIncomingMessageWebhook } from './twilio/webhooks'
-import { handleKapsoSuccess, handleKapsoFailure } from './kapso/webhooks'
+import { handleKapsoWebhook } from './kapso/webhooks'
 
 const http = httpRouter()
 
@@ -14,17 +14,11 @@ http.route({
     handler: WhatsappIncomingMessageWebhook
 })
 
-// Kapso webhook routes
+// Kapso webhook route - handles "WhatsApp Phone Number Created" event
 http.route({
-    path: "/api/webhooks/kapso/success",
-    method: "GET",
-    handler: handleKapsoSuccess
-})
-
-http.route({
-    path: "/api/webhooks/kapso/failed",
-    method: "GET",
-    handler: handleKapsoFailure
+    path: "/api/webhooks/kapso",
+    method: "POST",
+    handler: handleKapsoWebhook
 })
 
 export default http

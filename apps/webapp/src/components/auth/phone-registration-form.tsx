@@ -187,7 +187,7 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                                 });
 
                                 // Open Kapso setup link in new tab
-                                window.open(result.setupUrl, '_blank');
+                                window.open(result.setupUrl);
                             } catch (error) {
                                 toast.error("Failed to create setup link");
                                 console.error(error);
@@ -219,7 +219,7 @@ export default function PhoneRegistrationForm({ onSuccess }: PhoneRegistrationFo
                                 });
 
                                 // Open Kapso setup link in new tab
-                                window.open(result.setupUrl, '_blank');
+                                window.open(result.setupUrl);
                             } catch (error) {
                                 toast.error("Failed to create setup link");
                                 console.error(error);
