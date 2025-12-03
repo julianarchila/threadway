@@ -1,83 +1,80 @@
 import { httpAction } from "../_generated/server";
 import { internal } from "../_generated/api";
+import {
+  verifyWebhookSignature,
+  parseWebhookPayload,
+  isTestWebhook,
+  validatePhoneNumberCreatedPayload,
+} from "../../lib/kapso/webhooks";
 
 /**
- * Unified webhook handler for Kapso WhatsApp connection
- * Handles the "WhatsApp Phone Number Created" event from Kapso
- * This processes the webhook POST request with JSON body
+ * Webhook handler for Kapso "WhatsApp Phone Number Created" event
+ * Triggered when a customer successfully connects their WhatsApp through a setup link
  */
 export const handleKapsoWebhook = httpAction(async (ctx, request) => {
   try {
-    // Parse JSON body from Kapso webhook
-    const body = await request.json();
+    const rawBody = await request.text();
+    const signature = request.headers.get("x-kapso-signature");
 
-    console.log("📨 Kapso webhook received:", body);
-
-    // Check if it's a test webhook
-    if (body.test) {
-      console.log("🧪 Test webhook received");
-      return new Response(JSON.stringify({ status: "ok", message: "Test webhook received" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+    // Verify webhook signature
+    const isValidSignature = await verifyWebhookSignature(rawBody, signature);
+    if (!isValidSignature) {
+      return new Response(
+        JSON.stringify({ error: "Invalid signature" }),
+        { status: 401, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    // For real webhooks, extract the data
-    // Project webhook format: { phone_number_id, project: { id }, customer: { id } }
-    const phone_number_id = body.phone_number_id;
-    const customer_id = body.customer?.id;
-    const project_id = body.project?.id;
+    const payload = parseWebhookPayload(rawBody);
 
-    if (!customer_id || !phone_number_id) {
-      console.error("❌ Missing required fields:", body);
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+    // Handle test webhooks
+    if (isTestWebhook(payload)) {
+      return new Response(
+        JSON.stringify({ status: "ok", message: "Test webhook received" }),
+        { status: 200, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    console.log("✅ Valid webhook data:", {
-      customer_id,
-      phone_number_id,
-      project_id,
-    });
+    // Validate payload
+    const validatedData = validatePhoneNumberCreatedPayload(payload);
+    if (!validatedData) {
+      return new Response(
+        JSON.stringify({ error: "Missing required fields" }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
+    }
 
     // Find user by Kapso customer ID
-    const user = await ctx.runQuery(internal.kapso.helpers.getUserByKapsoCustomerId, {
-      kapsoCustomerId: customer_id,
-    });
+    const user = await ctx.runQuery(
+      internal.kapso.helpers.getUserByKapsoCustomerId,
+      { kapsoCustomerId: validatedData.customerId }
+    );
 
     if (!user) {
-      console.error(`❌ User not found for Kapso customer ID: ${customer_id}`);
-      return new Response(JSON.stringify({ error: "User not found" }), {
-        status: 404,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: "User not found" }),
+        { status: 404, headers: { "Content-Type": "application/json" } }
+      );
     }
 
-    console.log("👤 Found user:", user._id);
-
-    // Update user's WhatsApp connection details
-    // Note: connection_type and waba_id come from other Kapso APIs, not this webhook
+    // Create WhatsApp connection record
     await ctx.runMutation(internal.kapso.mutations.updateWhatsAppConnection, {
       userId: user._id,
-      phoneNumberId: phone_number_id,
-      phoneNumber: undefined, // Will be populated later from Kapso API
-      connectionType: "coexistence", // Default, can be updated later
+      phoneNumberId: validatedData.phoneNumberId,
+      phoneNumber: undefined,
+      connectionType: "coexistence",
       wabaId: undefined,
     });
 
-    console.log("✅ WhatsApp connection updated successfully");
-
-    return new Response(JSON.stringify({ status: "ok", message: "Webhook processed successfully" }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ status: "ok", message: "Webhook processed successfully" }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
   } catch (error) {
-    console.error("❌ Error handling Kapso webhook:", error);
-    return new Response(JSON.stringify({ error: "Internal server error" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    console.error("Error processing Kapso webhook:", error);
+    return new Response(
+      JSON.stringify({ error: "Internal server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
   }
 });
